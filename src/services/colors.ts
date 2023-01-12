@@ -1,0 +1,27 @@
+interface IColors {
+	BG_DARK: string
+	MAIN: string
+	TITLE_COLOR: string
+	GRAY: string
+	BLACK: string
+	WHITE: string
+	BLUE: string
+	GOLD: string
+	MODAL_BG: string
+	RED: string
+}
+
+const COLORS: IColors = {
+	BG_DARK: "#353535",
+	MAIN: "#1BAA75",
+	TITLE_COLOR: "#E2EAFF",
+	GRAY: "#828282",
+	WHITE: "#FFFFFF",
+	BLACK: "#000000",
+	BLUE: "#7D9CE3",
+	GOLD: "gold",
+	RED: "red",
+	MODAL_BG: "rgba(0, 0, 0, 0.8)",
+}
+
+export default COLORS
