@@ -7,6 +7,7 @@ export const RoutesNames = {
 	},
 	Auth: {
 		index: "Auth",
-		AuthStack: "Регистрация",
+		AuthStack: "Авторизация",
+		Register: "Регистрация",
 	},
 }

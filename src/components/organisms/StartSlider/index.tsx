@@ -31,7 +31,7 @@ const StartSlider: FC<TStartSlider> = memo(() => {
 			source: require("../../../assets/images/pin.png"),
 			btn: (
 				<PressedBtn overStyle={{ marginTop: 20 }} onPress={toPin}>
-					<Text style={{ color: COLORS.MAIN }}>создать</Text>
+					<Text style={{ color: COLORS.MAIN, fontSize: 16 }}>создать</Text>
 				</PressedBtn>
 			),
 		},

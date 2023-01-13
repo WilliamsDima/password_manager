@@ -1,10 +1,7 @@
-import React, { FC, useEffect, useRef, useState } from "react"
+import React, { FC, useCallback, useEffect, useState } from "react"
 import { Text, View, StyleSheet, Vibration, ToastAndroid } from "react-native"
-import ReactNativePinView from "react-native-pin-view"
 import COLORS from "../../../services/colors"
-import { HEIGHT, USER_PIN } from "../../../services/constants"
-import IconIon from "react-native-vector-icons/Ionicons"
-import IconEntypo from "react-native-vector-icons/Entypo"
+import { USER_PIN } from "../../../services/constants"
 import { getEncrypted, setEncrypted } from "../../../api/asyncStorage"
 import {
 	useNavigation,
@@ -12,38 +9,28 @@ import {
 	useRoute,
 } from "@react-navigation/native"
 import { RoutesNames } from "../../../navigation/routes-names"
+import PinInput from "../../molecules/PinInput"
+import KeyboardNumber from "../../organisms/KeyboardNumber"
 
 type TPin = {}
 
 const PinTemplate: FC<TPin> = ({}) => {
-	const pinView = useRef<any>(null)
+	const size = 4
+
+	const [pin, setPin] = useState<number[]>([])
+	const [error, setError] = useState(false)
+
 	const navigation = useNavigation()
 	const { params } = useRoute<any>()
 
-	const pinLength = 4
-
 	const [step, setStep] = useState(1)
-	const [userPin, setUserPin] = useState("")
-
-	const [showButton, setShowButton] = useState(false)
-	const [enteredPin, setEnteredPin] = useState("")
-	const [userCode, setUserCode] = useState<undefined | string>(undefined)
-
-	const changePinHandler = (value: string) => {
-		setEnteredPin(value)
-	}
-
-	const onButtonPressHandler = (key: string) => {
-		if (key === "custom_left") {
-			pinView?.current?.clear()
-		}
-		if (key === "custom_right") {
-			pinView?.current?.clearAll()
-		}
-	}
+	const [userPinLocal, setUserPinLocal] = useState<undefined | string>(
+		undefined
+	)
+	const [userPin, setUserPin] = useState<undefined | string>(undefined)
 
 	const toAuth = () => {
-		pinView?.current?.clearAll()
+		clearHandler()
 		navigation.navigate(RoutesNames.Auth.AuthStack as never)
 		navigation.dispatch(
 			CommonActions.reset({
@@ -53,106 +40,95 @@ const PinTemplate: FC<TPin> = ({}) => {
 		)
 	}
 
+	const setPinHandler = useCallback(
+		(value: number | number[]) => {
+			if (Array.isArray(value)) {
+				setPin(value)
+			} else {
+				if (pin.length !== size) {
+					setPin([...pin, value])
+				}
+			}
+		},
+		[pin]
+	)
+
+	const clearHandler = useCallback(() => {
+		setPinHandler([])
+	}, [])
+
 	const checkUserPin = () => {
-		// console.log("pin", userCode === enteredPin)
+		const pinStr = pin.join("")
+		console.log("pin", pinStr)
 
-		if (enteredPin.length === pinLength && step === 1) {
-			setUserPin(enteredPin)
-			setStep(2)
-			pinView?.current?.clearAll()
-		} else if (userPin && userPin === enteredPin) {
-			// console.log("пароль создан!", userPin)
-			setUserPin("")
-			toAuth()
-		}
+		if (!params?.createMode) {
+			if (userPinLocal && userPinLocal === pinStr) {
+				console.log("код верный!")
+				clearHandler()
+				toAuth()
+			}
 
-		if (
-			userPin.length === pinLength &&
-			enteredPin.length === pinLength &&
-			userPin !== enteredPin &&
-			step === 2
-		) {
-			Vibration.vibrate()
-			ToastAndroid.show("пароли не совпадают!", 2000)
-			setUserPin("")
-			setStep(1)
-			pinView?.current?.clearAll()
-		}
+			if (userPinLocal && pinStr.length === size && userPinLocal !== pinStr) {
+				console.log("код неверный!")
+				clearHandler()
+				setError(true)
+				Vibration.vibrate()
+			}
+		} else {
+			if (pinStr.length === size && step === 1) {
+				setUserPin(pinStr)
+				setStep(2)
+				clearHandler()
+				console.log("первый шаг !")
+			}
 
-		if (userCode === enteredPin && !params?.createMode) {
-			toAuth()
+			if (pinStr.length === size && step === 2 && pinStr === userPin) {
+				setEncrypted(USER_PIN, pinStr)
+				setUserPin("")
+				clearHandler()
+				console.log("второй шаг - пароль создан !")
+				toAuth()
+			}
+
+			if (pinStr.length === size && step === 2 && pinStr !== userPin) {
+				Vibration.vibrate()
+				setError(true)
+				ToastAndroid.show("пароли не совпадают!", 2000)
+				setUserPin("")
+				setStep(1)
+				clearHandler()
+			}
 		}
 	}
 
 	const getUserCodeHandler = async () => {
 		const res = await getEncrypted(USER_PIN)
-		setUserCode(res)
-		// console.log("getUserCodeHandler", res)
-	}
-
-	const setUserCodeHandler = () => {
-		setEncrypted(USER_PIN, "1828")
+		setUserPinLocal(res)
+		console.log("get UserCode local", res)
 	}
 
 	useEffect(() => {
-		setUserCodeHandler()
-
 		checkUserPin()
 
-		if (!userCode) {
+		if (!userPinLocal && !params?.createMode) {
 			getUserCodeHandler()
 		}
-
-		if (enteredPin.length > 0) {
-			setShowButton(true)
-		} else {
-			setShowButton(false)
-		}
-	}, [enteredPin])
+	}, [pin])
 
 	return (
 		<View style={[styles.container]}>
 			<Text style={styles.title}>PIN</Text>
 			{params?.createMode && (
 				<Text style={styles.text}>
-					{step === 1 ? "придумайте пароль" : "повторите пароль"}
+					{step === 1 ? "придумайте пароль" : "повтарите пароль"}
 				</Text>
 			)}
-			<ReactNativePinView
-				style={{ height: "100%" }}
-				inputSize={42}
-				ref={pinView}
-				pinLength={pinLength}
-				buttonSize={60}
-				onValueChange={changePinHandler}
-				buttonAreaStyle={{
-					marginTop: 24,
-				}}
-				inputAreaStyle={{
-					marginBottom: 24,
-				}}
-				inputViewEmptyStyle={styles.inputViewEmptyStyle}
-				inputViewFilledStyle={{
-					backgroundColor: COLORS.MAIN,
-				}}
-				buttonViewStyle={{
-					borderWidth: 1,
-					borderColor: COLORS.WHITE,
-				}}
-				buttonTextStyle={{
-					color: COLORS.WHITE,
-				}}
-				onButtonPress={onButtonPressHandler}
-				customLeftButton={
-					showButton ? (
-						<IconIon name={"ios-backspace"} size={46} color={COLORS.WHITE} />
-					) : undefined
-				}
-				customRightButton={
-					showButton ? (
-						<IconEntypo name={"cross"} size={56} color={COLORS.WHITE} />
-					) : undefined
-				}
+			<PinInput numbers={pin} size={size} error={error} setError={setError} />
+			<KeyboardNumber
+				clear={clearHandler}
+				numbers={pin}
+				onChange={setPinHandler}
+				size={size}
 			/>
 		</View>
 	)
@@ -161,30 +137,20 @@ export default PinTemplate
 
 const styles = StyleSheet.create({
 	container: {
-		// flex: 1,
 		width: "100%",
-		height: HEIGHT,
-		marginTop: HEIGHT / 3.5,
+		height: "100%",
+		backgroundColor: COLORS.BG_DARK,
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	title: {
-		paddingTop: 0,
-		paddingBottom: 20,
-		color: COLORS.BLUE,
-		fontSize: 48,
-		textAlign: "center",
-	},
 	text: {
-		paddingTop: 0,
-		paddingBottom: 48,
 		color: COLORS.TITLE_COLOR,
 		fontSize: 18,
-		textAlign: "center",
+		marginBottom: 20,
 	},
-	inputViewEmptyStyle: {
-		backgroundColor: "transparent",
-		borderWidth: 1,
-		borderColor: COLORS.WHITE,
+	title: {
+		color: COLORS.BLUE,
+		fontSize: 42,
+		marginBottom: 40,
 	},
 })

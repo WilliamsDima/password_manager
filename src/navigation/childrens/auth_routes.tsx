@@ -5,22 +5,42 @@ import { screenOptions } from "../routes-config"
 import Auth from "../../screens/Auth"
 import Pin from "../../screens/Pin"
 import Start from "../../screens/Start"
-import { getLocal } from "../../api/asyncStorage"
-import { START } from "../../services/constants"
+import {
+	clearEncrypted,
+	clearLocal,
+	getEncrypted,
+	getLocal,
+} from "../../api/asyncStorage"
+import { START, USER_PIN } from "../../services/constants"
+import Register from "../../screens/Register"
 
 const AuthStack = createStackNavigator()
 
 const AuthRoutes = () => {
 	const [start, setStart] = useState<string | null>(null)
+	const [pin, setPin] = useState<string | null>(null)
 
-	const getStart = async () => {
-		const res = await getLocal(START)
+	// clearLocal()
+	// clearEncrypted()
 
-		res && setStart(res)
+	const getLocalHandler = async () => {
+		const resStart = await getLocal(START)
+		const resPin = await getEncrypted(USER_PIN)
+
+		if (!start && resStart) {
+			setStart(resStart)
+		}
+
+		if (!pin && resPin) {
+			setPin(resPin)
+		}
 	}
 
 	useEffect(() => {
-		!start && getStart()
+		console.log("start", start)
+		console.log("pin", pin)
+
+		getLocalHandler()
 	}, [])
 
 	return (
@@ -30,13 +50,16 @@ const AuthRoutes = () => {
 				headerShown: false,
 			}}
 		>
-			{/* {!start && (
-				<AuthStack.Screen name={RoutesNames.Start} component={Start} />
-			)} */}
+			{!start && !pin && (
+				<>
+					<AuthStack.Screen name={RoutesNames.Start} component={Start} />
+					<AuthStack.Screen name={RoutesNames.Pin} component={Pin} />
+				</>
+			)}
 
-			<AuthStack.Screen name={RoutesNames.Start} component={Start} />
-			<AuthStack.Screen name={RoutesNames.Pin} component={Pin} />
+			{pin && <AuthStack.Screen name={RoutesNames.Pin} component={Pin} />}
 			<AuthStack.Screen name={RoutesNames.Auth.AuthStack} component={Auth} />
+			<AuthStack.Screen name={RoutesNames.Auth.Register} component={Register} />
 		</AuthStack.Navigator>
 	)
 }

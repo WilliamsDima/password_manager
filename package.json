@@ -1,5 +1,5 @@
 {
-	"name": "passwords_manage",
+	"name": "account_manager",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
@@ -25,7 +25,6 @@
 		"react-native-encrypted-storage": "^4.0.3",
 		"react-native-gesture-handler": "^2.5.0",
 		"react-native-navigation-bar-color": "^2.0.2",
-		"react-native-pin-view": "^3.0.3",
 		"react-native-reanimated": "^2.9.1",
 		"react-native-safe-area-context": "^4.3.1",
 		"react-native-screens": "^3.15.0",

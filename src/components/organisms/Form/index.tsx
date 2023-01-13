@@ -8,23 +8,49 @@ import LoginSvg from "../../atoms/Icons/LoginSvg"
 import PasswordSvg from "../../atoms/Icons/PasswordSvg"
 import Input from "../../atoms/Input/Input"
 import PressedBtn from "../../atoms/PressedBtn"
+import { useNavigation } from "@react-navigation/native"
+import { RoutesNames } from "../../../navigation/routes-names"
+import { useActions } from "../../../hooks/useActions"
 
-type TForm = {}
+type TForm = {
+	registerMode?: boolean
+}
 
-const Form: FC<TForm> = memo(() => {
+const Form: FC<TForm> = memo(({ registerMode = false }) => {
 	const { registerHandler, loginHandler } = useAuth()
+	const { setError } = useActions()
+	const navigation = useNavigation()
 
-	const [loginText, bindLogin, resetLogin] = useInput("")
-	const [password, bindPassword, resetPassword] = useInput("")
+	const [loginText, bindLogin, resetLogin] = useInput("oxpa@mail.ru")
+	const [password, bindPassword, resetPassword] = useInput("samurai")
+	const [password2, bindPassword2, resetPassword2] = useInput("samura")
 
-	const register = async () => {
-		await registerHandler(loginText, password)
+	const toRegister = () => {
+		navigation.navigate(RoutesNames.Auth.Register as never)
 		resetLogin()
 		resetPassword()
 	}
 
+	const toAuth = () => {
+		navigation.navigate(RoutesNames.Auth.AuthStack as never)
+		resetLogin()
+		resetPassword()
+		resetPassword2()
+	}
+
+	const register = async () => {
+		if (password === password2) {
+			await registerHandler(loginText, password)
+			resetLogin()
+		} else {
+			setError("Пароли не совпадают!")
+		}
+		resetPassword()
+		resetPassword2()
+	}
+
 	const login = async () => {
-		await loginHandler("oxpa@mail.ru", "samurai")
+		await loginHandler(loginText, password)
 		resetLogin()
 		resetPassword()
 	}
@@ -34,7 +60,7 @@ const Form: FC<TForm> = memo(() => {
 				<Text
 					style={{ color: COLORS.TITLE_COLOR, fontSize: 22, fontWeight: "700" }}
 				>
-					Авторизация
+					{registerMode ? "Регистрация" : "Авторизация"}
 				</Text>
 			</View>
 
@@ -42,7 +68,7 @@ const Form: FC<TForm> = memo(() => {
 				{...bindLogin}
 				placeholder={"логин"}
 				overStyle={styles.input}
-				overStyleWrapp={{ marginBottom: 10 }}
+				overStyleWrapp={{ marginBottom: 15 }}
 			>
 				<LoginSvg />
 			</Input>
@@ -51,20 +77,49 @@ const Form: FC<TForm> = memo(() => {
 				placeholder={"пароль"}
 				secureTextEntry={true}
 				overStyle={styles.input}
+				overStyleWrapp={{ marginBottom: 15 }}
 			>
 				<PasswordSvg />
 			</Input>
 
-			<Button overStyle={{ width: "100%", marginTop: 20 }} onPress={login}>
-				<Text style={{ color: COLORS.BLACK }}>Войти</Text>
-			</Button>
-			<PressedBtn
-				overStyle={styles.btnRegister}
-				onPress={register}
-				colorPressed={"rgba(125, 156, 227, 0.1)"}
+			{registerMode && (
+				<Input
+					{...bindPassword2}
+					placeholder={"повторный пароль"}
+					secureTextEntry={true}
+					overStyle={styles.input}
+					overStyleWrapp={{ marginBottom: 15 }}
+				>
+					<PasswordSvg />
+				</Input>
+			)}
+
+			<Button
+				overStyle={{ width: "100%", marginTop: 20 }}
+				onPress={registerMode ? register : login}
 			>
-				<Text style={{ color: COLORS.BLUE }}>Зарегестрироваться</Text>
-			</PressedBtn>
+				<Text style={{ color: COLORS.BLACK }}>
+					{registerMode ? "Зарегестрироваться" : "Войти"}
+				</Text>
+			</Button>
+
+			{registerMode ? (
+				<PressedBtn
+					overStyle={styles.btnRegister}
+					onPress={toAuth}
+					colorPressed={"rgba(125, 156, 227, 0.1)"}
+				>
+					<Text style={{ color: COLORS.BLUE }}>Войти</Text>
+				</PressedBtn>
+			) : (
+				<PressedBtn
+					overStyle={styles.btnRegister}
+					onPress={toRegister}
+					colorPressed={"rgba(125, 156, 227, 0.1)"}
+				>
+					<Text style={{ color: COLORS.BLUE }}>Зарегестрироваться</Text>
+				</PressedBtn>
+			)}
 		</View>
 	)
 })
@@ -85,5 +140,7 @@ const styles = StyleSheet.create({
 	input: {
 		// width: "50%",
 		color: COLORS.GOLD,
+		padding: 0,
+		paddingLeft: 10,
 	},
 })

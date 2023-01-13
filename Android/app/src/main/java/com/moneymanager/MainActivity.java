@@ -1,4 +1,4 @@
-package com.passwords_manage;
+package com.account_manager;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -12,7 +12,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "passwords_manage";
+    return "account_manager";
   }
 
   /**

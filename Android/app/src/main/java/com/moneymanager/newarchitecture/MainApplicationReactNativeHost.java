@@ -1,4 +1,4 @@
-package com.passwords_manage.newarchitecture;
+package com.account_manager.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.passwords_manage.BuildConfig;
-import com.passwords_manage.newarchitecture.components.MainComponentsRegistry;
-import com.passwords_manage.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.account_manager.BuildConfig;
+import com.account_manager.newarchitecture.components.MainComponentsRegistry;
+import com.account_manager.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
