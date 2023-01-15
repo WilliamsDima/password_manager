@@ -8,6 +8,7 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.config.ReactFeatureFlags;
+import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.account_manager.newarchitecture.MainApplicationReactNativeHost;
 import java.lang.reflect.InvocationTargetException;
