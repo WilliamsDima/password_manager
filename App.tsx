@@ -12,8 +12,12 @@ const App: FC = () => {
 	])
 
 	React.useEffect(() => {
-		SplashScreen.hide()
-		console.log("app start")
+		const fixWhiteBg = setTimeout(() => {
+			SplashScreen.hide()
+			console.log("app start")
+		}, 300)
+
+		return () => clearTimeout(fixWhiteBg)
 	}, [])
 
 	return (
