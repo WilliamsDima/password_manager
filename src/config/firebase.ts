@@ -3,10 +3,12 @@ import {
 	signInWithEmailAndPassword,
 	createUserWithEmailAndPassword,
 	signOut,
+	User,
 } from "firebase/auth"
 import { initializeApp } from "firebase/app"
 import {
 	doc,
+	DocumentData,
 	getDoc,
 	getFirestore,
 	setDoc,
@@ -36,6 +38,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
+
+export const getUserData = async (
+	id: string
+): Promise<DocumentData | undefined> => {
+	const docRef = doc(db, "users", id)
+	const docSnap = await getDoc(docRef)
+	const data = docSnap.data()
+	return data
+}
 
 export const register = (email: string, password: string) => {
 	return createUserWithEmailAndPassword(auth, email, password)

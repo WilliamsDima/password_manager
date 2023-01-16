@@ -4,7 +4,7 @@ import Layout from "../Layout"
 
 const Main = () => {
 	return (
-		<Layout>
+		<Layout scroll={false}>
 			<MainTemplate />
 		</Layout>
 	)

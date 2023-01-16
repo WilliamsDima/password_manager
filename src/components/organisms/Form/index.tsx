@@ -11,6 +11,8 @@ import PressedBtn from "../../atoms/PressedBtn"
 import { useNavigation } from "@react-navigation/native"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { useActions } from "../../../hooks/useActions"
+import UserSvg from "../../atoms/Icons/UserSvg"
+import { IUser } from "../../../services/types"
 
 type TForm = {
 	registerMode?: boolean
@@ -22,37 +24,52 @@ const Form: FC<TForm> = memo(({ registerMode = false }) => {
 	const navigation = useNavigation()
 
 	const [loginText, bindLogin, resetLogin] = useInput("oxpa@mail.ru")
+	const [name, bindName, resetName] = useInput("Dmitry Williams")
 	const [password, bindPassword, resetPassword] = useInput("samurai")
-	const [password2, bindPassword2, resetPassword2] = useInput("samura")
+	const [password2, bindPassword2, resetPassword2] = useInput("samurai")
+
+	// https://sun9-45.userapi.com/impg/CafINlJbiaLtmHJDRavJelOHaKZxU49bT_cr8w/_d6frYBe4xs.jpg?size=2160x2160&quality=96&sign=dc7cddfca73e700359776a92eeba92d8&type=album
+
+	const clearFilds = () => {
+		resetLogin()
+		resetName()
+		resetPassword()
+		resetPassword2()
+	}
 
 	const toRegister = () => {
 		navigation.navigate(RoutesNames.Auth.Register as never)
-		resetLogin()
-		resetPassword()
+		clearFilds()
 	}
 
 	const toAuth = () => {
 		navigation.navigate(RoutesNames.Auth.AuthStack as never)
-		resetLogin()
-		resetPassword()
-		resetPassword2()
+		clearFilds()
 	}
 
 	const register = async () => {
+		if (!name.trim() || name.trim().length < 3) {
+			setError("Имя должно состоять миниму из 3-х символов!")
+			return
+		}
+
 		if (password === password2) {
-			await registerHandler(loginText, password)
-			resetLogin()
+			const user = {
+				displayName: name,
+			} as IUser
+
+			await registerHandler(loginText, password, user)
+			clearFilds()
 		} else {
 			setError("Пароли не совпадают!")
+			resetPassword()
+			resetPassword2()
 		}
-		resetPassword()
-		resetPassword2()
 	}
 
 	const login = async () => {
 		await loginHandler(loginText, password)
-		resetLogin()
-		resetPassword()
+		clearFilds()
 	}
 	return (
 		<View style={styles.form}>
@@ -72,6 +89,18 @@ const Form: FC<TForm> = memo(({ registerMode = false }) => {
 			>
 				<LoginSvg />
 			</Input>
+
+			{registerMode && (
+				<Input
+					{...bindName}
+					placeholder={"имя"}
+					overStyle={styles.input}
+					overStyleWrapp={{ marginBottom: 15 }}
+				>
+					<UserSvg style={{ marginLeft: -3, marginRight: 3 }} />
+				</Input>
+			)}
+
 			<Input
 				{...bindPassword}
 				placeholder={"пароль"}

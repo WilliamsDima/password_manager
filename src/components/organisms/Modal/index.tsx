@@ -34,7 +34,7 @@ const MyModal: FC<TModal> = memo(
 					style={[styles.modalStyle, { backgroundColor: COLORS.MODAL_BG }]}
 				>
 					<StatusBar
-						barStyle='dark-content'
+						barStyle='light-content'
 						hidden={false}
 						backgroundColor={COLORS.MODAL_BG}
 						translucent={true}

@@ -23,7 +23,7 @@ type TLayout = {
 const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 	const { isLoading } = useAuth()
 	const { setError } = useActions()
-	const { error } = useAppSelector(store => store.main)
+	const { error, loading } = useAppSelector(store => store.main)
 
 	const setColorForNavigationBar = async () => {
 		try {
@@ -35,19 +35,25 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 	}
 
 	useEffect(() => {
+		console.log("loading", isLoading || loading)
+
 		setColorForNavigationBar()
-	}, [])
+	}, [loading])
 
 	return (
 		<SafeAreaView style={styles.container}>
 			<StatusBar
-				barStyle='dark-content'
+				barStyle='light-content'
 				hidden={false}
 				backgroundColor={COLORS.BG_DARK}
 				translucent={true}
 			/>
 
-			<MyModal visible={isLoading} close={() => null} animationType={"fade"}>
+			<MyModal
+				visible={isLoading || loading}
+				close={() => null}
+				animationType={"fade"}
+			>
 				<Loader />
 			</MyModal>
 			<MyModal
@@ -67,6 +73,7 @@ export default Layout
 const styles = StyleSheet.create({
 	container: {
 		position: "relative",
+		flex: 1,
 		backgroundColor: COLORS.BG_DARK,
 	},
 })

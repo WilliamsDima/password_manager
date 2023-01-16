@@ -38,7 +38,7 @@ export async function removeEncrypted(key: string): Promise<void | undefined> {
 	}
 }
 
-export async function getLocal(key: string): Promise<string | undefined> {
+export async function getLocal(key: string): Promise<any | undefined> {
 	try {
 		const res = await AsyncStorage.getItem(key)
 		if (!res) {

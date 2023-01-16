@@ -1,5 +1,6 @@
 interface IColors {
 	BG_DARK: string
+	ITEM_BG: string
 	MAIN: string
 	TITLE_COLOR: string
 	GRAY: string
@@ -13,6 +14,7 @@ interface IColors {
 
 const COLORS: IColors = {
 	BG_DARK: "#353535",
+	ITEM_BG: "#252526",
 	MAIN: "#1BAA75",
 	TITLE_COLOR: "#E2EAFF",
 	GRAY: "#828282",

@@ -1,8 +1,8 @@
 import React, { FC, useCallback, useEffect, useState } from "react"
 import { Text, View, StyleSheet, Vibration, ToastAndroid } from "react-native"
 import COLORS from "../../../services/colors"
-import { USER_PIN } from "../../../services/constants"
-import { getEncrypted, setEncrypted } from "../../../api/asyncStorage"
+import { START, USER_PIN } from "../../../services/constants"
+import { getEncrypted, setEncrypted, setLocal } from "../../../api/asyncStorage"
 import {
 	useNavigation,
 	CommonActions,
@@ -11,6 +11,7 @@ import {
 import { RoutesNames } from "../../../navigation/routes-names"
 import PinInput from "../../molecules/PinInput"
 import KeyboardNumber from "../../organisms/KeyboardNumber"
+import { useAppSelector } from "../../../hooks/hooks"
 
 type TPin = {}
 
@@ -18,6 +19,7 @@ const PinTemplate: FC<TPin> = ({}) => {
 	const size = 4
 
 	const [pin, setPin] = useState<number[]>([])
+	const { user } = useAppSelector(store => store.main)
 	const [error, setError] = useState(false)
 
 	const navigation = useNavigation()
@@ -31,13 +33,24 @@ const PinTemplate: FC<TPin> = ({}) => {
 
 	const toAuth = () => {
 		clearHandler()
-		navigation.navigate(RoutesNames.Auth.AuthStack as never)
-		navigation.dispatch(
-			CommonActions.reset({
-				index: 1,
-				routes: [{ name: RoutesNames.Auth.AuthStack }],
-			})
-		)
+
+		if (user) {
+			navigation.navigate(RoutesNames.Main.HomeStack as never)
+			navigation.dispatch(
+				CommonActions.reset({
+					index: 1,
+					routes: [{ name: RoutesNames.Main.HomeStack }],
+				})
+			)
+		} else {
+			navigation.navigate(RoutesNames.Auth.AuthStack as never)
+			navigation.dispatch(
+				CommonActions.reset({
+					index: 1,
+					routes: [{ name: RoutesNames.Auth.AuthStack }],
+				})
+			)
+		}
 	}
 
 	const setPinHandler = useCallback(
@@ -84,6 +97,7 @@ const PinTemplate: FC<TPin> = ({}) => {
 
 			if (pinStr.length === size && step === 2 && pinStr === userPin) {
 				setEncrypted(USER_PIN, pinStr)
+				setLocal(START, true)
 				setUserPin("")
 				clearHandler()
 				console.log("второй шаг - пароль создан !")

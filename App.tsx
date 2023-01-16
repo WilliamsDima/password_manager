@@ -8,7 +8,7 @@ import { LogBox } from "react-native"
 
 const App: FC = () => {
 	LogBox.ignoreLogs([
-		"Warning: Async Storage has been extracted from react-native core",
+		"Warning: AsyncStorage has been extracted from react-native core",
 	])
 
 	React.useEffect(() => {

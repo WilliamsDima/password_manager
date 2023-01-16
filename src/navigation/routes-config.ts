@@ -1,3 +1,5 @@
+import COLORS from "../services/colors"
+
 export const screenOptions = {
 	headerStyle: {
 		borderBottomWidth: 0,
@@ -5,6 +7,7 @@ export const screenOptions = {
 		elevation: 0,
 		// ios
 		shadowOpacity: 0,
+		backgroundColor: COLORS.MAIN,
 	},
 }
 

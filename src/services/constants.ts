@@ -9,3 +9,5 @@ export const IS_IOS = Platform.OS === "ios"
 
 export const USER_PIN = "USER_PIN"
 export const START = "START"
+export const USER = "USER"
+export const LIST = "LIST"

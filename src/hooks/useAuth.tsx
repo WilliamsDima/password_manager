@@ -1,5 +1,12 @@
 import { onAuthStateChanged, User } from "firebase/auth"
-import { addDoc, collection } from "firebase/firestore/lite"
+import {
+	addDoc,
+	updateDoc,
+	doc,
+	setDoc,
+	collection,
+	DocumentData,
+} from "firebase/firestore/lite"
 import React, {
 	FC,
 	useState,
@@ -9,17 +16,28 @@ import React, {
 	ReactNode,
 	useEffect,
 } from "react"
-import { Alert } from "react-native"
-import { auth, db, login, logout, register } from "../config/firebase"
+import {
+	auth,
+	db,
+	getUserData,
+	login,
+	logout,
+	register,
+} from "../config/firebase"
 import { getErrorMessage } from "../services/errorsMessage"
+import { IUser } from "../services/types"
 import { useActions } from "./useActions"
 
 type IContext = {
-	user: User | null
+	user: DocumentData | undefined
 	isLoading: boolean
 	loginHandler: (email: string, password: string) => Promise<void>
 	logoutHandler: () => Promise<void>
-	registerHandler: (email: string, password: string) => Promise<void>
+	registerHandler: (
+		email: string,
+		password: string,
+		user: IUser
+	) => Promise<void>
 }
 
 const AuthContext = createContext<IContext>({} as IContext)
@@ -29,23 +47,30 @@ type AuthProviderType = {
 }
 
 export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
-	const [user, setUser] = useState<User | null>(null)
+	const [user, setUser] = useState<DocumentData | undefined>()
 	const [isLoadingInitial, setIsLoadingInitial] = useState<boolean>(false)
 	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const { setError } = useActions()
+	const { setError, setUser: setUserAC } = useActions()
 
-	const registerHandler = async (email: string, password: string) => {
+	const registerHandler = async (
+		email: string,
+		password: string,
+		userReg: IUser
+	) => {
 		setIsLoading(true)
 		try {
 			const { user } = await register(email, password)
-			await addDoc(collection(db, "users"), {
+
+			const userData = {
+				...userReg,
 				id: user.uid,
-				displayName: "No name" || user.displayName,
-			})
+				email,
+			}
+			await setDoc(doc(db, "users", user.uid), userData)
+			setUserAC(userData)
 		} catch (error: any) {
 			if (error) setError(getErrorMessage(error.toString()))
 			console.log("error register: ", error)
-			// Alert.alert("error register: ", error)
 		} finally {
 			setIsLoading(false)
 		}
@@ -59,7 +84,19 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error) setError(getErrorMessage(error.toString()))
 
 			console.log("error login: ", error.toString())
-			// Alert.alert("error login: ", error)
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	const getUser = async (id: string) => {
+		setIsLoading(true)
+		try {
+			const user = (await getUserData(id)) as IUser
+			setUserAC(user)
+		} catch (error: any) {
+			if (error) setError(getErrorMessage(error.toString()))
+			console.log("error getUser: ", error.toString())
 		} finally {
 			setIsLoading(false)
 		}
@@ -69,10 +106,10 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		setIsLoading(true)
 		try {
 			await logout()
+			setUserAC(null)
 		} catch (error: any) {
 			if (error) setError(getErrorMessage(error.toString()))
 			console.log("error logout: ", error)
-			// Alert.alert("error logout: ", error)
 		} finally {
 			setIsLoading(false)
 		}
@@ -83,10 +120,11 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			setIsLoading(true)
 			if (user) {
 				setUser(user)
+				getUser(user.uid)
 				setIsLoadingInitial(false)
 				setIsLoading(false)
 			} else {
-				setUser(null)
+				setUser(undefined)
 				setIsLoading(false)
 			}
 		})
