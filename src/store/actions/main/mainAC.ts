@@ -34,7 +34,7 @@ export const reducers: MainActions = {
 		state.items = payload
 	},
 	addItem: (state, { payload }) => {
-		state.items.push(payload)
+		state.items.unshift(payload)
 	},
 	deleteItem: (state, { payload }) => {
 		state.items = state.items.filter(item => item.id !== payload)

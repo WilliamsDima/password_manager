@@ -1,4 +1,4 @@
-import React, { FC, useRef, useState } from "react"
+import React, { FC, useEffect, useRef, useState } from "react"
 import {
 	View,
 	Text,
@@ -32,9 +32,11 @@ const ListItem: FC<TListItem> = ({ item }) => {
 
 	const [hidden, setHidden] = useState(true)
 	const [animDeleteStart, setAnimDeleteStart] = useState(false)
+	const [animOpenStart, setAnimOpenStart] = useState(false)
 
 	const animatedController = useRef(new Animated.Value(0)).current
 	const animatedDeleteController = useRef(new Animated.Value(0)).current
+
 	const deleteAnim = useRef(new Animated.Value(0)).current
 
 	const translateXAnim = deleteAnim.interpolate({
@@ -50,7 +52,7 @@ const ListItem: FC<TListItem> = ({ item }) => {
 		],
 	})
 
-	const animDeleteItem = () => {
+	const animItem = (deleteMode?: Boolean) => {
 		const config = {
 			duration: 300,
 			toValue: animDeleteStart ? 0 : 1,
@@ -59,8 +61,10 @@ const ListItem: FC<TListItem> = ({ item }) => {
 		}
 
 		Animated.timing(animatedDeleteController, config).start(() => {
-			console.log("delete")
-			deleteItem(item.id)
+			if (deleteMode) {
+				console.log("delete")
+				deleteItem(item.id)
+			}
 		})
 		LayoutAnimation.configureNext(toggleAnimationHeight)
 	}
@@ -74,7 +78,7 @@ const ListItem: FC<TListItem> = ({ item }) => {
 			useNativeDriver: true,
 		}).start(() => {
 			setAnimDeleteStart(true)
-			animDeleteItem()
+			animItem(true)
 		})
 	}
 
@@ -94,6 +98,13 @@ const ListItem: FC<TListItem> = ({ item }) => {
 	const deleteHandler = () => {
 		runAnimationDelete()
 	}
+
+	useEffect(() => {
+		if (!animOpenStart) {
+			setAnimOpenStart(true)
+			animItem()
+		}
+	}, [])
 
 	return (
 		<Animated.View

@@ -15,7 +15,7 @@ const App: FC = () => {
 		const fixWhiteBg = setTimeout(() => {
 			SplashScreen.hide()
 			console.log("app start")
-		}, 300)
+		}, 500)
 
 		return () => clearTimeout(fixWhiteBg)
 	}, [])

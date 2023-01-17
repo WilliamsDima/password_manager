@@ -11,7 +11,7 @@ const ListAccaunts: FC<TList> = memo(({}) => {
 		<FlatList
 			data={items}
 			renderItem={({ item }) => <ListItem item={item} />}
-			keyExtractor={item => item.id}
+			keyExtractor={item => item.id.toString()}
 		/>
 	)
 })

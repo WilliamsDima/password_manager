@@ -13,10 +13,21 @@ import { WIDTH } from "../../../services/constants"
 import Button from "../../atoms/Button/Button"
 import ListAccaunts from "../../organisms/ListAccaunts"
 import Icon from "react-native-vector-icons/Ionicons"
+import { useActions } from "../../../hooks/useActions"
 
 const MainTemplate = () => {
 	const { user } = useAppSelector(store => store.main)
 	const { logoutHandler } = useAuth()
+	const { addItem } = useActions()
+
+	const addHandler = () => {
+		const data = {
+			id: +new Date(),
+			title: `Title ${+new Date()}`,
+		}
+
+		addItem(data)
+	}
 
 	useEffect(() => {
 		console.log("user", user)
@@ -38,7 +49,7 @@ const MainTemplate = () => {
 			<ListAccaunts />
 
 			<View style={styles.btnWrapper}>
-				<TouchableOpacity style={styles.btn}>
+				<TouchableOpacity style={styles.btn} onPress={addHandler}>
 					<Icon name={"add-circle"} size={66} color={COLORS.GOLD} />
 				</TouchableOpacity>
 			</View>

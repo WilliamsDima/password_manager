@@ -58,7 +58,7 @@ const initialState: IStore = {
 	user: null,
 	loading: false,
 	pin: null,
-	items: DATA || [],
+	items: [],
 }
 
 const mainSlice = createSlice({
