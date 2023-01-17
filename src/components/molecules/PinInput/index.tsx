@@ -31,8 +31,6 @@ const PinInput: FC<IInput> = memo(({ numbers, size = 4, error, setError }) => {
 		shake.stopAnimation()
 	}
 
-	let stop = true
-
 	const runAnimation = () => {
 		Animated.sequence([
 			Animated.timing(shake, {

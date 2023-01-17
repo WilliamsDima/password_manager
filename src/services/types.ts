@@ -7,4 +7,7 @@ export interface IUser {
 export interface IItem {
 	id: string
 	title: string
+	description: string
+	login: string
+	password
 }

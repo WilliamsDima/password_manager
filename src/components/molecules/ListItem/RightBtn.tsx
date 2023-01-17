@@ -1,17 +1,11 @@
-import React, { FC } from "react"
-import {
-	View,
-	Text,
-	StyleSheet,
-	Animated,
-	TouchableOpacity,
-} from "react-native"
+import React from "react"
+import { View, Animated } from "react-native"
 import IconMeterial from "react-native-vector-icons/MaterialCommunityIcons"
 import COLORS from "../../../services/colors"
 
 export const openRight = (progress, dragX) => {
 	const scale = dragX.interpolate({
-		inputRange: [0, 100],
+		inputRange: [0, 300],
 		outputRange: [1, 0],
 		extrapolate: "extend",
 	})
