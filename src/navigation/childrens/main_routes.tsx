@@ -6,13 +6,30 @@ import { screenOptions, stackOptions } from "../routes-config"
 import Header from "../../components/organisms/Header"
 import Pin from "../../screens/Pin"
 import { useAppSelector } from "../../hooks/hooks"
+import { getDataUser } from "../../api/firebase/firebase"
+import { useActions } from "../../hooks/useActions"
+import { useAuth } from "../../hooks/useAuth"
 
 const MainStack = createStackNavigator()
 
 const MainRoutes = () => {
 	const { pin } = useAppSelector(store => store.main)
+	const { setData, setLoading } = useActions()
+	const { user } = useAuth()
 
-	useEffect(() => {}, [pin])
+	const getData = async () => {
+		setLoading(true)
+		if (user) {
+			const data = await getDataUser(user)
+			data && setData(data)
+			console.log("getDataUser", data)
+		}
+		setLoading(false)
+	}
+
+	useEffect(() => {
+		getData()
+	}, [pin])
 	return (
 		<MainStack.Navigator
 			screenOptions={{

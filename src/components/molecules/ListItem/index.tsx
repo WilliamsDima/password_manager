@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react"
+import React, { FC, memo, useEffect, useRef, useState } from "react"
 import {
 	View,
 	Text,
@@ -16,19 +16,28 @@ import {
 } from "../../../services/animation"
 import COLORS from "../../../services/colors"
 import { WIDTH } from "../../../services/constants"
-import { IItem } from "../../../services/types"
+import { IItem, IItemContent } from "../../../services/types"
 import DescriptionItem from "../../atoms/DescriptionItem"
 import PressedBtn from "../../atoms/PressedBtn"
 import { openLeft } from "./LeftBtn"
 import { openRight } from "./RightBtn"
 import IconMeterial from "react-native-vector-icons/MaterialCommunityIcons"
+import { useAppSelector } from "../../../hooks/hooks"
+import { DecryptData } from "../../../hooks/helpers"
 
 type TListItem = {
 	item: IItem
 }
 
-const ListItem: FC<TListItem> = ({ item }) => {
-	const { deleteItem } = useActions()
+const ListItem: FC<TListItem> = memo(({ item }) => {
+	const { deleteItem, setError } = useActions()
+	const { key } = useAppSelector(store => store.main)
+
+	const [data, setData] = useState<IItemContent | null>(null)
+
+	const decryptHandler = () => {
+		key && setData(DecryptData(item.message, key, setError))
+	}
 
 	const [hidden, setHidden] = useState(true)
 	const [animDeleteStart, setAnimDeleteStart] = useState(false)
@@ -63,7 +72,7 @@ const ListItem: FC<TListItem> = ({ item }) => {
 		Animated.timing(animatedDeleteController, config).start(() => {
 			if (deleteMode) {
 				console.log("delete")
-				deleteItem(item.id)
+				deleteItem(item.message)
 			}
 		})
 		LayoutAnimation.configureNext(toggleAnimationHeight)
@@ -93,6 +102,7 @@ const ListItem: FC<TListItem> = ({ item }) => {
 		Animated.timing(animatedController, config).start()
 		LayoutAnimation.configureNext(toggleAnimation)
 		setHidden(!hidden)
+		decryptHandler()
 	}
 
 	const deleteHandler = () => {
@@ -132,17 +142,17 @@ const ListItem: FC<TListItem> = ({ item }) => {
 						) : (
 							<>
 								<View style={styles.showItem}>
-									<Text style={styles.showText}>логин</Text>
+									<Text style={styles.showText}>{data?.login}</Text>
 								</View>
 								<View style={styles.showItem}>
-									<Text style={styles.showText}>пароль</Text>
+									<Text style={styles.showText}>{data?.password}</Text>
 								</View>
 							</>
 						)}
 					</TouchableOpacity>
 
-					{!hidden && (
-						<DescriptionItem description='какое то описание для вашего аккаунта' />
+					{!hidden && data?.description && (
+						<DescriptionItem description={data.description} />
 					)}
 
 					{!hidden && (
@@ -158,7 +168,7 @@ const ListItem: FC<TListItem> = ({ item }) => {
 			</Swipeable>
 		</Animated.View>
 	)
-}
+})
 
 const styles = StyleSheet.create({
 	btn: {
@@ -180,7 +190,7 @@ const styles = StyleSheet.create({
 		alignItems: "flex-start",
 		position: "relative",
 		paddingBottom: 40,
-		elevation: 10,
+		elevation: 5,
 		overflow: "hidden",
 	},
 	hide: {

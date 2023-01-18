@@ -7,11 +7,14 @@ type TList = {}
 
 const ListAccaunts: FC<TList> = memo(({}) => {
 	const { items } = useAppSelector(store => store.main)
+
+	console.log("items", items)
+
 	return (
 		<FlatList
 			data={items}
 			renderItem={({ item }) => <ListItem item={item} />}
-			keyExtractor={item => item.id.toString()}
+			keyExtractor={item => item.message.toString()}
 		/>
 	)
 })

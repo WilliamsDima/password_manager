@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
 		borderBottomColor: COLORS.GRAY,
 		flexDirection: "row",
 		alignItems: "center",
+		overflow: "hidden",
 	},
 	input: {
 		width: "100%",

@@ -1,12 +1,5 @@
-import { onAuthStateChanged, User } from "firebase/auth"
-import {
-	addDoc,
-	updateDoc,
-	doc,
-	setDoc,
-	collection,
-	DocumentData,
-} from "firebase/firestore/lite"
+import { onAuthStateChanged } from "firebase/auth"
+import { doc, setDoc, DocumentData } from "firebase/firestore/lite"
 import React, {
 	FC,
 	useState,
@@ -16,14 +9,17 @@ import React, {
 	ReactNode,
 	useEffect,
 } from "react"
+import { clearEncrypted, clearLocal, setEncrypted } from "../api/asyncStorage"
 import {
 	auth,
 	db,
 	getUserData,
 	login,
 	logout,
+	recovery,
 	register,
 } from "../config/firebase"
+import { KEY } from "../services/constants"
 import { getErrorMessage } from "../services/errorsMessage"
 import { IUser } from "../services/types"
 import { useActions } from "./useActions"
@@ -31,7 +27,8 @@ import { useActions } from "./useActions"
 type IContext = {
 	user: DocumentData | undefined
 	isLoading: boolean
-	loginHandler: (email: string, password: string) => Promise<void>
+	loginHandler: (email: string, password: string, key: string) => Promise<void>
+	recoveryHandler: (email: string) => Promise<void>
 	logoutHandler: () => Promise<void>
 	registerHandler: (
 		email: string,
@@ -65,6 +62,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 				...userReg,
 				id: user.uid,
 				email,
+				items: [],
 			}
 			await setDoc(doc(db, "users", user.uid), userData)
 			setUserAC(userData)
@@ -76,14 +74,28 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		}
 	}
 
-	const loginHandler = async (email: string, password: string) => {
+	const loginHandler = async (email: string, password: string, key: string) => {
 		setIsLoading(true)
 		try {
 			await login(email, password)
+			setEncrypted(KEY, key)
 		} catch (error: any) {
 			if (error) setError(getErrorMessage(error.toString()))
 
 			console.log("error login: ", error.toString())
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	const recoveryHandler = async (email: string) => {
+		setIsLoading(true)
+		try {
+			await recovery(email)
+		} catch (error: any) {
+			if (error) setError(getErrorMessage(error.toString()))
+
+			console.log("error recover: ", error.toString())
 		} finally {
 			setIsLoading(false)
 		}
@@ -105,6 +117,8 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 	const logoutHandler = async () => {
 		setIsLoading(true)
 		try {
+			clearLocal()
+			clearEncrypted()
 			await logout()
 			setUserAC(null)
 		} catch (error: any) {
@@ -138,6 +152,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			isLoading,
 			loginHandler,
 			logoutHandler,
+			recoveryHandler,
 			registerHandler,
 		}
 	}, [user, isLoading])

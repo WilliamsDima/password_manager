@@ -14,19 +14,34 @@ import Button from "../../atoms/Button/Button"
 import ListAccaunts from "../../organisms/ListAccaunts"
 import Icon from "react-native-vector-icons/Ionicons"
 import { useActions } from "../../../hooks/useActions"
+import { EncryptData } from "../../../hooks/helpers"
 
 const MainTemplate = () => {
-	const { user } = useAppSelector(store => store.main)
+	const { user, key } = useAppSelector(store => store.main)
 	const { logoutHandler } = useAuth()
-	const { addItem } = useActions()
+	const { addItem, setError } = useActions()
 
 	const addHandler = () => {
-		const data = {
-			id: +new Date(),
-			title: `Title ${+new Date()}`,
-		}
+		if (key) {
+			const dataEncript = EncryptData(
+				{
+					description: "Какое то закодированное описание 2",
+					login: "oxpa222@mail.ru",
+					password: "samurai2222",
+					id: +new Date(),
+				},
+				key,
+				setError
+			)
 
-		addItem(data)
+			const data = {
+				title: `Title ${+new Date()}`,
+				message: dataEncript,
+			}
+			console.log("addHandler", data)
+
+			addItem(data)
+		}
 	}
 
 	useEffect(() => {
@@ -42,9 +57,9 @@ const MainTemplate = () => {
 				translucent={true}
 			/>
 
-			{/* <Button onPress={logoutHandler}>
+			<Button onPress={logoutHandler}>
 				<Text>выйти</Text>
-			</Button> */}
+			</Button>
 
 			<ListAccaunts />
 

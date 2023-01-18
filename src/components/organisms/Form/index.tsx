@@ -13,145 +13,235 @@ import { RoutesNames } from "../../../navigation/routes-names"
 import { useActions } from "../../../hooks/useActions"
 import UserSvg from "../../atoms/Icons/UserSvg"
 import { IUser } from "../../../services/types"
+import IconDesign from "react-native-vector-icons/AntDesign"
 
 type TForm = {
 	registerMode?: boolean
+	recoveryMode?: boolean
 }
 
-const Form: FC<TForm> = memo(({ registerMode = false }) => {
-	const { registerHandler, loginHandler } = useAuth()
-	const { setError } = useActions()
-	const navigation = useNavigation()
+const Form: FC<TForm> = memo(
+	({ registerMode = false, recoveryMode = false }) => {
+		const { registerHandler, loginHandler, recoveryHandler } = useAuth()
+		const { setError } = useActions()
+		const navigation = useNavigation()
 
-	const [loginText, bindLogin, resetLogin] = useInput("oxpa@mail.ru")
-	const [name, bindName, resetName] = useInput("Dmitry Williams")
-	const [password, bindPassword, resetPassword] = useInput("samurai")
-	const [password2, bindPassword2, resetPassword2] = useInput("samurai")
+		const [loginText, bindLogin, resetLogin] = useInput("")
+		const [key, bindKey, resetKey] = useInput("")
+		const [name, bindName, resetName] = useInput("")
+		const [password, bindPassword, resetPassword] = useInput("")
+		const [password2, bindPassword2, resetPassword2] = useInput("")
 
-	// https://sun9-45.userapi.com/impg/CafINlJbiaLtmHJDRavJelOHaKZxU49bT_cr8w/_d6frYBe4xs.jpg?size=2160x2160&quality=96&sign=dc7cddfca73e700359776a92eeba92d8&type=album
-
-	const clearFilds = () => {
-		resetLogin()
-		resetName()
-		resetPassword()
-		resetPassword2()
-	}
-
-	const toRegister = () => {
-		navigation.navigate(RoutesNames.Auth.Register as never)
-		clearFilds()
-	}
-
-	const toAuth = () => {
-		navigation.navigate(RoutesNames.Auth.AuthStack as never)
-		clearFilds()
-	}
-
-	const register = async () => {
-		if (!name.trim() || name.trim().length < 3) {
-			setError("Имя должно состоять миниму из 3-х символов!")
-			return
-		}
-
-		if (password === password2) {
-			const user = {
-				displayName: name,
-			} as IUser
-
-			await registerHandler(loginText, password, user)
-			clearFilds()
-		} else {
-			setError("Пароли не совпадают!")
+		const clearFilds = () => {
+			resetLogin()
+			resetName()
 			resetPassword()
 			resetPassword2()
+			resetKey()
 		}
-	}
 
-	const login = async () => {
-		await loginHandler(loginText, password)
-		clearFilds()
-	}
-	return (
-		<View style={styles.form}>
-			<View style={{ marginBottom: 20 }}>
-				<Text
-					style={{ color: COLORS.TITLE_COLOR, fontSize: 22, fontWeight: "700" }}
+		const toRegister = () => {
+			navigation.navigate(RoutesNames.Auth.Register as never)
+			clearFilds()
+		}
+
+		const toRecovery = () => {
+			navigation.navigate(RoutesNames.Auth.Recovery as never)
+			clearFilds()
+		}
+
+		const toAuth = () => {
+			navigation.navigate(RoutesNames.Auth.AuthStack as never)
+			clearFilds()
+		}
+
+		const toKeyGen = () => {
+			navigation.navigate(RoutesNames.KeyGen as never)
+			clearFilds()
+		}
+
+		const register = async () => {
+			if (!name.trim() || name.trim().length < 3) {
+				setError("Имя должно состоять миниму из 3-х символов!")
+				return
+			}
+
+			if (password === password2) {
+				const user = {
+					displayName: name,
+				} as IUser
+
+				await registerHandler(loginText, password, user)
+				toKeyGen()
+			} else {
+				setError("Пароли не совпадают!")
+				resetPassword()
+				resetPassword2()
+			}
+		}
+
+		const login = async () => {
+			if (key) {
+				await loginHandler(loginText, password, key)
+				clearFilds()
+			} else {
+				setError("Ключ обязателен!")
+			}
+		}
+
+		const recovery = async () => {
+			await recoveryHandler(loginText)
+			clearFilds()
+		}
+		return (
+			<View style={styles.form}>
+				<View style={{ marginBottom: 20 }}>
+					<Text
+						style={{
+							color: COLORS.TITLE_COLOR,
+							fontSize: 22,
+							fontWeight: "700",
+							textAlign: "center",
+						}}
+					>
+						{recoveryMode
+							? "Восстановление"
+							: registerMode
+							? "Зарегестрироваться"
+							: "Авторизация"}
+					</Text>
+
+					{recoveryMode && (
+						<Text
+							style={{
+								color: COLORS.TITLE_COLOR,
+								fontSize: 14,
+								fontWeight: "700",
+								marginTop: 10,
+								textAlign: "center",
+							}}
+						>
+							Вам придёт письмо с инструкцией на почту, которую вы указали.
+							Следуйте инструкции в письме.
+						</Text>
+					)}
+				</View>
+
+				<Input
+					{...bindLogin}
+					placeholder={
+						recoveryMode
+							? "email"
+							: registerMode
+							? "логин (существующая почта)"
+							: "логин"
+					}
+					overStyle={styles.input}
+					overStyleWrapp={{ marginBottom: 15 }}
 				>
-					{registerMode ? "Регистрация" : "Авторизация"}
-				</Text>
+					<LoginSvg />
+				</Input>
+
+				{registerMode && (
+					<Input
+						{...bindName}
+						placeholder={"имя"}
+						overStyle={styles.input}
+						overStyleWrapp={{ marginBottom: 15 }}
+					>
+						<UserSvg style={{ marginLeft: -3, marginRight: 3 }} />
+					</Input>
+				)}
+
+				{!recoveryMode && (
+					<Input
+						{...bindPassword}
+						placeholder={"пароль"}
+						secureTextEntry={true}
+						overStyle={styles.input}
+						overStyleWrapp={{ marginBottom: 15 }}
+					>
+						<PasswordSvg />
+					</Input>
+				)}
+
+				{!registerMode && !recoveryMode && (
+					<Input
+						{...bindKey}
+						placeholder={"ключ"}
+						overStyle={styles.input}
+						overStyleWrapp={{ marginBottom: 15 }}
+					>
+						<IconDesign name={"qrcode"} size={24} color={COLORS.MAIN} />
+					</Input>
+				)}
+
+				{registerMode && (
+					<Input
+						{...bindPassword2}
+						placeholder={"повторный пароль"}
+						secureTextEntry={true}
+						overStyle={styles.input}
+						overStyleWrapp={{ marginBottom: 15 }}
+					>
+						<PasswordSvg />
+					</Input>
+				)}
+
+				<Button
+					overStyle={{ width: "100%", marginTop: 20 }}
+					onPress={recoveryMode ? recovery : registerMode ? register : login}
+				>
+					<Text style={{ color: COLORS.BLACK }}>
+						{recoveryMode
+							? "Восстановить"
+							: registerMode
+							? "Зарегестрироваться"
+							: "Войти"}
+					</Text>
+				</Button>
+
+				{registerMode ? (
+					<PressedBtn
+						overStyle={styles.btnRegister}
+						onPress={toAuth}
+						colorPressed={"rgba(125, 156, 227, 0.1)"}
+					>
+						<Text style={{ color: COLORS.BLUE }}>Войти</Text>
+					</PressedBtn>
+				) : (
+					<>
+						<PressedBtn
+							overStyle={styles.btnRegister}
+							onPress={toRegister}
+							colorPressed={"rgba(125, 156, 227, 0.1)"}
+						>
+							<Text style={{ color: COLORS.BLUE }}>Зарегестрироваться</Text>
+						</PressedBtn>
+
+						{!recoveryMode ? (
+							<PressedBtn
+								overStyle={styles.btnRegister}
+								onPress={toRecovery}
+								colorPressed={"rgba(226,234,255, 0.1)"}
+							>
+								<Text style={{ color: COLORS.TITLE_COLOR }}>Забыл пароль</Text>
+							</PressedBtn>
+						) : (
+							<PressedBtn
+								overStyle={styles.btnRegister}
+								onPress={toAuth}
+								colorPressed={"rgba(125, 156, 227, 0.1)"}
+							>
+								<Text style={{ color: COLORS.BLUE }}>Войти</Text>
+							</PressedBtn>
+						)}
+					</>
+				)}
 			</View>
-
-			<Input
-				{...bindLogin}
-				placeholder={"логин"}
-				overStyle={styles.input}
-				overStyleWrapp={{ marginBottom: 15 }}
-			>
-				<LoginSvg />
-			</Input>
-
-			{registerMode && (
-				<Input
-					{...bindName}
-					placeholder={"имя"}
-					overStyle={styles.input}
-					overStyleWrapp={{ marginBottom: 15 }}
-				>
-					<UserSvg style={{ marginLeft: -3, marginRight: 3 }} />
-				</Input>
-			)}
-
-			<Input
-				{...bindPassword}
-				placeholder={"пароль"}
-				secureTextEntry={true}
-				overStyle={styles.input}
-				overStyleWrapp={{ marginBottom: 15 }}
-			>
-				<PasswordSvg />
-			</Input>
-
-			{registerMode && (
-				<Input
-					{...bindPassword2}
-					placeholder={"повторный пароль"}
-					secureTextEntry={true}
-					overStyle={styles.input}
-					overStyleWrapp={{ marginBottom: 15 }}
-				>
-					<PasswordSvg />
-				</Input>
-			)}
-
-			<Button
-				overStyle={{ width: "100%", marginTop: 20 }}
-				onPress={registerMode ? register : login}
-			>
-				<Text style={{ color: COLORS.BLACK }}>
-					{registerMode ? "Зарегестрироваться" : "Войти"}
-				</Text>
-			</Button>
-
-			{registerMode ? (
-				<PressedBtn
-					overStyle={styles.btnRegister}
-					onPress={toAuth}
-					colorPressed={"rgba(125, 156, 227, 0.1)"}
-				>
-					<Text style={{ color: COLORS.BLUE }}>Войти</Text>
-				</PressedBtn>
-			) : (
-				<PressedBtn
-					overStyle={styles.btnRegister}
-					onPress={toRegister}
-					colorPressed={"rgba(125, 156, 227, 0.1)"}
-				>
-					<Text style={{ color: COLORS.BLUE }}>Зарегестрироваться</Text>
-				</PressedBtn>
-			)}
-		</View>
-	)
-})
+		)
+	}
+)
 
 export default Form
 

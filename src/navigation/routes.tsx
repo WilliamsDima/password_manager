@@ -11,26 +11,31 @@ import {
 	getEncrypted,
 	getLocal,
 } from "../api/asyncStorage"
-import { USER, USER_PIN } from "../services/constants"
+import { KEY, USER, USER_PIN } from "../services/constants"
 import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
 
 const Stack = createStackNavigator()
 
 const Routes = () => {
-	const { pin, user } = useAppSelector(store => store.main)
+	const { pin, user, key } = useAppSelector(store => store.main)
 	const { user: authUser } = useAuth()
-	const { setPin, setUser } = useActions()
+	const { setPin, setUser, setKey } = useActions()
 
 	// clearLocal()
 	// clearEncrypted()
 
 	const getLocalHandler = async () => {
 		const resPin = await getEncrypted(USER_PIN)
+		const resKey = await getEncrypted(KEY)
 		const resUser = await getLocal(USER)
 
 		if (!pin && resPin) {
 			setPin(resPin)
+		}
+
+		if (!key && resKey) {
+			setKey(resKey)
 		}
 
 		if (!user && resUser) {
@@ -39,15 +44,15 @@ const Routes = () => {
 	}
 
 	useEffect(() => {
-		console.log("Routes user", user)
-		console.log("pin", pin)
+		// console.log("Routes user", user)
+		console.log("key", key)
 
 		getLocalHandler()
-	}, [user, pin, authUser])
+	}, [user, pin, authUser, key])
 
 	return (
 		<NavigationContainer>
-			{user || authUser ? (
+			{(user || authUser) && key ? (
 				<Stack.Navigator screenOptions={{ headerShown: false }}>
 					<Stack.Screen name={RoutesNames.Main.index} component={MainRoutes} />
 				</Stack.Navigator>

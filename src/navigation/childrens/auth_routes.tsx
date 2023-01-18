@@ -8,6 +8,8 @@ import Start from "../../screens/Start"
 import { getLocal } from "../../api/asyncStorage"
 import { START } from "../../services/constants"
 import Register from "../../screens/Register"
+import KeyGen from "../../screens/KeyGen"
+import Recovery from "../../screens/Recovery"
 
 const AuthStack = createStackNavigator()
 
@@ -59,6 +61,16 @@ const AuthRoutes = () => {
 				options={stackOptions}
 				name={RoutesNames.Auth.Register}
 				component={Register}
+			/>
+			<AuthStack.Screen
+				options={stackOptions}
+				name={RoutesNames.Auth.Recovery}
+				component={Recovery}
+			/>
+			<AuthStack.Screen
+				options={stackOptions}
+				name={RoutesNames.KeyGen}
+				component={KeyGen}
 			/>
 		</AuthStack.Navigator>
 	)

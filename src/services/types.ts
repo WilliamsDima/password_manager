@@ -4,10 +4,14 @@ export interface IUser {
 	email: string
 }
 
-export interface IItem {
+export interface IItemContent {
 	id: string
-	title: string
 	description: string
 	login: string
 	password
+}
+
+export interface IItem {
+	title: string
+	message: string
 }

@@ -4,6 +4,7 @@ import {
 	createUserWithEmailAndPassword,
 	signOut,
 	User,
+	sendPasswordResetEmail,
 } from "firebase/auth"
 import { initializeApp } from "firebase/app"
 import {
@@ -58,4 +59,22 @@ export const login = (email: string, password: string) => {
 
 export const logout = () => {
 	return signOut(auth)
+}
+
+export const recovery = (email: string) => {
+	sendPasswordResetEmail(auth, email)
+		.then(() => {
+			// Password reset email sent!
+			// ..
+
+			console.log("Password reset email sent!")
+		})
+		.catch(error => {
+			const errorCode = error.code
+			const errorMessage = error.message
+
+			console.log("error recovery", error)
+
+			// ..
+		})
 }
