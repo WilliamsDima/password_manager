@@ -44,6 +44,9 @@ google-services.json
 *.iml
 *.hprof
 
+config/
+firebase.ts
+
 # node.js
 #
 node_modules/

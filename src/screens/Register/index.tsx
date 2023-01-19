@@ -4,7 +4,7 @@ import Layout from "../Layout"
 
 const Register = () => {
 	return (
-		<Layout scroll={false}>
+		<Layout scroll={true}>
 			<RegisterTemplate />
 		</Layout>
 	)

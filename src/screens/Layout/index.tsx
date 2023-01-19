@@ -50,7 +50,8 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 	}
 
 	useEffect(() => {
-		console.log("loading", isLoading || loading)
+		console.log("loading auth", isLoading)
+		console.log("loading", loading)
 
 		setColorForNavigationBar()
 	}, [loading])
@@ -60,7 +61,7 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 			<StatusBar
 				barStyle='light-content'
 				hidden={false}
-				backgroundColor={COLORS.BG_DARK}
+				backgroundColor={"transparent"}
 				translucent={true}
 			/>
 

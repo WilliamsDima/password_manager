@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { RoutesNames } from "./routes-names"
-import MainRoutes from "./childrens/main_routes"
 import { useAuth } from "../hooks/useAuth"
 import AuthRoutes from "./childrens/auth_routes"
 import {
@@ -14,11 +13,10 @@ import { KEY, USER, USER_PIN } from "../services/constants"
 import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import TabBar from "../components/organisms/TabBar"
-import SettingsRoutes from "./childrens/settings_routes"
-import ProfileRoutes from "./childrens/profile_routes"
+import { createStackNavigator } from "@react-navigation/stack"
+import TabNavigation from "./tab"
 
-const Tab = createBottomTabNavigator()
+const Stack = createStackNavigator()
 
 const Routes = () => {
 	const { pin, user, key } = useAppSelector(store => store.main)
@@ -55,38 +53,19 @@ const Routes = () => {
 
 	return (
 		<NavigationContainer>
-			<Tab.Navigator
-				screenOptions={{ headerShown: false }}
-				tabBar={props => (user || authUser) && key && <TabBar {...props} />}
-			>
-				{(user || authUser) && key ? (
-					<>
-						<Tab.Screen
-							options={{ headerShown: false }}
-							name={RoutesNames.Main.index}
-							component={MainRoutes}
-						/>
-						<Tab.Screen
-							options={{ headerShown: false }}
-							name={RoutesNames.Settings.index}
-							component={SettingsRoutes}
-						/>
-						<Tab.Screen
-							options={{ headerShown: false }}
-							name={RoutesNames.Profile.index}
-							component={ProfileRoutes}
-						/>
-					</>
-				) : (
-					<Tab.Screen
+			{(user || authUser) && key ? (
+				<TabNavigation />
+			) : (
+				<Stack.Navigator>
+					<Stack.Screen
 						options={{
 							headerShown: false,
 						}}
 						name={RoutesNames.Auth.index}
 						component={AuthRoutes}
 					/>
-				)}
-			</Tab.Navigator>
+				</Stack.Navigator>
+			)}
 		</NavigationContainer>
 	)
 }

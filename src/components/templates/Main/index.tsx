@@ -39,13 +39,6 @@ const MainTemplate = () => {
 
 	return (
 		<View style={styles.container}>
-			<StatusBar
-				barStyle='light-content'
-				hidden={false}
-				backgroundColor={"transparent"}
-				translucent={true}
-			/>
-
 			<ListAccaunts />
 
 			<View style={styles.btnWrapper}>

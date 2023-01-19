@@ -17,11 +17,11 @@ const Form: FC<TForm> = memo(
 	({ registerMode = false, recoveryMode = false, setCamera }) => {
 		const { key: keyStore } = useAppSelector(store => store.main)
 
-		const [loginText, bindLogin, resetLogin] = useInput("")
+		const [loginText, bindLogin, resetLogin] = useInput("oxpa97@mail.ru")
 		const [key, bindKey, resetKey, setKey] = useInput(keyStore)
-		const [name, bindName, resetName] = useInput("")
-		const [password, bindPassword, resetPassword] = useInput("")
-		const [password2, bindPassword2, resetPassword2] = useInput("")
+		const [name, bindName, resetName] = useInput("Dmitry")
+		const [password, bindPassword, resetPassword] = useInput("samurai")
+		const [password2, bindPassword2, resetPassword2] = useInput("samurai")
 
 		const clearFilds = () => {
 			resetLogin()

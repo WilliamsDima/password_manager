@@ -26,7 +26,9 @@ export const reducers: MainActions = {
 		state.error = payload
 	},
 	setUser: (state, { payload }) => {
-		setLocal(USER, payload)
+		if (payload) {
+			setLocal(USER, payload)
+		}
 		state.user = payload
 	},
 	setLoading: (state, { payload }) => {

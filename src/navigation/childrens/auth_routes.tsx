@@ -10,7 +10,6 @@ import { START } from "../../services/constants"
 import Register from "../../screens/Register"
 import KeyGen from "../../screens/KeyGen"
 import Recovery from "../../screens/Recovery"
-import Camera from "../../screens/Camera"
 
 const AuthStack = createStackNavigator()
 
@@ -26,7 +25,7 @@ const AuthRoutes = () => {
 	}
 
 	useEffect(() => {
-		// console.log("start", start)
+		console.log("start", start)
 
 		getLocalHandler()
 	}, [])

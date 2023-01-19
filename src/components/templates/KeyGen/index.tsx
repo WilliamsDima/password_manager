@@ -49,6 +49,8 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 	}
 
 	useEffect(() => {
+		console.log("key gen screen", user)
+
 		if (user && !keyGen) {
 			createKey()
 		}

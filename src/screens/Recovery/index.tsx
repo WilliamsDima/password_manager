@@ -4,7 +4,7 @@ import Layout from "../Layout"
 
 const Recovery = () => {
 	return (
-		<Layout scroll={false}>
+		<Layout scroll={true}>
 			<RecoveryTemplate />
 		</Layout>
 	)

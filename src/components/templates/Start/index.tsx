@@ -6,7 +6,7 @@ import StartSlider from "../../organisms/StartSlider"
 import { useNavigation, CommonActions } from "@react-navigation/native"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { setLocal } from "../../../api/asyncStorage"
-import { START } from "../../../services/constants"
+import { HEIGHT, START, WIDTH } from "../../../services/constants"
 
 const StartTemplate = () => {
 	const navigation = useNavigation()
@@ -35,8 +35,8 @@ export default StartTemplate
 
 const styles = StyleSheet.create({
 	container: {
-		width: "100%",
-		height: "100%",
+		width: WIDTH,
+		height: HEIGHT,
 		justifyContent: "center",
 		alignItems: "center",
 	},

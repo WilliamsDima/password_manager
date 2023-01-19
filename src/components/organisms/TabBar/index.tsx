@@ -20,8 +20,6 @@ type TTabBar = {
 
 const TabBar: FC<TTabBar> = props => {
 	const { state, descriptors, navigation } = props
-	console.log("props", props)
-
 	return (
 		<View style={[styles.tab]}>
 			{state?.routes.map((route, index) => {

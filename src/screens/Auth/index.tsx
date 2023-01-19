@@ -4,7 +4,7 @@ import Layout from "../Layout"
 
 const Auth = () => {
 	return (
-		<Layout scroll={false}>
+		<Layout scroll={true}>
 			<AuthTemplate />
 		</Layout>
 	)

@@ -6,7 +6,7 @@ type TStart = {}
 
 const Start: FC<TStart> = () => {
 	return (
-		<Layout scroll={false}>
+		<Layout scroll={true}>
 			<StartTemplate />
 		</Layout>
 	)
