@@ -1,24 +1,15 @@
 import React, { useEffect } from "react"
-import {
-	View,
-	Text,
-	StyleSheet,
-	StatusBar,
-	TouchableOpacity,
-} from "react-native"
+import { View, StyleSheet, StatusBar, TouchableOpacity } from "react-native"
 import { useAppSelector } from "../../../hooks/hooks"
-import { useAuth } from "../../../hooks/useAuth"
 import COLORS from "../../../services/colors"
 import { WIDTH } from "../../../services/constants"
-import Button from "../../atoms/Button/Button"
 import ListAccaunts from "../../organisms/ListAccaunts"
 import Icon from "react-native-vector-icons/Ionicons"
 import { useActions } from "../../../hooks/useActions"
 import { EncryptData } from "../../../hooks/helpers"
 
 const MainTemplate = () => {
-	const { user, key } = useAppSelector(store => store.main)
-	const { logoutHandler } = useAuth()
+	const { key } = useAppSelector(store => store.main)
 	const { addItem, setError } = useActions()
 
 	const addHandler = () => {
@@ -38,28 +29,22 @@ const MainTemplate = () => {
 				title: `Title ${+new Date()}`,
 				message: dataEncript,
 			}
-			console.log("addHandler", data)
+			// console.log("addHandler", data)
 
 			addItem(data)
 		}
 	}
 
-	useEffect(() => {
-		console.log("user", user)
-	}, [])
+	useEffect(() => {}, [])
 
 	return (
 		<View style={styles.container}>
 			<StatusBar
 				barStyle='light-content'
 				hidden={false}
-				backgroundColor={COLORS.MAIN}
+				backgroundColor={"transparent"}
 				translucent={true}
 			/>
-
-			<Button onPress={logoutHandler}>
-				<Text>выйти</Text>
-			</Button>
 
 			<ListAccaunts />
 
@@ -76,7 +61,6 @@ const styles = StyleSheet.create({
 	container: {
 		height: "100%",
 		paddingHorizontal: 10,
-		paddingVertical: 10,
 		position: "relative",
 	},
 	btnWrapper: {
@@ -85,7 +69,7 @@ const styles = StyleSheet.create({
 		height: 0,
 		justifyContent: "center",
 		alignItems: "center",
-		bottom: 100,
+		bottom: 50,
 		left: 0,
 		zIndex: 10,
 		backgroundColor: "red",

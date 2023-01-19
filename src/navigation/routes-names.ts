@@ -3,8 +3,16 @@ export const RoutesNames = {
 	Pin: "Pin",
 	KeyGen: "KeyGen",
 	Main: {
-		index: "Home",
+		index: "home",
 		HomeStack: "Главная",
+	},
+	Settings: {
+		index: "gear",
+		SettingsStack: "Настройки",
+	},
+	Profile: {
+		index: "user",
+		ProfilStack: "Профиль",
 	},
 	Auth: {
 		index: "Auth",

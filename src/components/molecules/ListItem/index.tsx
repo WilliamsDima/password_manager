@@ -3,7 +3,6 @@ import {
 	View,
 	Text,
 	StyleSheet,
-	TouchableOpacity,
 	Animated,
 	Easing,
 	LayoutAnimation,
@@ -24,12 +23,14 @@ import { openRight } from "./RightBtn"
 import IconMeterial from "react-native-vector-icons/MaterialCommunityIcons"
 import { useAppSelector } from "../../../hooks/hooks"
 import { DecryptData } from "../../../hooks/helpers"
+import ContentItem from "../../atoms/ContentItem"
 
 type TListItem = {
 	item: IItem
+	index: number
 }
 
-const ListItem: FC<TListItem> = memo(({ item }) => {
+const ListItem: FC<TListItem> = memo(({ item, index }) => {
 	const { deleteItem, setError } = useActions()
 	const { key } = useAppSelector(store => store.main)
 
@@ -118,7 +119,11 @@ const ListItem: FC<TListItem> = memo(({ item }) => {
 
 	return (
 		<Animated.View
-			style={[getAnimationStyles(), animDeleteStart && { height: 0 }]}
+			style={[
+				getAnimationStyles(),
+				animDeleteStart && { height: 0 },
+				index === 0 && { marginTop: 50 },
+			]}
 		>
 			<Swipeable
 				rightThreshold={WIDTH / 3}
@@ -133,23 +138,11 @@ const ListItem: FC<TListItem> = memo(({ item }) => {
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
 					<Text style={styles.title}>{item.title}</Text>
 
-					<TouchableOpacity
-						onPress={toggleListItem}
-						style={[styles.showBlock, hidden && styles.hide]}
-					>
-						{hidden ? (
-							<Text style={styles.hideText}>.......</Text>
-						) : (
-							<>
-								<View style={styles.showItem}>
-									<Text style={styles.showText}>{data?.login}</Text>
-								</View>
-								<View style={styles.showItem}>
-									<Text style={styles.showText}>{data?.password}</Text>
-								</View>
-							</>
-						)}
-					</TouchableOpacity>
+					<ContentItem
+						hidden={hidden}
+						toggleListItem={toggleListItem}
+						data={data}
+					/>
 
 					{!hidden && data?.description && (
 						<DescriptionItem description={data.description} />
@@ -192,29 +185,6 @@ const styles = StyleSheet.create({
 		paddingBottom: 40,
 		elevation: 5,
 		overflow: "hidden",
-	},
-	hide: {
-		alignItems: "center",
-		padding: 0,
-	},
-	showBlock: {
-		width: "100%",
-		overflow: "hidden",
-		marginTop: 10,
-		backgroundColor: "rgba(255, 255, 255, 0.1)",
-		justifyContent: "center",
-		alignItems: "flex-start",
-		borderRadius: 5,
-		padding: 10,
-	},
-	showText: {
-		color: "#fff",
-		fontSize: 16,
-	},
-	showItem: {},
-	hideText: {
-		color: "rgba(255, 255, 255, 0.1)",
-		fontSize: 20,
 	},
 	title: {
 		color: COLORS.TITLE_COLOR,

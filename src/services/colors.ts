@@ -10,10 +10,12 @@ interface IColors {
 	GOLD: string
 	MODAL_BG: string
 	RED: string
+	BG_TAB: string
 }
 
 const COLORS: IColors = {
 	BG_DARK: "#353535",
+	BG_TAB: "#4E4E50",
 	ITEM_BG: "#252526",
 	MAIN: "#1BAA75",
 	TITLE_COLOR: "#E2EAFF",

@@ -11,11 +11,13 @@ const ListAccaunts: FC<TList> = memo(({}) => {
 	console.log("items", items)
 
 	return (
-		<FlatList
-			data={items}
-			renderItem={({ item }) => <ListItem item={item} />}
-			keyExtractor={item => item.message.toString()}
-		/>
+		<>
+			<FlatList
+				data={items}
+				renderItem={({ item, index }) => <ListItem item={item} index={index} />}
+				keyExtractor={item => item.message.toString()}
+			/>
+		</>
 	)
 })
 

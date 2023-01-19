@@ -34,5 +34,5 @@ export const useInput = (initialValue: any, useValidation: boolean = false) => {
 	// 	if (useValidation) validateEmail()
 	// }, [])
 
-	return [value, bind, reset, error]
+	return [value, bind, reset, setValue]
 }

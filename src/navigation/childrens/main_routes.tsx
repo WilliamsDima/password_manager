@@ -28,13 +28,15 @@ const MainRoutes = () => {
 	}
 
 	useEffect(() => {
+		// console.log("user", user)
 		getData()
-	}, [pin])
+	}, [pin, user])
 	return (
 		<MainStack.Navigator
 			screenOptions={{
 				...screenOptions,
-				headerTitle: props => <Header {...props} />,
+				headerShown: false,
+				// headerTitle: props => <Header {...props} />,
 			}}
 		>
 			{pin && (
@@ -44,6 +46,7 @@ const MainRoutes = () => {
 					component={Pin}
 				/>
 			)}
+
 			<MainStack.Screen name={RoutesNames.Main.HomeStack} component={Main} />
 		</MainStack.Navigator>
 	)

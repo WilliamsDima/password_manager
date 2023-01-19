@@ -1,6 +1,5 @@
 import React, { useEffect } from "react"
 import { NavigationContainer } from "@react-navigation/native"
-import { createStackNavigator } from "@react-navigation/stack"
 import { RoutesNames } from "./routes-names"
 import MainRoutes from "./childrens/main_routes"
 import { useAuth } from "../hooks/useAuth"
@@ -14,8 +13,12 @@ import {
 import { KEY, USER, USER_PIN } from "../services/constants"
 import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
+import TabBar from "../components/organisms/TabBar"
+import SettingsRoutes from "./childrens/settings_routes"
+import ProfileRoutes from "./childrens/profile_routes"
 
-const Stack = createStackNavigator()
+const Tab = createBottomTabNavigator()
 
 const Routes = () => {
 	const { pin, user, key } = useAppSelector(store => store.main)
@@ -52,15 +55,38 @@ const Routes = () => {
 
 	return (
 		<NavigationContainer>
-			{(user || authUser) && key ? (
-				<Stack.Navigator screenOptions={{ headerShown: false }}>
-					<Stack.Screen name={RoutesNames.Main.index} component={MainRoutes} />
-				</Stack.Navigator>
-			) : (
-				<Stack.Navigator screenOptions={{ headerShown: false }}>
-					<Stack.Screen name={RoutesNames.Auth.index} component={AuthRoutes} />
-				</Stack.Navigator>
-			)}
+			<Tab.Navigator
+				screenOptions={{ headerShown: false }}
+				tabBar={props => (user || authUser) && key && <TabBar {...props} />}
+			>
+				{(user || authUser) && key ? (
+					<>
+						<Tab.Screen
+							options={{ headerShown: false }}
+							name={RoutesNames.Main.index}
+							component={MainRoutes}
+						/>
+						<Tab.Screen
+							options={{ headerShown: false }}
+							name={RoutesNames.Settings.index}
+							component={SettingsRoutes}
+						/>
+						<Tab.Screen
+							options={{ headerShown: false }}
+							name={RoutesNames.Profile.index}
+							component={ProfileRoutes}
+						/>
+					</>
+				) : (
+					<Tab.Screen
+						options={{
+							headerShown: false,
+						}}
+						name={RoutesNames.Auth.index}
+						component={AuthRoutes}
+					/>
+				)}
+			</Tab.Navigator>
 		</NavigationContainer>
 	)
 }
