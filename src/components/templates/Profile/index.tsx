@@ -1,14 +1,22 @@
 import React from "react"
 import { View, StyleSheet, Text } from "react-native"
+import { useAppSelector } from "../../../hooks/hooks"
 import { useAuth } from "../../../hooks/useAuth"
 import Button from "../../atoms/Button/Button"
 
 const ProfileTemplate = () => {
-	const { logoutHandler } = useAuth()
+	const { logoutHandler, deleteUserHandler } = useAuth()
+	const { user } = useAppSelector(store => store.main)
 	return (
 		<View style={styles.container}>
-			<Button onPress={logoutHandler}>
+			<Button overStyle={{ marginTop: 10 }} onPress={logoutHandler}>
 				<Text>выйти</Text>
+			</Button>
+			<Button
+				overStyle={{ marginTop: 10 }}
+				onPress={() => user && deleteUserHandler(user?.id)}
+			>
+				<Text>Удалить аккаунт</Text>
 			</Button>
 			<Text>ProfileTemplate</Text>
 		</View>

@@ -10,9 +10,11 @@ import React, {
 	useEffect,
 } from "react"
 import { clearEncrypted, clearLocal, setEncrypted } from "../api/asyncStorage"
+import { deleteUserAPI } from "../api/firebase/firebase"
 import {
 	auth,
 	db,
+	deleteProfile,
 	getUserData,
 	login,
 	logout,
@@ -29,6 +31,7 @@ type IContext = {
 	isLoading: boolean
 	loginHandler: (email: string, password: string, key: string) => Promise<void>
 	recoveryHandler: (email: string) => Promise<void>
+	deleteUserHandler: (id: string) => Promise<void>
 	logoutHandler: () => Promise<void>
 	registerHandler: (
 		email: string,
@@ -162,6 +165,26 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		}
 	}
 
+	const deleteUserHandler = async (id: string) => {
+		setIsLoading(true)
+		try {
+			clearLocal()
+			clearEncrypted()
+			await deleteProfile(user)
+			await deleteUserAPI(id)
+			setUserAC(null)
+		} catch (error: any) {
+			if (error)
+				setMessage({
+					title: "Ошибка",
+					message: getErrorMessage(error.toString()),
+				})
+			console.log("error delete user: ", error)
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
 	useEffect(() => {
 		const unsub = onAuthStateChanged(auth, user => {
 			setIsLoading(true)
@@ -187,6 +210,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			logoutHandler,
 			recoveryHandler,
 			registerHandler,
+			deleteUserHandler,
 		}
 	}, [user, isLoading])
 

@@ -1,4 +1,10 @@
-import { doc, updateDoc, getDoc, DocumentData } from "firebase/firestore/lite"
+import {
+	doc,
+	updateDoc,
+	getDoc,
+	DocumentData,
+	deleteDoc,
+} from "firebase/firestore/lite"
 import { db } from "../../config/firebase"
 import { IItem, IUser } from "../../services/types"
 
@@ -7,6 +13,10 @@ export const updateItemAPI = async (user: IUser, items: IItem[]) => {
 		...user,
 		items: items,
 	})
+}
+
+export const deleteUserAPI = async (id: string) => {
+	await deleteDoc(doc(db, "users", id))
 }
 
 export const getDataUser = async (user: DocumentData) => {

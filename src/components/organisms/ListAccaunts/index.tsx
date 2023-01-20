@@ -1,22 +1,33 @@
 import React, { FC, memo } from "react"
-import { StyleSheet, FlatList } from "react-native"
+import { StyleSheet, FlatList, Image, View, Text } from "react-native"
 import { useAppSelector } from "../../../hooks/hooks"
+import COLORS from "../../../services/colors"
+import { IItem } from "../../../services/types"
+import Empty from "../../atoms/Empty/inxdex"
 import ListItem from "../../molecules/ListItem"
 
-type TList = {}
+type TList = {
+	setFormItem: (value: IItem | boolean) => void
+}
 
-const ListAccaunts: FC<TList> = memo(({}) => {
+const ListAccaunts: FC<TList> = memo(({ setFormItem }) => {
 	const { items } = useAppSelector(store => store.main)
 
 	console.log("items", items)
 
 	return (
 		<>
-			<FlatList
-				data={items}
-				renderItem={({ item, index }) => <ListItem item={item} index={index} />}
-				keyExtractor={item => item.message.toString()}
-			/>
+			{items.length ? (
+				<FlatList
+					data={items}
+					renderItem={({ item, index }) => (
+						<ListItem item={item} index={index} setFormItem={setFormItem} />
+					)}
+					keyExtractor={item => item.message.toString()}
+				/>
+			) : (
+				<Empty />
+			)}
 		</>
 	)
 })

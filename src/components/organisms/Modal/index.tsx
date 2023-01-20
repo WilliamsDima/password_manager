@@ -5,6 +5,7 @@ import {
 	StatusBar,
 	Modal,
 	TouchableOpacity,
+	ScrollView,
 } from "react-native"
 import COLORS from "../../../services/colors"
 

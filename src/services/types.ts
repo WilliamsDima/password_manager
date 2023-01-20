@@ -19,4 +19,5 @@ export interface IMessage {
 export interface IItem {
 	title: string
 	message: string
+	oldMessage?: string
 }

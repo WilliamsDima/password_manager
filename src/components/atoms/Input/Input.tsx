@@ -16,9 +16,11 @@ interface IInput extends TextInput {
 	children?: ReactNode
 	placeholder: string
 	secureTextEntry?: boolean
+	multiline?: boolean
 	value: string
 	onChange: () => void
 	error?: boolean
+	maxLength?: number
 }
 
 const Input: FC<IInput> = memo(props => {
@@ -26,11 +28,13 @@ const Input: FC<IInput> = memo(props => {
 		overStyle,
 		placeholder,
 		secureTextEntry = false,
+		multiline = false,
 		value,
 		onChange,
 		children,
 		overStyleWrapp,
 		error,
+		maxLength = 100,
 	} = props
 
 	const [showPassword, setShowPassword] = useState(false)
@@ -50,7 +54,9 @@ const Input: FC<IInput> = memo(props => {
 				value={value}
 				placeholderTextColor={COLORS.GRAY}
 				onChange={onChange}
+				multiline={multiline}
 				autoCapitalize={"none"}
+				maxLength={maxLength}
 			/>
 
 			{secureTextEntry && (

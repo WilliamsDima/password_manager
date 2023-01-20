@@ -1,50 +1,31 @@
-import React, { useEffect } from "react"
-import { View, StyleSheet, StatusBar, TouchableOpacity } from "react-native"
-import { useAppSelector } from "../../../hooks/hooks"
+import React, { useEffect, useState } from "react"
+import { View, StyleSheet, TouchableOpacity } from "react-native"
 import COLORS from "../../../services/colors"
 import { WIDTH } from "../../../services/constants"
 import ListAccaunts from "../../organisms/ListAccaunts"
 import Icon from "react-native-vector-icons/Ionicons"
-import { useActions } from "../../../hooks/useActions"
-import { EncryptData } from "../../../hooks/helpers"
+import MyModal from "../../organisms/Modal"
+import { IItem } from "../../../services/types"
+import FormItem from "../../molecules/FormItem"
 
 const MainTemplate = () => {
-	const { key } = useAppSelector(store => store.main)
-	const { addItem } = useActions()
-
-	const addHandler = () => {
-		if (key) {
-			const dataEncript = EncryptData(
-				{
-					description: "Какое то закодированное описание 2",
-					login: "oxpa222@mail.ru",
-					password: "samurai2222",
-					id: +new Date(),
-				},
-				key
-			)
-
-			const data = {
-				title: `Title ${+new Date()}`,
-				message: dataEncript,
-			}
-			// console.log("addHandler", data)
-
-			addItem(data)
-		}
-	}
+	const [formItem, setFormItem] = useState<boolean | IItem>(false)
 
 	useEffect(() => {}, [])
 
 	return (
 		<View style={styles.container}>
-			<ListAccaunts />
+			<ListAccaunts setFormItem={setFormItem} />
 
 			<View style={styles.btnWrapper}>
-				<TouchableOpacity style={styles.btn} onPress={addHandler}>
+				<TouchableOpacity style={styles.btn} onPress={() => setFormItem(true)}>
 					<Icon name={"add-circle"} size={66} color={COLORS.GOLD} />
 				</TouchableOpacity>
 			</View>
+
+			<MyModal visible={!!formItem} close={() => setFormItem(false)}>
+				<FormItem setFormItem={setFormItem} formItem={formItem} />
+			</MyModal>
 		</View>
 	)
 }

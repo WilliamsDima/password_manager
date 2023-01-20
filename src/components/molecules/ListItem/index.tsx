@@ -21,6 +21,7 @@ import PressedBtn from "../../atoms/PressedBtn"
 import { openLeft } from "./LeftBtn"
 import { openRight } from "./RightBtn"
 import IconMeterial from "react-native-vector-icons/MaterialCommunityIcons"
+import IconEntypo from "react-native-vector-icons/Entypo"
 import { useAppSelector } from "../../../hooks/hooks"
 import { DecryptData } from "../../../hooks/helpers"
 import ContentItem from "../../atoms/ContentItem"
@@ -28,16 +29,17 @@ import ContentItem from "../../atoms/ContentItem"
 type TListItem = {
 	item: IItem
 	index: number
+	setFormItem: (value: IItem | boolean) => void
 }
 
-const ListItem: FC<TListItem> = memo(({ item, index }) => {
-	const { deleteItem, setError } = useActions()
+const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
+	const { deleteItem, setMessage } = useActions()
 	const { key } = useAppSelector(store => store.main)
 
 	const [data, setData] = useState<IItemContent | null>(null)
 
 	const decryptHandler = () => {
-		key && setData(DecryptData(item.message, key, setError))
+		key && setData(DecryptData(item.message, key, setMessage))
 	}
 
 	const [hidden, setHidden] = useState(true)
@@ -149,13 +151,21 @@ const ListItem: FC<TListItem> = memo(({ item, index }) => {
 					)}
 
 					{!hidden && (
-						<PressedBtn
-							onPress={deleteHandler}
-							overStyle={styles.btn}
-							colorPressed={"rgba(255,0,0, 0.1)"}
-						>
-							<IconMeterial name={"delete"} size={20} color={COLORS.RED} />
-						</PressedBtn>
+						<>
+							<PressedBtn
+								onPress={deleteHandler}
+								overStyle={styles.btn}
+								colorPressed={"rgba(255,0,0, 0.1)"}
+							>
+								<IconMeterial name={"delete"} size={20} color={COLORS.RED} />
+							</PressedBtn>
+							<PressedBtn
+								overStyle={styles.btnEdit}
+								onPress={() => setFormItem(item)}
+							>
+								<IconEntypo name={"edit"} size={18} color={COLORS.MAIN} />
+							</PressedBtn>
+						</>
 					)}
 				</View>
 			</Swipeable>
@@ -168,6 +178,16 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 0,
 		left: 10,
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	btnEdit: {
+		position: "absolute",
+		bottom: 0,
+		left: "50%",
 		width: 40,
 		height: 40,
 		borderRadius: 20,
