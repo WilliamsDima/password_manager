@@ -1,7 +1,7 @@
-import { IItem, IUser } from "../../../services/types"
+import { IItem, IMessage, IUser } from "../../../services/types"
 
 export interface IStore {
-	error: string | null
+	message: IMessage | null
 	user: IUser | null
 	loading: boolean
 	pin: string | null

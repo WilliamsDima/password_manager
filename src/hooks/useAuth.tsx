@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "firebase/auth"
+import { onAuthStateChanged, sendEmailVerification } from "firebase/auth"
 import { doc, setDoc, DocumentData } from "firebase/firestore/lite"
 import React, {
 	FC,
@@ -47,7 +47,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 	const [user, setUser] = useState<DocumentData | undefined>()
 	const [isLoadingInitial, setIsLoadingInitial] = useState<boolean>(false)
 	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const { setError, setUser: setUserAC } = useActions()
+	const { setMessage, setUser: setUserAC } = useActions()
 
 	const registerHandler = async (
 		email: string,
@@ -58,6 +58,14 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		try {
 			const { user } = await register(email, password)
 
+			sendEmailVerification(user).then(() => {
+				setMessage({
+					title: "",
+					message: `На почту ${email} отправлено письмо с подтверждением.`,
+				})
+				console.log("Email verification sent!")
+			})
+
 			const userData = {
 				...userReg,
 				id: user.uid,
@@ -67,7 +75,12 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			await setDoc(doc(db, "users", user.uid), userData)
 			setUserAC(userData)
 		} catch (error: any) {
-			if (error) setError(getErrorMessage(error.toString()))
+			if (error)
+				setMessage({
+					title: "Ошибка",
+					message: getErrorMessage(error.toString()),
+				})
+
 			console.log("error register: ", error)
 		} finally {
 			setIsLoading(false)
@@ -80,7 +93,11 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			await login(email, password)
 			setEncrypted(KEY, key)
 		} catch (error: any) {
-			if (error) setError(getErrorMessage(error.toString()))
+			if (error)
+				setMessage({
+					title: "Ошибка",
+					message: getErrorMessage(error.toString()),
+				})
 
 			console.log("error login: ", error.toString())
 		} finally {
@@ -92,8 +109,16 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		setIsLoading(true)
 		try {
 			await recovery(email)
+			setMessage({
+				title: "",
+				message: `На почту ${email} отправлено письмо с инструкцией для сброса пароля.`,
+			})
 		} catch (error: any) {
-			if (error) setError(getErrorMessage(error.toString()))
+			if (error)
+				setMessage({
+					title: "Ошибка",
+					message: getErrorMessage(error.toString()),
+				})
 
 			console.log("error recover: ", error.toString())
 		} finally {
@@ -107,7 +132,11 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			const user = (await getUserData(id)) as IUser
 			setUserAC(user)
 		} catch (error: any) {
-			if (error) setError(getErrorMessage(error.toString()))
+			if (error)
+				setMessage({
+					title: "Ошибка",
+					message: getErrorMessage(error.toString()),
+				})
 			console.log("error getUser: ", error.toString())
 		} finally {
 			setIsLoading(false)
@@ -122,7 +151,11 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			await logout()
 			setUserAC(null)
 		} catch (error: any) {
-			if (error) setError(getErrorMessage(error.toString()))
+			if (error)
+				setMessage({
+					title: "Ошибка",
+					message: getErrorMessage(error.toString()),
+				})
 			console.log("error logout: ", error)
 		} finally {
 			setIsLoading(false)

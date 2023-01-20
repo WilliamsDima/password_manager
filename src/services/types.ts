@@ -11,6 +11,11 @@ export interface IItemContent {
 	password
 }
 
+export interface IMessage {
+	title: string
+	message: string
+}
+
 export interface IItem {
 	title: string
 	message: string

@@ -54,7 +54,7 @@ const DATA = [
 ]
 
 const initialState: IStore = {
-	error: null,
+	message: null,
 	user: null,
 	loading: false,
 	pin: null,

@@ -7,7 +7,7 @@ import {
 	StatusBar,
 } from "react-native"
 import changeNavigationBarColor from "react-native-navigation-bar-color"
-import ErrorMessage from "../../components/atoms/ErrorMessage/Index"
+import Message from "../../components/atoms/Message/Index"
 import Loader from "../../components/atoms/Loader/Index"
 import MyModal from "../../components/organisms/Modal"
 import { useAppSelector } from "../../hooks/hooks"
@@ -24,8 +24,8 @@ type TLayout = {
 
 const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 	const { isLoading } = useAuth()
-	const { setError } = useActions()
-	const { error, loading } = useAppSelector(store => store.main)
+	const { setMessage } = useActions()
+	const { message, loading } = useAppSelector(store => store.main)
 	const { name } = useRoute()
 
 	const colorNavigate =
@@ -73,11 +73,11 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 				<Loader />
 			</MyModal>
 			<MyModal
-				visible={!!error}
-				close={() => setError(null)}
+				visible={!!message}
+				close={() => setMessage(null)}
 				animationType={"fade"}
 			>
-				<ErrorMessage text={error} />
+				<Message message={message} />
 			</MyModal>
 			{scroll ? <ScrollView>{children}</ScrollView> : <View>{children}</View>}
 		</SafeAreaView>

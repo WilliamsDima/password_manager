@@ -8,16 +8,17 @@ import {
 } from "react-native"
 import { useActions } from "../../../hooks/useActions"
 import COLORS from "../../../services/colors"
+import { IMessage } from "../../../services/types"
 
 type TErrorMessage = {
 	overStyle?: ViewStyle
-	text: string | null
+	message: IMessage | null
 }
 
-const ErrorMessage: FC<TErrorMessage> = React.memo(({ overStyle, text }) => {
-	const { setError } = useActions()
+const ErrorMessage: FC<TErrorMessage> = React.memo(({ overStyle, message }) => {
+	const { setMessage } = useActions()
 	const closeHandler = () => {
-		setError(null)
+		setMessage(null)
 	}
 	return (
 		<TouchableOpacity
@@ -32,9 +33,11 @@ const ErrorMessage: FC<TErrorMessage> = React.memo(({ overStyle, text }) => {
 					fontWeight: "700",
 				}}
 			>
-				Ошибка
+				{message?.title}
 			</Text>
-			<Text style={{ color: COLORS.BLACK, marginBottom: 20 }}>{text}</Text>
+			<Text style={{ color: COLORS.BLACK, marginBottom: 20 }}>
+				{message?.message}
+			</Text>
 
 			<View style={styles.btnWrapper}>
 				<TouchableOpacity onPress={closeHandler}>

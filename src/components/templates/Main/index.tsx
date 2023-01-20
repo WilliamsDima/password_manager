@@ -10,7 +10,7 @@ import { EncryptData } from "../../../hooks/helpers"
 
 const MainTemplate = () => {
 	const { key } = useAppSelector(store => store.main)
-	const { addItem, setError } = useActions()
+	const { addItem } = useActions()
 
 	const addHandler = () => {
 		if (key) {
@@ -21,8 +21,7 @@ const MainTemplate = () => {
 					password: "samurai2222",
 					id: +new Date(),
 				},
-				key,
-				setError
+				key
 			)
 
 			const data = {

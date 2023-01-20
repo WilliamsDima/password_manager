@@ -64,7 +64,10 @@ const FormBtns: FC<IBtns> = memo(
 				await loginHandler(loginText, password, keyUser)
 				clearFilds()
 			} else {
-				setError("Ключ обязателен!")
+				setError({
+					title: "Ошибка",
+					message: "Ключ обязателен!",
+				})
 			}
 		}
 
@@ -75,7 +78,10 @@ const FormBtns: FC<IBtns> = memo(
 
 		const register = async () => {
 			if (!name.trim() || name.trim().length < 3) {
-				setError("Имя должно состоять миниму из 3-х символов!")
+				setError({
+					title: "Ошибка",
+					message: "Имя должно состоять миниму из 3-х символов!",
+				})
 				return
 			}
 
@@ -87,7 +93,10 @@ const FormBtns: FC<IBtns> = memo(
 				await registerHandler(loginText, password, user)
 				toKeyGen()
 			} else {
-				setError("Пароли не совпадают!")
+				setError({
+					title: "Ошибка",
+					message: "Пароли не совпадают!",
+				})
 				resetPassword()
 				resetPassword2()
 			}
