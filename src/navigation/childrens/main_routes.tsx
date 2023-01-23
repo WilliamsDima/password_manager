@@ -28,7 +28,7 @@ const MainRoutes = () => {
 	}
 
 	useEffect(() => {
-		// console.log("user", user)
+		console.log("main rotes user", user)
 		getData()
 	}, [pin, user])
 	return (

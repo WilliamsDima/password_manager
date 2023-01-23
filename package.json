@@ -19,7 +19,7 @@
 		"@react-navigation/stack": "^6.2.2",
 		"@reduxjs/toolkit": "^1.8.4",
 		"@types/react-redux": "^7.1.24",
-		"crypto-js": "^4.1.1",
+		"crypto-js": "^3.3.0",
 		"firebase": "^9.15.0",
 		"react": "17.0.2",
 		"react-firebase-hooks": "^5.1.1",

@@ -33,7 +33,9 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 
 	const [data, setData] = useState<IItemContent | null>(null)
 
-	const [title, bindTitle, resetTitle] = useInput(isItem ? formItem?.title : "")
+	const [title, bindTitle, resetTitle] = useInput(
+		isItem ? formItem?.title : "тестовый заголовок"
+	)
 	const [login, bindLogin, resetLogin, setLogin] = useInput("")
 	const [password, bindPassword, resetPassword, setPassword] = useInput("")
 	const [description, bindDescription, resetDescription, setDescription] =
@@ -44,7 +46,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 		if (isItem && key) {
 			const data: IItemContent = DecryptData(formItem?.message, key, setMessage)
 
-			console.log("data", data)
+			// console.log("data", data)
 			setLogin(data?.login || "")
 			setPassword(data?.password || "")
 			setDescription(data?.description || "")

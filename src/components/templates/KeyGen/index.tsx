@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useEffect } from "react"
 import {
 	Text,
 	View,
@@ -11,54 +11,44 @@ import COLORS from "../../../services/colors"
 import { KEY } from "../../../services/constants"
 import { setEncrypted } from "../../../api/asyncStorage"
 import { useAuth } from "../../../hooks/useAuth"
-import CryptoJS from "crypto-js"
 import QRCode from "react-native-qrcode-svg"
 import PressedBtn from "../../atoms/PressedBtn"
 import Clipboard from "@react-native-clipboard/clipboard"
 import { useActions } from "../../../hooks/useActions"
+import { EncryptData } from "../../../hooks/helpers"
 
 type TPin = {}
 
 const KeyGenTemplate: FC<TPin> = ({}) => {
-	const { setKey } = useActions()
-
-	const [keyGen, setKeyGen] = useState(null)
-
+	const { setUser, setKey } = useActions()
 	const { user } = useAuth()
 
+	const key = EncryptData(
+		user?.uid + +new Date().toString(),
+		user?.accessToken?.toString()
+	)
+
 	const copyToClipboard = () => {
-		keyGen && Clipboard.setString(keyGen)
-		keyGen && ToastAndroid.show("скопировано!", 2000)
-		Vibration.vibrate()
+		key && Clipboard.setString(key)
+		key && ToastAndroid.show("скопировано!", 2000)
+		key && Vibration.vibrate()
 	}
 
 	const redy = () => {
-		console.log("key redy", keyGen)
-		setEncrypted(KEY, keyGen)
-		keyGen && setKey(keyGen)
-	}
-
-	const createKey = () => {
-		const keyText = user?.uid + +new Date()
-		const encryptedAES = CryptoJS.AES.encrypt(
-			keyText.toString(),
-			user?.accessToken
-		)
-
-		setKeyGen(encryptedAES.toString())
+		console.log("key redy", user?.accessToken?.toString())
+		setEncrypted(KEY, key)
+		setKey(key)
+		setUser(user)
 	}
 
 	useEffect(() => {
-		console.log("key gen screen", user)
-
-		if (user && !keyGen) {
-			createKey()
-		}
+		// console.log("key gen screen", user)
+		// console.log("params key", key)
 	}, [user])
 
 	return (
 		<View style={styles.conteiner}>
-			{keyGen && (
+			{!!key && (
 				<>
 					<QRCode
 						color={COLORS.MAIN}
@@ -66,7 +56,7 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 						enableLinearGradient={true}
 						linearGradient={[COLORS.MAIN, COLORS.TITLE_COLOR]}
 						backgroundColor={"transparent"}
-						value={keyGen}
+						value={key}
 						logoBackgroundColor='transparent'
 					/>
 					<Text
@@ -74,24 +64,25 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 					>
 						Сделайте скриншот экрана или сохраните ключ.
 					</Text>
-
-					<Text style={[styles.text, { marginTop: 10 }]}>
-						Без ключа вы не сможете восстановить доступ к вашим данным!
-					</Text>
-					<TouchableOpacity
-						activeOpacity={1}
-						style={{ marginTop: 40 }}
-						onPress={copyToClipboard}
-					>
-						<Text selectable={true} style={styles.key}>
-							{keyGen}
-						</Text>
-					</TouchableOpacity>
-					<PressedBtn overStyle={{ marginTop: 20 }} onPress={redy}>
-						<Text style={styles.btnText}>Я сохранил!</Text>
-					</PressedBtn>
 				</>
 			)}
+
+			<Text style={[styles.text, { marginTop: 10 }]}>
+				Без ключа вы не сможете восстановить доступ к вашим данным!
+			</Text>
+			<TouchableOpacity
+				activeOpacity={1}
+				style={{ marginTop: 40 }}
+				onPress={copyToClipboard}
+			>
+				<Text selectable={true} style={styles.key}>
+					{key}
+				</Text>
+			</TouchableOpacity>
+
+			<PressedBtn overStyle={{ marginTop: 20 }} onPress={redy}>
+				<Text style={styles.btnText}>Я сохранил!</Text>
+			</PressedBtn>
 		</View>
 	)
 }
@@ -104,6 +95,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		paddingHorizontal: 50,
+		backgroundColor: COLORS.BG_DARK,
 	},
 	text: {
 		color: COLORS.RED,

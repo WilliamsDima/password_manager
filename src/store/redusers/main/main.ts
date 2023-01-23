@@ -57,6 +57,7 @@ const initialState: IStore = {
 	message: null,
 	user: null,
 	loading: false,
+	keyGenModal: false,
 	pin: null,
 	key: "",
 	items: [],

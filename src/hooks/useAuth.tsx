@@ -1,4 +1,4 @@
-import { onAuthStateChanged, sendEmailVerification } from "firebase/auth"
+import { onAuthStateChanged } from "firebase/auth"
 import { doc, setDoc, DocumentData } from "firebase/firestore/lite"
 import React, {
 	FC,
@@ -24,6 +24,7 @@ import {
 import { KEY } from "../services/constants"
 import { getErrorMessage } from "../services/errorsMessage"
 import { IUser } from "../services/types"
+import { EncryptData } from "./helpers"
 import { useActions } from "./useActions"
 
 type IContext = {
@@ -36,7 +37,8 @@ type IContext = {
 	registerHandler: (
 		email: string,
 		password: string,
-		user: IUser
+		user: IUser,
+		toKeyGen: () => void
 	) => Promise<void>
 }
 
@@ -55,28 +57,23 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 	const registerHandler = async (
 		email: string,
 		password: string,
-		userReg: IUser
+		userReg: IUser,
+		toKeyGen: () => void
 	) => {
 		setIsLoading(true)
 		try {
 			const { user } = await register(email, password)
 
-			sendEmailVerification(user).then(() => {
-				setMessage({
-					title: "",
-					message: `На почту ${email} отправлено письмо с подтверждением.`,
-				})
-				console.log("Email verification sent!")
-			})
-
 			const userData = {
 				...userReg,
 				id: user.uid,
+				dateCreate: +new Date(),
 				email,
 				items: [],
 			}
 			await setDoc(doc(db, "users", user.uid), userData)
-			setUserAC(userData)
+
+			toKeyGen()
 		} catch (error: any) {
 			if (error)
 				setMessage({

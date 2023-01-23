@@ -6,5 +6,6 @@ export interface IStore {
 	loading: boolean
 	pin: string | null
 	items: IItem[]
+	keyGenModal: boolean
 	key: string | null
 }

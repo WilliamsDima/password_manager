@@ -3,9 +3,12 @@ import { View, StyleSheet, Text } from "react-native"
 import { useAppSelector } from "../../../hooks/hooks"
 import { useAuth } from "../../../hooks/useAuth"
 import Button from "../../atoms/Button/Button"
+import { useNavigation } from "@react-navigation/native"
+import { RoutesNames } from "../../../navigation/routes-names"
 
 const ProfileTemplate = () => {
 	const { logoutHandler, deleteUserHandler } = useAuth()
+	const { navigate } = useNavigation()
 	const { user } = useAppSelector(store => store.main)
 	return (
 		<View style={styles.container}>
@@ -17,6 +20,12 @@ const ProfileTemplate = () => {
 				onPress={() => user && deleteUserHandler(user?.id)}
 			>
 				<Text>Удалить аккаунт</Text>
+			</Button>
+			<Button
+				overStyle={{ marginTop: 10 }}
+				onPress={() => navigate(RoutesNames.KeyGen as never)}
+			>
+				<Text>Сгенерировать ключ</Text>
 			</Button>
 			<Text>ProfileTemplate</Text>
 		</View>

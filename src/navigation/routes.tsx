@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { RoutesNames } from "./routes-names"
-import { useAuth } from "../hooks/useAuth"
 import AuthRoutes from "./childrens/auth_routes"
 import {
 	clearEncrypted,
@@ -12,7 +11,6 @@ import {
 import { KEY, USER, USER_PIN } from "../services/constants"
 import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { createStackNavigator } from "@react-navigation/stack"
 import TabNavigation from "./tab"
 
@@ -20,7 +18,6 @@ const Stack = createStackNavigator()
 
 const Routes = () => {
 	const { pin, user, key } = useAppSelector(store => store.main)
-	const { user: authUser } = useAuth()
 	const { setPin, setUser, setKey } = useActions()
 
 	// clearLocal()
@@ -45,15 +42,15 @@ const Routes = () => {
 	}
 
 	useEffect(() => {
-		// console.log("Routes user", user)
+		console.log("Routes user", user)
 		console.log("key", key)
 
 		getLocalHandler()
-	}, [user, pin, authUser, key])
+	}, [user])
 
 	return (
 		<NavigationContainer>
-			{(user || authUser) && key ? (
+			{user ? (
 				<TabNavigation />
 			) : (
 				<Stack.Navigator>

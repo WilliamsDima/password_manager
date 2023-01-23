@@ -1,8 +1,16 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { StyleSheet, View, Image, Text } from "react-native"
+import { useAppSelector } from "../../../hooks/hooks"
+import { useActions } from "../../../hooks/useActions"
 import Form from "../../organisms/Form"
+import MyModal from "../../organisms/Modal"
+import KeyGenTemplate from "../KeyGen"
 
 const RegisterTemplate = () => {
+	// const { keyGenModal, key } = useAppSelector(store => store.main)
+	// const { setKeyModal } = useActions()
+
+	useEffect(() => {}, [])
 	return (
 		<View style={styles.wrapp}>
 			<Image
@@ -10,6 +18,9 @@ const RegisterTemplate = () => {
 				source={require("../../../assets/images/register.png")}
 			/>
 			<Form registerMode={true} />
+			{/* <MyModal visible={keyGenModal && !!key} close={() => setKeyModal(false)}>
+				<KeyGenTemplate />
+			</MyModal> */}
 		</View>
 	)
 }

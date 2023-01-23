@@ -2,12 +2,13 @@ import React, { FC, memo } from "react"
 import { StyleSheet, Text } from "react-native"
 import COLORS from "../../../services/colors"
 import Button from "../../atoms/Button/Button"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation, CommonActions } from "@react-navigation/native"
 import { useActions } from "../../../hooks/useActions"
 import { useAuth } from "../../../hooks/useAuth"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { IUser } from "../../../services/types"
 import PressedBtn from "../../atoms/PressedBtn"
+import { EncryptData } from "../../../hooks/helpers"
 
 type IBtns = {
 	recoveryMode: boolean
@@ -35,27 +36,33 @@ const FormBtns: FC<IBtns> = memo(
 		password2,
 		name,
 	}) => {
-		const navigation = useNavigation()
-		const { setError } = useActions()
+		const { navigate, dispatch } = useNavigation()
+		const { setMessage, setKey, setKeyModal } = useActions()
 		const { registerHandler, loginHandler, recoveryHandler } = useAuth()
 
-		const toKeyGen = () => {
-			navigation.navigate(RoutesNames.KeyGen as never)
+		const toAuth = () => {
+			navigate(RoutesNames.Auth.AuthStack as never)
 			clearFilds()
 		}
 
-		const toAuth = () => {
-			navigation.navigate(RoutesNames.Auth.AuthStack as never)
+		const toKeyGen = () => {
+			navigate(RoutesNames.KeyGen as never)
+			dispatch(
+				CommonActions.reset({
+					index: 1,
+					routes: [{ name: RoutesNames.KeyGen }],
+				})
+			)
 			clearFilds()
 		}
 
 		const toRegister = () => {
-			navigation.navigate(RoutesNames.Auth.Register as never)
+			navigate(RoutesNames.Auth.Register as never)
 			clearFilds()
 		}
 
 		const toRecovery = () => {
-			navigation.navigate(RoutesNames.Auth.Recovery as never)
+			navigate(RoutesNames.Auth.Recovery as never)
 			clearFilds()
 		}
 
@@ -64,7 +71,7 @@ const FormBtns: FC<IBtns> = memo(
 				await loginHandler(loginText, password, keyUser)
 				clearFilds()
 			} else {
-				setError({
+				setMessage({
 					title: "Ошибка",
 					message: "Ключ обязателен!",
 				})
@@ -78,7 +85,7 @@ const FormBtns: FC<IBtns> = memo(
 
 		const register = async () => {
 			if (!name.trim() || name.trim().length < 3) {
-				setError({
+				setMessage({
 					title: "Ошибка",
 					message: "Имя должно состоять миниму из 3-х символов!",
 				})
@@ -90,10 +97,10 @@ const FormBtns: FC<IBtns> = memo(
 					displayName: name,
 				} as IUser
 
-				await registerHandler(loginText, password, user)
-				toKeyGen()
+				await registerHandler(loginText, password, user, toKeyGen)
+				// setKeyModal(true)
 			} else {
-				setError({
+				setMessage({
 					title: "Ошибка",
 					message: "Пароли не совпадают!",
 				})
