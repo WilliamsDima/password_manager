@@ -37,3 +37,22 @@ export const EncryptData = (
 		console.log("error EcryptData", error)
 	}
 }
+
+const dateConverter = i => {
+	if (i < 10) {
+		return "0" + i
+	}
+	return i
+}
+
+export const getDateDisplay = (d: Date | number | string) => {
+	const date = new Date(d)
+	const display =
+		dateConverter(date.getDate()) +
+		"." +
+		dateConverter(date.getMonth() + 1) +
+		"." +
+		date.getFullYear()
+
+	return display
+}

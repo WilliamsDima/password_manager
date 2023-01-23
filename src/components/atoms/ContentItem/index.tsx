@@ -1,5 +1,6 @@
 import React, { FC, memo } from "react"
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native"
+import COLORS from "../../../services/colors"
 import { IItemContent } from "../../../services/types"
 
 type TContent = {
@@ -18,7 +19,16 @@ const ContentItem: FC<TContent> = memo(({ data, toggleListItem, hidden }) => {
 				<Text style={styles.hideText}>.......</Text>
 			) : (
 				<>
-					<View style={styles.showItem}>
+					<View
+						style={[
+							styles.showItem,
+							{
+								borderBottomWidth: 1,
+								borderBottomColor: COLORS.GRAY,
+								paddingBottom: 5,
+							},
+						]}
+					>
 						<Text style={styles.showText}>{data?.login}</Text>
 					</View>
 					<View style={styles.showItem}>
@@ -55,5 +65,7 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 		padding: 10,
 	},
-	showItem: {},
+	showItem: {
+		width: "100%",
+	},
 })

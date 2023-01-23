@@ -34,11 +34,13 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	const [data, setData] = useState<IItemContent | null>(null)
 
 	const [title, bindTitle, resetTitle] = useInput(
-		isItem ? DecryptData(formItem?.title, key) : "тестовый заголовок"
+		isItem && key
+			? DecryptData(formItem?.title, key)
+			: "какой длинный тестовый заголовок"
 	)
-	const [login, bindLogin, resetLogin, setLogin] = useInput("test@mail.ru")
+	const [login, bindLogin, resetLogin, setLogin] = useInput("text@test.ru")
 	const [password, bindPassword, resetPassword, setPassword] =
-		useInput("123456789")
+		useInput("1234567890")
 	const [description, bindDescription, resetDescription, setDescription] =
 		useInput("какое то описание")
 
@@ -46,8 +48,6 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 		const isItem = typeof formItem === "object"
 		if (isItem && key) {
 			const data: IItemContent = DecryptData(formItem?.message, key, setMessage)
-
-			// console.log("data", data)
 			setLogin(data?.login || "")
 			setPassword(data?.password || "")
 			setDescription(data?.description || "")
@@ -56,49 +56,49 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	}
 
 	const checkError = () => {
-		if (title.trim().light === 0) {
+		if (title.trim().length === 0) {
 			setMessage({
 				title: "Ошибка",
 				message: `Заголовок обязателеное поле!`,
 			})
 			return true
 		}
-		if (login.trim().light === 0) {
+		if (login.trim().length === 0) {
 			setMessage({
 				title: "Ошибка",
 				message: `Логин обязателеное поле!`,
 			})
 			return true
 		}
-		if (password.trim().light === 0) {
+		if (password.trim().length === 0) {
 			setMessage({
 				title: "Ошибка",
 				message: `Пароль обязателеное поле!`,
 			})
 			return true
 		}
-		if (title.light > titleMax) {
+		if (title.length > titleMax) {
 			setMessage({
 				title: "Ошибка",
 				message: `Длина заголовка превышает ${titleMax}!`,
 			})
 			return true
 		}
-		if (login.light > loginMax) {
+		if (login.length > loginMax) {
 			setMessage({
 				title: "Ошибка",
 				message: `Длина логина превышает ${loginMax}!`,
 			})
 			return true
 		}
-		if (password.light > passwordMax) {
+		if (password.length > passwordMax) {
 			setMessage({
 				title: "Ошибка",
 				message: `Длина пароля превышает ${passwordMax}!`,
 			})
 			return true
 		}
-		if (description.light > descriptionMax) {
+		if (description.length > descriptionMax) {
 			setMessage({
 				title: "Ошибка",
 				message: `Длина описания превышает ${descriptionMax}!`,

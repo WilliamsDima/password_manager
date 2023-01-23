@@ -23,7 +23,7 @@ import { openRight } from "./RightBtn"
 import IconMeterial from "react-native-vector-icons/MaterialCommunityIcons"
 import IconEntypo from "react-native-vector-icons/Entypo"
 import { useAppSelector } from "../../../hooks/hooks"
-import { DecryptData } from "../../../hooks/helpers"
+import { getDateDisplay, DecryptData } from "../../../hooks/helpers"
 import ContentItem from "../../atoms/ContentItem"
 
 type TListItem = {
@@ -138,9 +138,12 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 				renderLeftActions={openLeft}
 			>
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
-					<Text style={styles.title}>
-						{key && DecryptData(item.title, key)}
-					</Text>
+					<View style={styles.titleBlock}>
+						<Text style={styles.title}>
+							{key && DecryptData(item.title, key)}
+						</Text>
+						<Text style={styles.date}>{getDateDisplay(item.id)}</Text>
+					</View>
 
 					<ContentItem
 						hidden={hidden}
@@ -208,9 +211,21 @@ const styles = StyleSheet.create({
 		elevation: 5,
 		overflow: "hidden",
 	},
+	titleBlock: {
+		width: "100%",
+		justifyContent: "space-between",
+		alignItems: "flex-start",
+		flexDirection: "row",
+	},
 	title: {
 		color: COLORS.TITLE_COLOR,
 		fontSize: 16,
+		width: "70%",
+	},
+	date: {
+		color: COLORS.GRAY,
+		width: "30%",
+		textAlign: "right",
 	},
 })
 
