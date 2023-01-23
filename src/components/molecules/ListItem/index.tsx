@@ -75,7 +75,7 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 		Animated.timing(animatedDeleteController, config).start(() => {
 			if (deleteMode) {
 				console.log("delete")
-				deleteItem(item.message)
+				deleteItem(item.id)
 			}
 		})
 		LayoutAnimation.configureNext(toggleAnimationHeight)
@@ -138,7 +138,9 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 				renderLeftActions={openLeft}
 			>
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
-					<Text style={styles.title}>{item.title}</Text>
+					<Text style={styles.title}>
+						{key && DecryptData(item.title, key)}
+					</Text>
 
 					<ContentItem
 						hidden={hidden}

@@ -5,7 +5,6 @@ export interface IUser {
 }
 
 export interface IItemContent {
-	id: string
 	description: string
 	login: string
 	password
@@ -17,7 +16,7 @@ export interface IMessage {
 }
 
 export interface IItem {
+	id: number
 	title: string
 	message: string
-	oldMessage?: string
 }

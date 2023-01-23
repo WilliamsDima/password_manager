@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react"
+import React, { FC, memo, useEffect } from "react"
 import { StyleSheet, FlatList, Image, View, Text } from "react-native"
 import { useAppSelector } from "../../../hooks/hooks"
 import COLORS from "../../../services/colors"
@@ -15,6 +15,8 @@ const ListAccaunts: FC<TList> = memo(({ setFormItem }) => {
 
 	console.log("items", items)
 
+	useEffect(() => {}, [items])
+
 	return (
 		<>
 			{items.length ? (
@@ -23,7 +25,7 @@ const ListAccaunts: FC<TList> = memo(({ setFormItem }) => {
 					renderItem={({ item, index }) => (
 						<ListItem item={item} index={index} setFormItem={setFormItem} />
 					)}
-					keyExtractor={item => item.message.toString()}
+					keyExtractor={item => item.id.toString()}
 				/>
 			) : (
 				<Empty />

@@ -18,7 +18,7 @@ export type MainActions = {
 
 	setList: (state: IStore, payload: PayloadAction<IItem[]>) => void
 	addItem: (state: IStore, payload: PayloadAction<IItem>) => void
-	deleteItem: (state: IStore, payload: PayloadAction<string>) => void
+	deleteItem: (state: IStore, payload: PayloadAction<number>) => void
 	editItem: (state: IStore, payload: PayloadAction<IItem>) => void
 }
 
@@ -63,7 +63,7 @@ export const reducers: MainActions = {
 		}
 	},
 	deleteItem: (state, { payload }) => {
-		state.items = state.items.filter(item => item.message !== payload)
+		state.items = state.items.filter(item => item.id !== payload)
 
 		if (state.user) {
 			updateItemAPI(state.user, state.items)
@@ -71,7 +71,7 @@ export const reducers: MainActions = {
 	},
 	editItem: (state, { payload }) => {
 		state.items = state.items.map(item => {
-			if (item.message === payload.oldMessage) {
+			if (item.id === payload.id) {
 				item.title = payload.title
 				item.message = payload.message
 			}

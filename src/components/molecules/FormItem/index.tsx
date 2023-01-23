@@ -34,12 +34,13 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	const [data, setData] = useState<IItemContent | null>(null)
 
 	const [title, bindTitle, resetTitle] = useInput(
-		isItem ? formItem?.title : "тестовый заголовок"
+		isItem ? DecryptData(formItem?.title, key) : "тестовый заголовок"
 	)
-	const [login, bindLogin, resetLogin, setLogin] = useInput("")
-	const [password, bindPassword, resetPassword, setPassword] = useInput("")
+	const [login, bindLogin, resetLogin, setLogin] = useInput("test@mail.ru")
+	const [password, bindPassword, resetPassword, setPassword] =
+		useInput("123456789")
 	const [description, bindDescription, resetDescription, setDescription] =
-		useInput("")
+		useInput("какое то описание")
 
 	const descriptData = () => {
 		const isItem = typeof formItem === "object"
@@ -114,21 +115,21 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 					description,
 					login,
 					password,
-					id: +new Date(),
 				},
 				key,
 				setMessage
 			)
 
 			const data = {
-				title,
+				id: +new Date(),
+				title: EncryptData(title, key),
 				message: dataEncript,
 			}
 
 			if (isItem) {
 				const editData = {
-					title,
-					oldMessage: formItem.message,
+					id: formItem.id,
+					title: EncryptData(title, key),
 					message: dataEncript,
 				}
 				editItem(editData)
