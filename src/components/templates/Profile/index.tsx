@@ -6,9 +6,12 @@ import CameraTemplate from "../Camera"
 import ProfileBtns from "../../molecules/ProfileBtns"
 import COLORS from "../../../services/colors"
 import IconMaterial from "react-native-vector-icons/MaterialIcons"
+import QR from "../../atoms/QR"
+import { useAppSelector } from "../../../hooks/hooks"
 
 const ProfileTemplate = () => {
 	const [camnera, setCamera] = useState(false)
+	const { key } = useAppSelector(store => store.main)
 
 	return (
 		<View style={styles.container}>
@@ -23,10 +26,8 @@ const ProfileTemplate = () => {
 			</MyModal>
 
 			<View style={styles.imgBlock}>
-				<Image
-					style={styles.img}
-					source={require("../../../assets/images/cpu.png")}
-				/>
+				{key && <QR keyUser={key} visible={false} />}
+
 				<View style={styles.textBlock}>
 					<Text style={styles.text}>Ваши данные защищены</Text>
 					<IconMaterial name={"done"} size={18} color={COLORS.MAIN} />
@@ -47,7 +48,6 @@ const styles = StyleSheet.create({
 	},
 	imgBlock: {
 		width: "100%",
-		height: 200,
 		justifyContent: "center",
 		alignItems: "center",
 		marginTop: 20,

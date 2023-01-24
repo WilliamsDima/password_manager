@@ -8,14 +8,12 @@ import {
 	TouchableOpacity,
 } from "react-native"
 import COLORS from "../../../services/colors"
-import { KEY } from "../../../services/constants"
-import { setEncrypted } from "../../../api/asyncStorage"
 import { useAuth } from "../../../hooks/useAuth"
-import QRCode from "react-native-qrcode-svg"
 import PressedBtn from "../../atoms/PressedBtn"
 import Clipboard from "@react-native-clipboard/clipboard"
 import { useActions } from "../../../hooks/useActions"
 import { EncryptData } from "../../../hooks/helpers"
+import QR from "../../atoms/QR/index"
 
 type TPin = {}
 
@@ -49,15 +47,7 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 		<View style={styles.conteiner}>
 			{!!key && (
 				<>
-					<QRCode
-						color={COLORS.MAIN}
-						size={150}
-						enableLinearGradient={true}
-						linearGradient={[COLORS.MAIN, COLORS.TITLE_COLOR]}
-						backgroundColor={"transparent"}
-						value={key}
-						logoBackgroundColor='transparent'
-					/>
+					<QR keyUser={key} />
 					<Text
 						style={[styles.text, { marginTop: 20, color: COLORS.TITLE_COLOR }]}
 					>
