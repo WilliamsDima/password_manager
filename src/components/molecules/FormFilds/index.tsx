@@ -1,5 +1,5 @@
 import React, { FC, memo } from "react"
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native"
+import { StyleSheet, TouchableOpacity } from "react-native"
 import COLORS from "../../../services/colors"
 import LoginSvg from "../../atoms/Icons/LoginSvg"
 import PasswordSvg from "../../atoms/Icons/PasswordSvg"

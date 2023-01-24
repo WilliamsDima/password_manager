@@ -34,6 +34,8 @@ export const styles = StyleSheet.create({
 	button: {
 		borderRadius: 10,
 		padding: 15,
+		width: 50,
+		height: 50,
 		alignItems: "center",
 		justifyContent: "center",
 	},

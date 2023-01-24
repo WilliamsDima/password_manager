@@ -25,7 +25,6 @@ const TabBar: FC<TTabBar> = props => {
 			{state?.routes.map((route, index) => {
 				const { options } = descriptors[route.key]
 				const label = options.title !== undefined ? options.title : route.name
-
 				const isFocused = state.index === index
 
 				const onPress = () => {

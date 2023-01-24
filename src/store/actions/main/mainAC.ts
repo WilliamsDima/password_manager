@@ -1,9 +1,10 @@
+import { updateProfileAPI } from "./../../../api/firebase/firebase"
 import { PayloadAction } from "@reduxjs/toolkit"
 import { doc, updateDoc, collection } from "firebase/firestore/lite"
-import { setLocal } from "../../../api/asyncStorage"
+import { setEncrypted, setLocal } from "../../../api/asyncStorage"
 import { updateItemAPI } from "../../../api/firebase/firebase"
 import { db } from "../../../config/firebase"
-import { USER } from "../../../services/constants"
+import { KEY, USER } from "../../../services/constants"
 import { IItem, IMessage, IUser } from "../../../services/types"
 import { IStore } from "../../redusers/main/types"
 
@@ -12,9 +13,11 @@ export type MainActions = {
 	setUser: (state: IStore, payload: PayloadAction<IUser | null>) => void
 	setLoading: (state: IStore, payload: PayloadAction<boolean>) => void
 	setPin: (state: IStore, payload: PayloadAction<string | null>) => void
-	setKey: (state: IStore, payload: PayloadAction<string>) => void
+	setKey: (state: IStore, payload: PayloadAction<string | null>) => void
 
 	setData: (state: IStore, payload: PayloadAction<any>) => void
+
+	updateProfile: (state: IStore, payload: PayloadAction<string>) => void
 
 	setList: (state: IStore, payload: PayloadAction<IItem[]>) => void
 	addItem: (state: IStore, payload: PayloadAction<IItem>) => void
@@ -40,10 +43,20 @@ export const reducers: MainActions = {
 	},
 	setKey: (state, { payload }) => {
 		state.key = payload
+		setEncrypted(KEY, state.key)
+	},
+
+	updateProfile: (state, { payload }) => {
+		if (state.user) {
+			state.user.displayName = payload
+			updateProfileAPI(state.user, payload)
+			setLocal(USER, state.user)
+		}
 	},
 
 	setData: (state, { payload }) => {
 		const user: IUser = {
+			dateCreate: payload.dateCreate,
 			displayName: payload.displayName,
 			email: payload.email,
 			id: payload.id,

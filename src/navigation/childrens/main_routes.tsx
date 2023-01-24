@@ -19,6 +19,7 @@ const MainRoutes = () => {
 
 	const getData = async () => {
 		setLoading(true)
+
 		if (user) {
 			const data = await getDataUser(user)
 			data && setData(data)
@@ -28,7 +29,7 @@ const MainRoutes = () => {
 	}
 
 	useEffect(() => {
-		console.log("main rotes user", user)
+		// console.log("main rotes user", user)
 		getData()
 	}, [pin, user])
 	return (

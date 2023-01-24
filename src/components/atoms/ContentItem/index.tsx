@@ -44,7 +44,7 @@ export default ContentItem
 
 const styles = StyleSheet.create({
 	showText: {
-		color: "#fff",
+		color: COLORS.WHITE,
 		fontSize: 16,
 	},
 	hide: {

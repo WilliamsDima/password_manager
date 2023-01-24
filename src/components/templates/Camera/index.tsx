@@ -1,7 +1,6 @@
 import React, { FC, useRef } from "react"
 import { View, StyleSheet, Text } from "react-native"
-import { setEncrypted } from "../../../api/asyncStorage"
-import { KEY, WIDTH } from "../../../services/constants"
+import { WIDTH } from "../../../services/constants"
 import { RNCamera } from "react-native-camera"
 import { useActions } from "../../../hooks/useActions"
 import COLORS from "../../../services/colors"
@@ -16,7 +15,6 @@ const CameraTemplate: FC<TCamera> = ({ setCamera }) => {
 	const cameraRef = useRef(null)
 
 	const readingQR = ({ data }) => {
-		data && setEncrypted(KEY, data)
 		data && setKey(data)
 		setCamera(false)
 		// console.log("barcodesс", data)

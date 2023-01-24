@@ -134,7 +134,7 @@ const PinTemplate: FC<TPin> = ({}) => {
 			<Text style={styles.title}>PIN</Text>
 			{params?.createMode && (
 				<Text style={styles.text}>
-					{step === 1 ? "придумайте пароль" : "повтарите пароль"}
+					{step === 1 ? "придумайте пароль" : "повторите пароль"}
 				</Text>
 			)}
 			<PinInput numbers={pin} size={size} error={error} setError={setError} />

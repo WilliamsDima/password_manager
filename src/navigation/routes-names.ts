@@ -13,6 +13,7 @@ export const RoutesNames = {
 	Profile: {
 		index: "user",
 		ProfilStack: "Профиль",
+		RecoveryPassword: "RecoveryPassword",
 	},
 	Auth: {
 		index: "Auth",

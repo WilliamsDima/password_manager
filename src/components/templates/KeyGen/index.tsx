@@ -35,8 +35,7 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 	}
 
 	const redy = () => {
-		console.log("key redy", user?.accessToken?.toString())
-		setEncrypted(KEY, key)
+		// console.log("key redy", user?.accessToken?.toString())
 		setKey(key)
 		setUser(user)
 	}

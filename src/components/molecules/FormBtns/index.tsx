@@ -8,11 +8,11 @@ import { useAuth } from "../../../hooks/useAuth"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { IUser } from "../../../services/types"
 import PressedBtn from "../../atoms/PressedBtn"
-import { EncryptData } from "../../../hooks/helpers"
 
 type IBtns = {
 	recoveryMode: boolean
 	registerMode: boolean
+	recoveryProfile: boolean
 	clearFilds: () => void
 	resetPassword: () => void
 	resetPassword2: () => void
@@ -27,6 +27,7 @@ const FormBtns: FC<IBtns> = memo(
 	({
 		recoveryMode,
 		registerMode,
+		recoveryProfile,
 		clearFilds,
 		resetPassword,
 		resetPassword2,
@@ -37,7 +38,7 @@ const FormBtns: FC<IBtns> = memo(
 		name,
 	}) => {
 		const { navigate, dispatch } = useNavigation()
-		const { setMessage, setKey, setKeyModal } = useActions()
+		const { setMessage } = useActions()
 		const { registerHandler, loginHandler, recoveryHandler } = useAuth()
 
 		const toAuth = () => {
@@ -92,6 +93,14 @@ const FormBtns: FC<IBtns> = memo(
 				return
 			}
 
+			if (name.trim().length > 30) {
+				setMessage({
+					title: "Ошибка",
+					message: "Имя не должно превышать 30 символов!",
+				})
+				return
+			}
+
 			if (password === password2) {
 				const user = {
 					displayName: name,
@@ -108,6 +117,7 @@ const FormBtns: FC<IBtns> = memo(
 				resetPassword2()
 			}
 		}
+
 		return (
 			<>
 				<Button
@@ -116,40 +126,16 @@ const FormBtns: FC<IBtns> = memo(
 				>
 					<Text style={{ color: COLORS.BLACK }}>
 						{recoveryMode
-							? "Восстановить"
+							? "Сбросить пароль"
 							: registerMode
 							? "Зарегистрироваться"
 							: "Войти"}
 					</Text>
 				</Button>
 
-				{registerMode ? (
-					<PressedBtn
-						overStyle={styles.btnRegister}
-						onPress={toAuth}
-						colorPressed={"rgba(125, 156, 227, 0.1)"}
-					>
-						<Text style={{ color: COLORS.BLUE }}>Войти</Text>
-					</PressedBtn>
-				) : (
+				{!recoveryProfile && (
 					<>
-						<PressedBtn
-							overStyle={styles.btnRegister}
-							onPress={toRegister}
-							colorPressed={"rgba(125, 156, 227, 0.1)"}
-						>
-							<Text style={{ color: COLORS.BLUE }}>Зарегистрироваться</Text>
-						</PressedBtn>
-
-						{!recoveryMode ? (
-							<PressedBtn
-								overStyle={styles.btnRegister}
-								onPress={toRecovery}
-								colorPressed={"rgba(226,234,255, 0.1)"}
-							>
-								<Text style={{ color: COLORS.TITLE_COLOR }}>Забыл пароль</Text>
-							</PressedBtn>
-						) : (
+						{registerMode ? (
 							<PressedBtn
 								overStyle={styles.btnRegister}
 								onPress={toAuth}
@@ -157,6 +143,36 @@ const FormBtns: FC<IBtns> = memo(
 							>
 								<Text style={{ color: COLORS.BLUE }}>Войти</Text>
 							</PressedBtn>
+						) : (
+							<>
+								<PressedBtn
+									overStyle={styles.btnRegister}
+									onPress={toRegister}
+									colorPressed={"rgba(125, 156, 227, 0.1)"}
+								>
+									<Text style={{ color: COLORS.BLUE }}>Зарегистрироваться</Text>
+								</PressedBtn>
+
+								{!recoveryMode ? (
+									<PressedBtn
+										overStyle={styles.btnRegister}
+										onPress={toRecovery}
+										colorPressed={"rgba(226,234,255, 0.1)"}
+									>
+										<Text style={{ color: COLORS.TITLE_COLOR }}>
+											Забыл пароль
+										</Text>
+									</PressedBtn>
+								) : (
+									<PressedBtn
+										overStyle={styles.btnRegister}
+										onPress={toAuth}
+										colorPressed={"rgba(125, 156, 227, 0.1)"}
+									>
+										<Text style={{ color: COLORS.BLUE }}>Войти</Text>
+									</PressedBtn>
+								)}
+							</>
 						)}
 					</>
 				)}

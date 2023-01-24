@@ -74,7 +74,7 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 
 		Animated.timing(animatedDeleteController, config).start(() => {
 			if (deleteMode) {
-				console.log("delete")
+				// console.log("delete")
 				deleteItem(item.id)
 			}
 		})

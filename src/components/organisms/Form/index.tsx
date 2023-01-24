@@ -10,14 +10,22 @@ import FormBtns from "../../molecules/FormBtns"
 type TForm = {
 	registerMode?: boolean
 	recoveryMode?: boolean
+	recoveryProfile?: boolean
 	setCamera?: (value: boolean) => void
 }
 
 const Form: FC<TForm> = memo(
-	({ registerMode = false, recoveryMode = false, setCamera }) => {
-		const { key: keyStore } = useAppSelector(store => store.main)
+	({
+		registerMode = false,
+		recoveryMode = false,
+		recoveryProfile = false,
+		setCamera,
+	}) => {
+		const { key: keyStore, user } = useAppSelector(store => store.main)
 
-		const [loginText, bindLogin, resetLogin] = useInput("test@mail.ru")
+		const [loginText, bindLogin, resetLogin] = useInput(
+			user?.email || "test@mail.ru"
+		)
 		const [key, bindKey, resetKey, setKey] = useInput(keyStore)
 		const [name, bindName, resetName] = useInput("Dmitry")
 		const [password, bindPassword, resetPassword] = useInput("123456789")
@@ -62,6 +70,7 @@ const Form: FC<TForm> = memo(
 					resetPassword={resetPassword}
 					resetPassword2={resetPassword2}
 					keyUser={key}
+					recoveryProfile={recoveryProfile}
 				/>
 			</View>
 		)

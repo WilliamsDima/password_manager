@@ -18,6 +18,7 @@ type TErrorMessage = {
 const ErrorMessage: FC<TErrorMessage> = React.memo(({ overStyle, message }) => {
 	const { setMessage } = useActions()
 	const closeHandler = () => {
+		message?.callback && message?.callback()
 		setMessage(null)
 	}
 	return (

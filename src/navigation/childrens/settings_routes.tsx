@@ -12,7 +12,7 @@ const SettingsRoutes = () => {
 		<SettingsStack.Navigator
 			screenOptions={{
 				...screenOptions,
-				headerTitle: props => <Header {...props} />,
+				headerShown: false,
 			}}
 		>
 			<SettingsStack.Screen

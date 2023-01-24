@@ -1,4 +1,5 @@
 export interface IUser {
+	dateCreate: number
 	displayName: string
 	id: string
 	email: string
@@ -13,6 +14,7 @@ export interface IItemContent {
 export interface IMessage {
 	title: string
 	message: string
+	callback?: () => void
 }
 
 export interface IItem {

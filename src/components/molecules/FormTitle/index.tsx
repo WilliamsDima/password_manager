@@ -12,7 +12,7 @@ const FormTitle: FC<ITitle> = memo(({ recoveryMode, registerMode }) => {
 		<View style={{ marginBottom: 20 }}>
 			<Text style={styles.title}>
 				{recoveryMode
-					? "Восстановление"
+					? "Сброс пароля"
 					: registerMode
 					? "Зарегистрироваться"
 					: "Авторизация"}

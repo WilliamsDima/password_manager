@@ -109,6 +109,8 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	}
 
 	const sendHandler = () => {
+		console.log("sendHandler", key)
+
 		if (!checkError() && key) {
 			const dataEncript = EncryptData(
 				{

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React from "react"
 import { View, StyleSheet, Text } from "react-native"
 import COLORS from "../../../services/colors"
 import PressedBtn from "../../atoms/PressedBtn"
