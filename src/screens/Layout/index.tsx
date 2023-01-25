@@ -49,6 +49,13 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 		}
 	}
 
+	const closeMessageHandler = () => {
+		if (message?.cansel) {
+			message?.cansel()
+		}
+		setMessage(null)
+	}
+
 	useEffect(() => {
 		// console.log("Layout render")
 		// console.log("loading auth", isLoading)
@@ -75,7 +82,7 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 			</MyModal>
 			<MyModal
 				visible={!!message}
-				close={() => setMessage(null)}
+				close={closeMessageHandler}
 				animationType={"fade"}
 			>
 				<Message message={message} />

@@ -15,6 +15,7 @@ export interface IMessage {
 	title: string
 	message: string
 	callback?: () => void
+	cansel?: () => void
 }
 
 export interface IItem {

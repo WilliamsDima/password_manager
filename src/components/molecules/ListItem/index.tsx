@@ -81,6 +81,18 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 		LayoutAnimation.configureNext(toggleAnimationHeight)
 	}
 
+	const canselAnimationDelete = () => {
+		Animated.timing(deleteAnim, {
+			delay: 0,
+			toValue: 0,
+			duration: 50,
+			easing: Easing.out(Easing.sin),
+			useNativeDriver: true,
+		}).start(() => {
+			// console.log("canselAnimationDelete")
+		})
+	}
+
 	const runAnimationDelete = () => {
 		Animated.timing(deleteAnim, {
 			delay: 0,
@@ -89,8 +101,17 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 			easing: Easing.out(Easing.sin),
 			useNativeDriver: true,
 		}).start(() => {
-			setAnimDeleteStart(true)
-			animItem(true)
+			setMessage({
+				title: "Внимание!",
+				message: "Данные будут безвозвратно удалены!",
+				callback: () => {
+					setAnimDeleteStart(true)
+					animItem(true)
+				},
+				cansel: () => {
+					canselAnimationDelete()
+				},
+			})
 		})
 	}
 
@@ -140,7 +161,7 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
 					<View style={styles.titleBlock}>
 						<Text style={styles.title}>
-							{key && DecryptData(item.title, key)}
+							{!!key && DecryptData(item.title, key)}
 						</Text>
 						<Text style={styles.date}>{getDateDisplay(item.id)}</Text>
 					</View>
@@ -151,7 +172,7 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 						data={data}
 					/>
 
-					{!hidden && data?.description && (
+					{!hidden && !!data?.description && (
 						<DescriptionItem description={data.description} />
 					)}
 
