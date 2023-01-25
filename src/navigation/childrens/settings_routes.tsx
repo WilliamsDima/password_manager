@@ -1,9 +1,10 @@
 import React from "react"
 import { createStackNavigator } from "@react-navigation/stack"
 import { RoutesNames } from "../routes-names"
-import { screenOptions } from "../routes-config"
+import { screenOptions, stackOptions } from "../routes-config"
 import Header from "../../components/organisms/Header"
 import Settings from "../../screens/Settings"
+import Pin from "../../screens/Pin"
 
 const SettingsStack = createStackNavigator()
 
@@ -18,6 +19,11 @@ const SettingsRoutes = () => {
 			<SettingsStack.Screen
 				name={RoutesNames.Settings.SettingsStack}
 				component={Settings}
+			/>
+			<SettingsStack.Screen
+				name={RoutesNames.Pin}
+				options={stackOptions}
+				component={Pin}
 			/>
 		</SettingsStack.Navigator>
 	)

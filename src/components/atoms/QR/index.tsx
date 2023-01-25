@@ -21,11 +21,13 @@ const QR: FC<IQR> = memo(({ keyUser, visible = true }) => {
 			onPress={() => setShow(false)}
 		>
 			{!show && (
-				<View style={styles.btnWrapper}>
-					<TouchableOpacity onPress={() => setShow(true)}>
-						<Icon name={"eye"} size={48} color={COLORS.BLUE} />
-					</TouchableOpacity>
-				</View>
+				<TouchableOpacity
+					activeOpacity={1}
+					style={styles.btnWrapper}
+					onPress={() => setShow(true)}
+				>
+					<Icon name={"eye"} size={48} color={COLORS.BLUE} />
+				</TouchableOpacity>
 			)}
 
 			<View style={styles.qr}>

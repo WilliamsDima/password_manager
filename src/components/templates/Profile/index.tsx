@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { View, StyleSheet, Image, Text } from "react-native"
+import { View, StyleSheet, Text } from "react-native"
 import UserProfile from "../../molecules/UserProfile"
 import MyModal from "../../organisms/Modal"
 import CameraTemplate from "../Camera"

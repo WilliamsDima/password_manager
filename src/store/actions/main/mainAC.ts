@@ -1,10 +1,8 @@
 import { updateProfileAPI } from "./../../../api/firebase/firebase"
 import { PayloadAction } from "@reduxjs/toolkit"
-import { doc, updateDoc, collection } from "firebase/firestore/lite"
 import { setEncrypted, setLocal } from "../../../api/asyncStorage"
 import { updateItemAPI } from "../../../api/firebase/firebase"
-import { db } from "../../../config/firebase"
-import { KEY, USER } from "../../../services/constants"
+import { KEY, START, USER, USER_PIN } from "../../../services/constants"
 import { IItem, IMessage, IUser } from "../../../services/types"
 import { IStore } from "../../redusers/main/types"
 
@@ -40,6 +38,8 @@ export const reducers: MainActions = {
 	},
 	setPin: (state, { payload }) => {
 		state.pin = payload
+		setEncrypted(USER_PIN, state.pin)
+		setLocal(START, true)
 	},
 	setKey: (state, { payload }) => {
 		state.key = payload

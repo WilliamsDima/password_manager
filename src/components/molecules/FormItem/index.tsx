@@ -34,15 +34,12 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	const [data, setData] = useState<IItemContent | null>(null)
 
 	const [title, bindTitle, resetTitle] = useInput(
-		isItem && key
-			? DecryptData(formItem?.title, key)
-			: "какой длинный тестовый заголовок"
+		isItem && key ? DecryptData(formItem?.title, key) : ""
 	)
-	const [login, bindLogin, resetLogin, setLogin] = useInput("text@test.ru")
-	const [password, bindPassword, resetPassword, setPassword] =
-		useInput("1234567890")
+	const [login, bindLogin, resetLogin, setLogin] = useInput("")
+	const [password, bindPassword, resetPassword, setPassword] = useInput("")
 	const [description, bindDescription, resetDescription, setDescription] =
-		useInput("какое то описание")
+		useInput("")
 
 	const descriptData = () => {
 		const isItem = typeof formItem === "object"
@@ -109,7 +106,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	}
 
 	const sendHandler = () => {
-		console.log("sendHandler", key)
+		// console.log("sendHandler", key)
 
 		if (!checkError() && key) {
 			const dataEncript = EncryptData(

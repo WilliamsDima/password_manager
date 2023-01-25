@@ -23,13 +23,11 @@ const Form: FC<TForm> = memo(
 	}) => {
 		const { key: keyStore, user } = useAppSelector(store => store.main)
 
-		const [loginText, bindLogin, resetLogin] = useInput(
-			user?.email || "test@mail.ru"
-		)
+		const [loginText, bindLogin, resetLogin] = useInput(user?.email || "")
 		const [key, bindKey, resetKey, setKey] = useInput(keyStore)
-		const [name, bindName, resetName] = useInput("Dmitry")
-		const [password, bindPassword, resetPassword] = useInput("123456789")
-		const [password2, bindPassword2, resetPassword2] = useInput("123456789")
+		const [name, bindName, resetName] = useInput("")
+		const [password, bindPassword, resetPassword] = useInput("")
+		const [password2, bindPassword2, resetPassword2] = useInput("")
 
 		const clearFilds = () => {
 			resetLogin()

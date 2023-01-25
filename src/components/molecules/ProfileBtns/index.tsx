@@ -8,14 +8,12 @@ import PressedBtn from "../../atoms/PressedBtn"
 import { useNavigation } from "@react-navigation/native"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { urlAppStore } from "../../../services/constants"
-import { useActions } from "../../../hooks/useActions"
 
 type TProfileBtns = {}
 
 const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 	const { navigate } = useNavigation()
 	const { logoutHandler } = useAuth()
-	const { setKey } = useActions()
 
 	const toRecovery = () => {
 		navigate(RoutesNames.Profile.RecoveryPassword as never)
@@ -23,7 +21,6 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 
 	const logout = () => {
 		logoutHandler()
-		setKey(null)
 	}
 
 	const toGooglePlay = () => {

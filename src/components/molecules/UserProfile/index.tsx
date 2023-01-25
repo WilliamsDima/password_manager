@@ -38,7 +38,6 @@ const UserProfile: FC<TUser> = memo(({ setCamera }) => {
 				message: "Все ваши данные будут безвозвратно удалены, вы уверены?",
 				callback: () => {
 					deleteUserHandler(user.id)
-					setKey(null)
 				},
 			})
 		}
@@ -74,14 +73,13 @@ const UserProfile: FC<TUser> = memo(({ setCamera }) => {
 	}
 
 	const keyUpdate = () => {
-		console.log("keyUpdate", keyUser)
-
+		// console.log("keyUpdate", keyUser)
 		setUserKey(keyUser)
 		setKey(keyUser)
 	}
 
 	useEffect(() => {
-		console.log("profile", key)
+		// console.log("profile", key)
 
 		setUserKey(key)
 	}, [key])
@@ -118,7 +116,7 @@ const UserProfile: FC<TUser> = memo(({ setCamera }) => {
 				</View>
 			</View>
 
-			{!!items?.length && (
+			{!!items?.length ? (
 				<View style={styles.keyBlock}>
 					<Input
 						{...bindKey}
@@ -136,6 +134,10 @@ const UserProfile: FC<TUser> = memo(({ setCamera }) => {
 						<IconMaterial name={"done"} size={18} color={COLORS.MAIN} />
 					</PressedBtn>
 				</View>
+			) : (
+				<Text style={[styles.textBtn, { textAlign: "center", marginTop: 5 }]}>
+					ключ будет доступен, только когда в списке будет хотя бы 1 элемент
+				</Text>
 			)}
 
 			<PressedBtn

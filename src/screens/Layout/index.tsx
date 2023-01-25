@@ -25,7 +25,7 @@ type TLayout = {
 const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 	const { isLoading } = useAuth()
 	const { setMessage } = useActions()
-	const { message, loading } = useAppSelector(store => store.main)
+	const { message, loading, pin } = useAppSelector(store => store.main)
 	const { name } = useRoute()
 
 	const colorNavigate =
@@ -43,15 +43,16 @@ const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 				false,
 				false
 			)
-			console.log(response) // {success: true}
+			//console.log(response) // {success: true}
 		} catch (e) {
 			console.log(e) // {success: false}
 		}
 	}
 
 	useEffect(() => {
-		console.log("loading auth", isLoading)
-		console.log("loading", loading)
+		// console.log("Layout render")
+		// console.log("loading auth", isLoading)
+		// console.log("loading", loading)
 
 		setColorForNavigationBar()
 	}, [loading])

@@ -25,6 +25,7 @@ import { KEY } from "../services/constants"
 import { getErrorMessage } from "../services/errorsMessage"
 import { IUser } from "../services/types"
 import { EncryptData } from "./helpers"
+import { useAppSelector } from "./hooks"
 import { useActions } from "./useActions"
 
 type IContext = {
@@ -52,7 +53,8 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 	const [user, setUser] = useState<DocumentData | undefined>()
 	const [isLoadingInitial, setIsLoadingInitial] = useState<boolean>(false)
 	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const { setMessage, setUser: setUserAC } = useActions()
+	const { setMessage, setUser: setUserAC, setKey, setPin } = useActions()
+	const { pin } = useAppSelector(store => store.main)
 
 	const registerHandler = async (
 		email: string,
@@ -150,6 +152,8 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			clearEncrypted()
 			await logout()
 			setUserAC(null)
+			setKey(null)
+			setPin(pin)
 		} catch (error: any) {
 			if (error)
 				setMessage({
@@ -170,6 +174,8 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			await deleteProfile(user)
 			await deleteUserAPI(id)
 			setUserAC(null)
+			setKey(null)
+			setPin(pin)
 		} catch (error: any) {
 			if (error)
 				setMessage({

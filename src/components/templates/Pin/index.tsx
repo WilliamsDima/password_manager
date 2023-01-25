@@ -1,8 +1,13 @@
 import React, { FC, useCallback, useEffect, useState } from "react"
-import { Text, View, StyleSheet, Vibration, ToastAndroid } from "react-native"
+import {
+	Text,
+	View,
+	StyleSheet,
+	Vibration,
+	ToastAndroid,
+	TouchableOpacity,
+} from "react-native"
 import COLORS from "../../../services/colors"
-import { START, USER_PIN } from "../../../services/constants"
-import { getEncrypted, setEncrypted, setLocal } from "../../../api/asyncStorage"
 import {
 	useNavigation,
 	CommonActions,
@@ -12,46 +17,26 @@ import { RoutesNames } from "../../../navigation/routes-names"
 import PinInput from "../../molecules/PinInput"
 import KeyboardNumber from "../../organisms/KeyboardNumber"
 import { useAppSelector } from "../../../hooks/hooks"
+import { useActions } from "../../../hooks/useActions"
 
-type TPin = {}
+type TPin = {
+	setVisible: (value: boolean) => void
+}
 
-const PinTemplate: FC<TPin> = ({}) => {
+const PinTemplate: FC<TPin> = ({ setVisible }) => {
 	const size = 4
 
+	const { params } = useRoute<any>()
+
+	const { user, pin: pinStore } = useAppSelector(store => store.main)
 	const [pin, setPin] = useState<number[]>([])
-	const { user } = useAppSelector(store => store.main)
+	const { setPin: setPinAC } = useActions()
 	const [error, setError] = useState(false)
 
 	const navigation = useNavigation()
-	const { params } = useRoute<any>()
 
 	const [step, setStep] = useState(1)
-	const [userPinLocal, setUserPinLocal] = useState<undefined | string>(
-		undefined
-	)
 	const [userPin, setUserPin] = useState<undefined | string>(undefined)
-
-	const toAuth = () => {
-		clearHandler()
-
-		if (user) {
-			navigation.navigate(RoutesNames.Main.HomeStack as never)
-			navigation.dispatch(
-				CommonActions.reset({
-					index: 1,
-					routes: [{ name: RoutesNames.Main.HomeStack }],
-				})
-			)
-		} else {
-			navigation.navigate(RoutesNames.Auth.AuthStack as never)
-			navigation.dispatch(
-				CommonActions.reset({
-					index: 1,
-					routes: [{ name: RoutesNames.Auth.AuthStack }],
-				})
-			)
-		}
-	}
 
 	const setPinHandler = useCallback(
 		(value: number | number[]) => {
@@ -70,63 +55,88 @@ const PinTemplate: FC<TPin> = ({}) => {
 		setPinHandler([])
 	}, [])
 
+	const errorHandler = () => {
+		Vibration.vibrate()
+		setError(true)
+		clearHandler()
+		ToastAndroid.show("пароли не совпадают!", 2000)
+	}
+
+	const canselHandler = () => {
+		setUserPin(undefined)
+		setStep(1)
+		clearHandler()
+		navigation.goBack()
+		setVisible(false)
+	}
+
+	const toAuth = () => {
+		clearHandler()
+
+		if (user) {
+			navigation.navigate(RoutesNames.Main.HomeStack as never)
+			navigation.dispatch(
+				CommonActions.reset({
+					index: 1,
+					routes: [{ name: RoutesNames.Main.HomeStack }],
+				})
+			)
+			if (params?.settingsMode) {
+				navigation.goBack()
+				setVisible(false)
+			}
+		} else {
+			navigation.navigate(RoutesNames.Auth.AuthStack as never)
+			navigation.dispatch(
+				CommonActions.reset({
+					index: 1,
+					routes: [{ name: RoutesNames.Auth.AuthStack }],
+				})
+			)
+		}
+	}
+
 	const checkUserPin = () => {
 		const pinStr = pin.join("")
-		console.log("pin", pinStr)
+		// console.log("pin", pinStr)
 
 		if (!params?.createMode) {
-			if (userPinLocal && userPinLocal === pinStr) {
+			if (pinStore && pinStore === pinStr) {
 				console.log("код верный!")
 				clearHandler()
 				toAuth()
 			}
 
-			if (userPinLocal && pinStr.length === size && userPinLocal !== pinStr) {
-				console.log("код неверный!")
-				clearHandler()
-				setError(true)
-				Vibration.vibrate()
+			if (pinStore && pinStr.length === size && pinStore !== pinStr) {
+				// console.log("код неверный!")
+				errorHandler()
 			}
 		} else {
 			if (pinStr.length === size && step === 1) {
 				setUserPin(pinStr)
 				setStep(2)
 				clearHandler()
-				console.log("первый шаг !")
+				// console.log("первый шаг !")
 			}
 
 			if (pinStr.length === size && step === 2 && pinStr === userPin) {
-				setEncrypted(USER_PIN, pinStr)
-				setLocal(START, true)
+				setPinAC(pinStr)
 				setUserPin("")
 				clearHandler()
-				console.log("второй шаг - пароль создан !")
+				// console.log("второй шаг - пароль создан !")
 				toAuth()
 			}
 
 			if (pinStr.length === size && step === 2 && pinStr !== userPin) {
-				Vibration.vibrate()
-				setError(true)
-				ToastAndroid.show("пароли не совпадают!", 2000)
+				errorHandler()
 				setUserPin("")
 				setStep(1)
-				clearHandler()
 			}
 		}
 	}
 
-	const getUserCodeHandler = async () => {
-		const res = await getEncrypted(USER_PIN)
-		setUserPinLocal(res)
-		console.log("get UserCode local", res)
-	}
-
 	useEffect(() => {
 		checkUserPin()
-
-		if (!userPinLocal && !params?.createMode) {
-			getUserCodeHandler()
-		}
 	}, [pin])
 
 	return (
@@ -144,6 +154,9 @@ const PinTemplate: FC<TPin> = ({}) => {
 				onChange={setPinHandler}
 				size={size}
 			/>
+			<TouchableOpacity onPress={canselHandler}>
+				<Text style={styles.text}>отмена</Text>
+			</TouchableOpacity>
 		</View>
 	)
 }
