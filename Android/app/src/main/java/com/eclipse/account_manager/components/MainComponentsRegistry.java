@@ -1,4 +1,4 @@
-package com.account_manager.newarchitecture.components;
+package com.eclipse.account_manager.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

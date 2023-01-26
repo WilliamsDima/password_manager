@@ -1,4 +1,4 @@
-package com.account_manager;
+package com.eclipse.account_manager;
 
 import com.facebook.react.ReactActivity;
 import android.os.Bundle;

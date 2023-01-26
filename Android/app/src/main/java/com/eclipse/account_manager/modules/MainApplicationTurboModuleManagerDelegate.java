@@ -1,4 +1,4 @@
-package com.account_manager.newarchitecture.modules;
+package com.eclipse.account_manager.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;
