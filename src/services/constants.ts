@@ -3,7 +3,7 @@ import { Dimensions, NativeModules, Platform } from "react-native"
 const { StatusBarManager } = NativeModules
 
 export const urlAppStore =
-	"https://play.google.com/store/apps/details?id=com.moneymanager_williams"
+	"https://play.google.com/store/apps/details?id=com.eclipse.account_manager"
 
 export const WIDTH = Dimensions.get("window").width
 export const HEIGHT = Dimensions.get("window").height

@@ -1,5 +1,5 @@
 import React, { FC, memo, useRef, useState } from "react"
-import { View, StyleSheet, ScrollView, Text, SafeAreaView } from "react-native"
+import { View, StyleSheet, ScrollView, Text } from "react-native"
 import COLORS from "../../../services/colors"
 import { WIDTH } from "../../../services/constants"
 import PressedBtn from "../../atoms/PressedBtn"

@@ -2,12 +2,7 @@ import React, { useEffect } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { RoutesNames } from "./routes-names"
 import AuthRoutes from "./childrens/auth_routes"
-import {
-	clearEncrypted,
-	clearLocal,
-	getEncrypted,
-	getLocal,
-} from "../api/asyncStorage"
+import { getEncrypted, getLocal } from "../api/asyncStorage"
 import { KEY, USER, USER_PIN } from "../services/constants"
 import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
@@ -19,9 +14,6 @@ const Stack = createStackNavigator()
 const Routes = () => {
 	const { pin, user, key } = useAppSelector(store => store.main)
 	const { setPin, setUser, setKey } = useActions()
-
-	// clearLocal()
-	// clearEncrypted()
 
 	const getLocalHandler = async () => {
 		const resPin = await getEncrypted(USER_PIN)
@@ -42,8 +34,8 @@ const Routes = () => {
 	}
 
 	useEffect(() => {
-		console.log("Routes user", user)
-		console.log("key", key)
+		// console.log("Routes user", user)
+		// console.log("key", key)
 
 		getLocalHandler()
 	}, [user])

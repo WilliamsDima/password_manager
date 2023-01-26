@@ -25,7 +25,7 @@ const AuthRoutes = () => {
 	}
 
 	useEffect(() => {
-		console.log("start", start)
+		// console.log("start", start)
 
 		getLocalHandler()
 	}, [])

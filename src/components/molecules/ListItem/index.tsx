@@ -18,7 +18,6 @@ import { WIDTH } from "../../../services/constants"
 import { IItem, IItemContent } from "../../../services/types"
 import DescriptionItem from "../../atoms/DescriptionItem"
 import PressedBtn from "../../atoms/PressedBtn"
-import { openLeft } from "./LeftBtn"
 import { openRight } from "./RightBtn"
 import IconMeterial from "react-native-vector-icons/MaterialCommunityIcons"
 import IconEntypo from "react-native-vector-icons/Entypo"
@@ -150,13 +149,9 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 		>
 			<Swipeable
 				rightThreshold={WIDTH / 3}
-				leftThreshold={WIDTH / 3}
 				onSwipeableRightOpen={deleteHandler}
-				onSwipeableLeftWillOpen={toggleListItem}
 				overshootRight={true}
-				overshootLeft={false}
 				renderRightActions={openRight}
-				renderLeftActions={openLeft}
 			>
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
 					<View style={styles.titleBlock}>

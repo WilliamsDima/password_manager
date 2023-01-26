@@ -1,5 +1,5 @@
 import React, { FC } from "react"
-import { View, StyleSheet, ViewStyle, ActivityIndicator } from "react-native"
+import { StyleSheet, ViewStyle, ActivityIndicator } from "react-native"
 import COLORS from "../../../services/colors"
 
 interface ILoader {
@@ -9,7 +9,7 @@ interface ILoader {
 const Loader: FC<ILoader> = React.memo(({ overStyle }) => {
 	return (
 		<ActivityIndicator
-			style={{ transform: [{ scale: 2 }] }}
+			style={[{ transform: [{ scale: 2 }] }, overStyle]}
 			size='large'
 			color={COLORS.MAIN}
 		/>

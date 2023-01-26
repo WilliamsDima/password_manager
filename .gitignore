@@ -47,6 +47,9 @@ google-services.json
 config/
 firebase.ts
 
+Android/
+.aab
+
 # node.js
 #
 node_modules/

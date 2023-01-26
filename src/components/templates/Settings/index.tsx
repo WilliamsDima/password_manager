@@ -1,11 +1,5 @@
 import React, { useEffect } from "react"
-import { View, StyleSheet, Text, Image } from "react-native"
-import { useAppSelector } from "../../../hooks/hooks"
-import PressedBtn from "../../atoms/PressedBtn"
-import IconAnt from "react-native-vector-icons/AntDesign"
-import COLORS from "../../../services/colors"
-import { useNavigation } from "@react-navigation/native"
-import { RoutesNames } from "../../../navigation/routes-names"
+import { View, StyleSheet, Image } from "react-native"
 import SettingsBtns from "../../organisms/SettingsBtns"
 import DevInfo from "../../organisms/DevInfo"
 

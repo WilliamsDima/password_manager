@@ -19,7 +19,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 
 	const toPrivacy = () => {
 		Linking.openURL(
-			"https://pages.flycricket.io/upravlenie-finansami/privacy.html"
+			"https://doc-hosting.flycricket.io/menedzher-parolei-privacy-policy/cb38791d-4d5b-4d94-ad86-ebfc4bc4b7ca/privacy"
 		)
 	}
 
@@ -101,7 +101,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 			</View>
 
 			<View style={[styles.itemCenter]}>
-				<Text style={[styles.title, { marginBottom: 10 }]}>о приложение:</Text>
+				<Text style={[styles.title, { marginBottom: 10 }]}>о приложении:</Text>
 
 				<TouchableOpacity onPress={toReactNative}>
 					<IconIonicons name={"logo-react"} size={63} color={COLORS.MAIN} />
@@ -111,9 +111,9 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 					версия приложения 1.0.1
 				</Text>
 
-				<TouchableOpacity onPress={toReactNative}>
+				<TouchableOpacity onPress={toPrivacy}>
 					<Text style={[styles.text, { marginTop: 10 }]}>
-						политика конфидициальности
+						политика конфиденциальности
 					</Text>
 				</TouchableOpacity>
 			</View>
