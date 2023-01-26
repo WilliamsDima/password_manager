@@ -154,9 +154,12 @@ const PinTemplate: FC<TPin> = ({ setVisible }) => {
 				onChange={setPinHandler}
 				size={size}
 			/>
-			<TouchableOpacity onPress={canselHandler}>
-				<Text style={styles.text}>отмена</Text>
-			</TouchableOpacity>
+
+			{params?.settingsMode && (
+				<TouchableOpacity onPress={canselHandler}>
+					<Text style={styles.text}>отмена</Text>
+				</TouchableOpacity>
+			)}
 		</View>
 	)
 }

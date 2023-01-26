@@ -25,7 +25,7 @@ type TLayout = {
 const Layout: FC<TLayout> = ({ children, scroll = true }) => {
 	const { isLoading } = useAuth()
 	const { setMessage } = useActions()
-	const { message, loading, pin } = useAppSelector(store => store.main)
+	const { message, loading } = useAppSelector(store => store.main)
 	const { name } = useRoute()
 
 	const colorNavigate =

@@ -7,10 +7,12 @@ import IconEntypo from "react-native-vector-icons/Entypo"
 import IconIonicons from "react-native-vector-icons/Ionicons"
 import IconFontisto from "react-native-vector-icons/Fontisto"
 import { urlAppStore } from "../../../services/constants"
+import { useAppSelector } from "../../../hooks/hooks"
 
 type TBtns = {}
 
 const DevInfo: FC<TBtns> = memo(({}) => {
+	const { user } = useAppSelector(store => store.main)
 	const toMySite = () => {
 		Linking.openURL("https://williams-dy.ru/")
 	}
@@ -34,7 +36,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 	}
 
 	const toMail = () => {
-		Linking.openURL("mailto:oxpa97@mail.ru?subject=testsubject&body=testbody")
+		Linking.openURL(`mailto:oxpa97@mail.ru?subject=${user?.id}`)
 	}
 
 	// const toLindedin = () => {
@@ -106,7 +108,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 				</TouchableOpacity>
 
 				<Text style={[styles.text, { marginTop: 10 }]}>
-					версия приложения 1.0.0
+					версия приложения 1.0.1
 				</Text>
 
 				<TouchableOpacity onPress={toReactNative}>

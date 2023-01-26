@@ -1,26 +1,35 @@
-import React, { FC, memo } from "react"
-import { View, Text, StyleSheet, Share, Linking } from "react-native"
+import React, { FC, memo, useState } from "react"
+import {
+	View,
+	Text,
+	StyleSheet,
+	Share,
+	Linking,
+	TouchableOpacity,
+} from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
 import IconEntypo from "react-native-vector-icons/Entypo"
 import { useAuth } from "../../../hooks/useAuth"
 import COLORS from "../../../services/colors"
 import PressedBtn from "../../atoms/PressedBtn"
-import { useNavigation } from "@react-navigation/native"
-import { RoutesNames } from "../../../navigation/routes-names"
 import { urlAppStore } from "../../../services/constants"
+import { useActions } from "../../../hooks/useActions"
+import MyModal from "../../organisms/Modal"
+import Form from "../../organisms/Form"
 
 type TProfileBtns = {}
 
 const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
-	const { navigate } = useNavigation()
 	const { logoutHandler } = useAuth()
-
-	const toRecovery = () => {
-		navigate(RoutesNames.Profile.RecoveryPassword as never)
-	}
+	const { setMessage } = useActions()
+	const [recovery, setRecovery] = useState(false)
 
 	const logout = () => {
-		logoutHandler()
+		setMessage({
+			title: "",
+			message: "Выйти из аккаунта?",
+			callback: () => logoutHandler(),
+		})
 	}
 
 	const toGooglePlay = () => {
@@ -48,6 +57,18 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 
 	return (
 		<View style={styles.container}>
+			<MyModal visible={recovery} close={() => setRecovery(false)}>
+				<TouchableOpacity
+					activeOpacity={1}
+					style={{
+						justifyContent: "center",
+						alignItems: "center",
+						width: "100%",
+					}}
+				>
+					<Form recoveryMode={true} recoveryProfile={true} />
+				</TouchableOpacity>
+			</MyModal>
 			<PressedBtn
 				overStyle={styles.btn}
 				onPress={toGooglePlay}
@@ -66,7 +87,7 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 			</PressedBtn>
 			<PressedBtn
 				overStyle={styles.btn}
-				onPress={toRecovery}
+				onPress={() => setRecovery(true)}
 				colorPressed={"rgba(226,234,255, 0.1)"}
 			>
 				<IconEntypo name={"email"} size={26} color={COLORS.TITLE_COLOR} />
