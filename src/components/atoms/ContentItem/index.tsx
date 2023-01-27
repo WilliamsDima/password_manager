@@ -1,7 +1,15 @@
 import React, { FC, memo } from "react"
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native"
+import {
+	View,
+	StyleSheet,
+	TouchableOpacity,
+	Text,
+	ToastAndroid,
+	Vibration,
+} from "react-native"
 import COLORS from "../../../services/colors"
 import { IItemContent } from "../../../services/types"
+import Clipboard from "@react-native-clipboard/clipboard"
 
 type TContent = {
 	toggleListItem: () => void
@@ -10,9 +18,19 @@ type TContent = {
 }
 
 const ContentItem: FC<TContent> = memo(({ data, toggleListItem, hidden }) => {
+	const copyToClipboard = () => {
+		if (!hidden) {
+			const copyText = `${data?.login} ${data?.password}`
+			data && Clipboard.setString(copyText)
+			data && ToastAndroid.show("скопировано!", 2000)
+			data && Vibration.vibrate()
+		}
+
+		toggleListItem()
+	}
 	return (
 		<TouchableOpacity
-			onPress={toggleListItem}
+			onPress={copyToClipboard}
 			style={[styles.showBlock, hidden && styles.hide]}
 		>
 			{hidden ? (
@@ -29,10 +47,14 @@ const ContentItem: FC<TContent> = memo(({ data, toggleListItem, hidden }) => {
 							},
 						]}
 					>
-						<Text style={styles.showText}>{data?.login}</Text>
+						<Text selectable={true} style={styles.showText}>
+							{data?.login}
+						</Text>
 					</View>
 					<View style={styles.showItem}>
-						<Text style={styles.showText}>{data?.password}</Text>
+						<Text selectable={true} style={styles.showText}>
+							{data?.password}
+						</Text>
 					</View>
 				</>
 			)}

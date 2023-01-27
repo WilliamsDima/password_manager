@@ -1,8 +1,6 @@
-import React, { useState } from "react"
+import React from "react"
 import { View, StyleSheet, Text } from "react-native"
 import UserProfile from "../../molecules/UserProfile"
-import MyModal from "../../organisms/Modal"
-import CameraTemplate from "../Camera"
 import ProfileBtns from "../../molecules/ProfileBtns"
 import COLORS from "../../../services/colors"
 import IconMaterial from "react-native-vector-icons/MaterialIcons"
@@ -10,20 +8,11 @@ import QR from "../../atoms/QR"
 import { useAppSelector } from "../../../hooks/hooks"
 
 const ProfileTemplate = () => {
-	const [camnera, setCamera] = useState(false)
 	const { key } = useAppSelector(store => store.main)
 
 	return (
 		<View style={styles.container}>
-			<UserProfile setCamera={setCamera} />
-
-			<MyModal
-				visible={camnera}
-				close={() => setCamera(false)}
-				animationType={"fade"}
-			>
-				<CameraTemplate setCamera={setCamera} />
-			</MyModal>
+			<UserProfile />
 
 			<View style={styles.imgBlock}>
 				{key && <QR keyUser={key} visible={false} />}

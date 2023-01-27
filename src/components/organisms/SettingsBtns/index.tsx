@@ -68,9 +68,10 @@ export const styles = StyleSheet.create({
 		marginBottom: 10,
 	},
 	btn: {
-		width: "100%",
+		// width: "100%",
 		justifyContent: "flex-start",
 		alignItems: "center",
+		paddingHorizontal: 10,
 	},
 	wrappIcon: {
 		width: "10%",
@@ -78,6 +79,7 @@ export const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	btnText: {
+		width: "87%",
 		marginLeft: 10,
 		color: COLORS.TITLE_COLOR,
 		fontSize: 16,

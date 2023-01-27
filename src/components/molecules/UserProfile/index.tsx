@@ -5,6 +5,8 @@ import {
 	StyleSheet,
 	TextInput,
 	TouchableOpacity,
+	ToastAndroid,
+	Vibration,
 } from "react-native"
 import { useAppSelector } from "../../../hooks/hooks"
 import COLORS from "../../../services/colors"
@@ -16,20 +18,19 @@ import { useAuth } from "../../../hooks/useAuth"
 import { getDateDisplay } from "../../../hooks/helpers"
 import { useActions } from "../../../hooks/useActions"
 import { useInput } from "../../../hooks/useInput"
-import Input from "../../atoms/Input/Input"
-import IconDesign from "react-native-vector-icons/AntDesign"
+import Clipboard from "@react-native-clipboard/clipboard"
+import { BlurView } from "@react-native-community/blur"
 
-type TUser = {
-	setCamera: (value: boolean) => void
-}
+type TUser = {}
 
-const UserProfile: FC<TUser> = memo(({ setCamera }) => {
-	const { user, key, items } = useAppSelector(store => store.main)
+const UserProfile: FC<TUser> = memo(({}) => {
+	const { user, key } = useAppSelector(store => store.main)
 	const { deleteUserHandler } = useAuth()
 	const { setMessage, updateProfile, setKey } = useActions()
 	const [editeMode, setEditeMode] = useState(false)
 	const [name, bindName, setName] = useInput(user?.displayName || "")
 	const [keyUser, bindKey, setUserKey] = useInput(key || "")
+	const [show, setShow] = useState(false)
 
 	const deleteProfile = () => {
 		if (user) {
@@ -72,10 +73,11 @@ const UserProfile: FC<TUser> = memo(({ setCamera }) => {
 		updateProfile(name)
 	}
 
-	const keyUpdate = () => {
-		// console.log("keyUpdate", keyUser)
-		setUserKey(keyUser)
-		setKey(keyUser)
+	const copyToClipboard = () => {
+		keyUser && Clipboard.setString(keyUser)
+		keyUser && ToastAndroid.show("скопировано!", 2000)
+		keyUser && Vibration.vibrate()
+		setShow(false)
 	}
 
 	useEffect(() => {
@@ -116,29 +118,46 @@ const UserProfile: FC<TUser> = memo(({ setCamera }) => {
 				</View>
 			</View>
 
-			{!!items?.length ? (
-				<View style={styles.keyBlock}>
-					<Input
-						{...bindKey}
-						placeholder={"ключ"}
-						overStyle={styles.keyInput}
-						secureTextEntry={true}
-						overStyleWrapp={{ marginBottom: 15 }}
+			<TouchableOpacity
+				activeOpacity={1}
+				style={styles.blurBlock}
+				onPress={() => setShow(false)}
+			>
+				{!show && (
+					<TouchableOpacity
+						activeOpacity={1}
+						style={styles.btnWrapper}
+						onPress={() => setShow(true)}
 					>
-						<TouchableOpacity onPress={() => setCamera && setCamera(true)}>
-							<IconDesign name={"qrcode"} size={24} color={COLORS.MAIN} />
-						</TouchableOpacity>
-					</Input>
+						<Icon name={"eye"} size={48} color={COLORS.BLUE} />
+					</TouchableOpacity>
+				)}
+				{!show && (
+					<BlurView
+						overlayColor=''
+						style={styles.blur}
+						blurType='light'
+						blurAmount={7}
+					/>
+				)}
+				<TouchableOpacity onPress={copyToClipboard}>
+					<Text
+						selectable={true}
+						style={[styles.textBtn, { textAlign: "center", marginVertical: 5 }]}
+					>
+						{keyUser}
+					</Text>
+				</TouchableOpacity>
 
-					<PressedBtn overStyle={styles.keyDone} onPress={keyUpdate}>
-						<IconMaterial name={"done"} size={18} color={COLORS.MAIN} />
-					</PressedBtn>
-				</View>
-			) : (
-				<Text style={[styles.textBtn, { textAlign: "center", marginTop: 5 }]}>
-					ключ будет доступен, только когда в списке будет хотя бы 1 элемент
-				</Text>
-			)}
+				{!show && (
+					<BlurView
+						overlayColor=''
+						style={styles.blur}
+						blurType='light'
+						blurAmount={7}
+					/>
+				)}
+			</TouchableOpacity>
 
 			<PressedBtn
 				colorPressed={"rgba(255, 255, 255, 0.12)"}
@@ -223,5 +242,25 @@ const styles = StyleSheet.create({
 		color: COLORS.MAIN,
 		fontSize: 20,
 		width: "80%",
+	},
+	blurBlock: {
+		position: "relative",
+		width: "100%",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	btnWrapper: {
+		position: "absolute",
+		zIndex: 5,
+		width: "100%",
+		height: "100%",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	blur: {
+		position: "absolute",
+		zIndex: 1,
+		width: "100%",
+		height: "100%",
 	},
 })
