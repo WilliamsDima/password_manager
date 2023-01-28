@@ -20,6 +20,7 @@ import { useActions } from "../../../hooks/useActions"
 import { useInput } from "../../../hooks/useInput"
 import Clipboard from "@react-native-clipboard/clipboard"
 import { BlurView } from "@react-native-community/blur"
+import { WIDTH } from "../../../services/constants"
 
 type TUser = {}
 
@@ -245,9 +246,10 @@ const styles = StyleSheet.create({
 	},
 	blurBlock: {
 		position: "relative",
-		width: "100%",
+		width: WIDTH,
 		justifyContent: "center",
 		alignItems: "center",
+		paddingVertical: 5,
 	},
 	btnWrapper: {
 		position: "absolute",

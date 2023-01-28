@@ -24,7 +24,6 @@ import {
 import { KEY } from "../services/constants"
 import { getErrorMessage } from "../services/errorsMessage"
 import { IUser } from "../services/types"
-import { EncryptData } from "./helpers"
 import { useAppSelector } from "./hooks"
 import { useActions } from "./useActions"
 
@@ -80,7 +79,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error)
 				setMessage({
 					title: "Ошибка",
-					message: getErrorMessage(error.toString()),
+					message: getErrorMessage(error.toString()) || error.toString(),
 				})
 
 			console.log("error register: ", error)
@@ -98,7 +97,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error)
 				setMessage({
 					title: "Ошибка",
-					message: getErrorMessage(error.toString()),
+					message: getErrorMessage(error.toString()) || error.toString(),
 				})
 
 			console.log("error login: ", error.toString())
@@ -119,7 +118,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error)
 				setMessage({
 					title: "Ошибка",
-					message: getErrorMessage(error.toString()),
+					message: getErrorMessage(error.toString()) || error.toString(),
 				})
 
 			console.log("error recover: ", error.toString())
@@ -137,7 +136,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error)
 				setMessage({
 					title: "Ошибка",
-					message: getErrorMessage(error.toString()),
+					message: getErrorMessage(error.toString()) || error.toString(),
 				})
 			console.log("error getUser: ", error.toString())
 		} finally {
@@ -158,7 +157,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error)
 				setMessage({
 					title: "Ошибка",
-					message: getErrorMessage(error.toString()),
+					message: getErrorMessage(error.toString()) || error.toString(),
 				})
 			console.log("error logout: ", error)
 		} finally {
@@ -180,7 +179,7 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			if (error)
 				setMessage({
 					title: "Ошибка",
-					message: getErrorMessage(error.toString()),
+					message: getErrorMessage(error.toString()) || error.toString(),
 				})
 			console.log("error delete user: ", error)
 		} finally {

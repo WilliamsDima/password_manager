@@ -102,7 +102,7 @@ const PinTemplate: FC<TPin> = ({ setVisible }) => {
 
 		if (!params?.createMode) {
 			if (pinStore && pinStore === pinStr) {
-				console.log("код верный!")
+				// console.log("код верный!")
 				clearHandler()
 				toAuth()
 			}

@@ -108,7 +108,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 				</TouchableOpacity>
 
 				<Text style={[styles.text, { marginTop: 10 }]}>
-					версия приложения 1.0.2
+					версия приложения 1.0.3
 				</Text>
 
 				<TouchableOpacity onPress={toPrivacy}>
