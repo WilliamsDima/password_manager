@@ -8,7 +8,6 @@ import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
 import { createStackNavigator } from "@react-navigation/stack"
 import TabNavigation from "./tab"
-import { NativeModules } from "react-native"
 import i18n from "../i18n/i18n"
 
 const Stack = createStackNavigator()
@@ -16,15 +15,6 @@ const Stack = createStackNavigator()
 const Routes = () => {
 	const { pin, user, key, language } = useAppSelector(store => store.main)
 	const { setPin, setUser, setKey, changeLanguage } = useActions()
-
-	const languageModel = NativeModules.I18nManager.localeIdentifier
-
-	const locale =
-		languageModel !== "ru_RU" ||
-		languageModel !== "en_US" ||
-		languageModel !== "uk_UA"
-			? "en_US"
-			: languageModel
 
 	const changeLang = lang => {
 		i18n
@@ -59,7 +49,6 @@ const Routes = () => {
 	useEffect(() => {
 		// console.log("Routes user", user)
 		// console.log("key", key)
-		!language && changeLang(locale)
 		// console.log("locale", locale)
 
 		getLocalHandler()

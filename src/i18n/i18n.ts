@@ -5,7 +5,7 @@ import ru from "./ru.json"
 import en from "./en.json"
 import uk from "./uk.json"
 
-export const defaultNS = "ru_RU"
+const defaultNS = "ru_RU"
 export const resources = {
 	uk_UA: {
 		translation: uk,
@@ -19,7 +19,7 @@ export const resources = {
 } as const
 
 i18n.use(initReactI18next).init({
-	lng: "en_US",
+	lng: defaultNS,
 	resources,
 	// keySeparator: true, // we do not use keys in form messages.welcome
 	fallbackLng: "",

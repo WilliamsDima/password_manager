@@ -56,6 +56,7 @@
 	"cancel": "cancel",
 	"data_protected": "Your data is protected",
 	"skip": "skip",
+	"next": "next",
 	"email_recovery_password": "An email has been sent to {{email}} with instructions to reset your password..",
 
 	"admin-restricted-operation": "This operation is only available to administrators.",

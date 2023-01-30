@@ -70,7 +70,7 @@ const SliderIndicators: FC<TSliderIndicator> = ({ length, idx, setActive }) => {
 							marginBottom: 2,
 						}}
 					>
-						далее
+						{t("next")}
 					</Text>
 					<Icon
 						name={"right"}

@@ -7,8 +7,10 @@ import { useNavigation, CommonActions } from "@react-navigation/native"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { setLocal } from "../../../api/asyncStorage"
 import { HEIGHT, START, WIDTH } from "../../../services/constants"
+import { useTranslation } from "react-i18next"
 
 const StartTemplate = () => {
+	const { t } = useTranslation()
 	const navigation = useNavigation()
 
 	const skip = () => {
@@ -25,7 +27,7 @@ const StartTemplate = () => {
 	return (
 		<View style={styles.container}>
 			<PressedBtn overStyle={styles.skipBtn} onPress={skip}>
-				<Text style={{ color: COLORS.MAIN }}>пропустить</Text>
+				<Text style={{ color: COLORS.MAIN }}>{t("skip")}</Text>
 			</PressedBtn>
 			<StartSlider />
 		</View>
