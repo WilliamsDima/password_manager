@@ -17,7 +17,14 @@ const Routes = () => {
 	const { pin, user, key, language } = useAppSelector(store => store.main)
 	const { setPin, setUser, setKey, changeLanguage } = useActions()
 
-	const locale = NativeModules.I18nManager.localeIdentifier
+	const languageModel = NativeModules.I18nManager.localeIdentifier
+
+	const locale =
+		languageModel !== "ru_RU" ||
+		languageModel !== "en_US" ||
+		languageModel !== "uk_UA"
+			? "en_US"
+			: languageModel
 
 	const changeLang = lang => {
 		i18n
@@ -53,7 +60,7 @@ const Routes = () => {
 		// console.log("Routes user", user)
 		// console.log("key", key)
 		!language && changeLang(locale)
-		// console.log("locale", language)
+		// console.log("locale", locale)
 
 		getLocalHandler()
 	}, [user, language])

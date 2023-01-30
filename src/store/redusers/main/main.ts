@@ -10,7 +10,7 @@ const initialState: IStore = {
 	pin: null,
 	key: "",
 	items: [],
-	language: "en_US",
+	language: "ru_RU",
 }
 
 const mainSlice = createSlice({
