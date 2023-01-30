@@ -16,10 +16,12 @@ import { urlAppStore } from "../../../services/constants"
 import { useActions } from "../../../hooks/useActions"
 import MyModal from "../../organisms/Modal"
 import Form from "../../organisms/Form"
+import { useTranslation } from "react-i18next"
 
 type TProfileBtns = {}
 
 const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
+	const { t } = useTranslation()
 	const { logoutHandler } = useAuth()
 	const { setMessage } = useActions()
 	const [recovery, setRecovery] = useState(false)
@@ -27,7 +29,7 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 	const logout = () => {
 		setMessage({
 			title: "",
-			message: "Выйти из аккаунта?",
+			message: t("sign_out"),
 			callback: () => logoutHandler(),
 		})
 	}
@@ -75,7 +77,7 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 				colorPressed={"rgba(226,234,255, 0.1)"}
 			>
 				<IconEntypo name={"google-play"} size={26} color={COLORS.TITLE_COLOR} />
-				<Text style={styles.textBtn}>оставить отзыв</Text>
+				<Text style={styles.textBtn}>{t("feedback")}</Text>
 			</PressedBtn>
 			<PressedBtn
 				overStyle={styles.btn}
@@ -83,7 +85,7 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 				colorPressed={"rgba(226,234,255, 0.1)"}
 			>
 				<IconEntypo name={"share"} size={26} color={COLORS.TITLE_COLOR} />
-				<Text style={styles.textBtn}>поделиться</Text>
+				<Text style={styles.textBtn}>{t("share")}</Text>
 			</PressedBtn>
 			<PressedBtn
 				overStyle={styles.btn}
@@ -91,7 +93,7 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 				colorPressed={"rgba(226,234,255, 0.1)"}
 			>
 				<IconEntypo name={"email"} size={26} color={COLORS.TITLE_COLOR} />
-				<Text style={styles.textBtn}>сменить пароль</Text>
+				<Text style={styles.textBtn}>{t("recovery")}</Text>
 			</PressedBtn>
 			<PressedBtn
 				colorPressed={"rgba(255, 255, 255, 0.12)"}
@@ -99,7 +101,7 @@ const ProfileBtns: FC<TProfileBtns> = memo(({}) => {
 				onPress={logout}
 			>
 				<Icon name={"exit-to-app"} size={26} color={COLORS.TITLE_COLOR} />
-				<Text style={styles.textBtn}>выйти</Text>
+				<Text style={styles.textBtn}>{t("logout_btn")}</Text>
 			</PressedBtn>
 		</View>
 	)

@@ -3,6 +3,7 @@ import { View, StyleSheet, Text } from "react-native"
 import COLORS from "../../../services/colors"
 import Icon from "react-native-vector-icons/AntDesign"
 import PressedBtn from "../../atoms/PressedBtn"
+import { useTranslation } from "react-i18next"
 
 type TSliderIndicator = {
 	idx: number
@@ -11,6 +12,7 @@ type TSliderIndicator = {
 }
 
 const SliderIndicators: FC<TSliderIndicator> = ({ length, idx, setActive }) => {
+	const { t } = useTranslation()
 	const count = Array(length).fill("dot")
 
 	const activePrevHandler = () => {
@@ -37,7 +39,7 @@ const SliderIndicators: FC<TSliderIndicator> = ({ length, idx, setActive }) => {
 							marginBottom: 2,
 						}}
 					>
-						назад
+						{t("back")}
 					</Text>
 				</>
 			</PressedBtn>

@@ -1,15 +1,18 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { View, StyleSheet, Image } from "react-native"
 import SettingsBtns from "../../organisms/SettingsBtns"
 import DevInfo from "../../organisms/DevInfo"
+import MyModal from "../../organisms/Modal"
+import LanguageModal from "../../molecules/LanguageModal/Index"
 
 const SettingsTemplate = () => {
+	const [languageModal, setLanguageModal] = useState(false)
 	useEffect(() => {
 		// console.log(pin)
 	}, [])
 	return (
 		<View style={styles.container}>
-			<SettingsBtns />
+			<SettingsBtns setLanguageModal={setLanguageModal} />
 			<View style={styles.imgWrapper}>
 				<Image
 					style={styles.img}
@@ -17,6 +20,9 @@ const SettingsTemplate = () => {
 				/>
 			</View>
 			<DevInfo />
+			<MyModal visible={languageModal} close={() => setLanguageModal(false)}>
+				<LanguageModal setLanguageModal={setLanguageModal} />
+			</MyModal>
 		</View>
 	)
 }

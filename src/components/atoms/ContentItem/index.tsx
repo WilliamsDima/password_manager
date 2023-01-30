@@ -10,6 +10,7 @@ import {
 import COLORS from "../../../services/colors"
 import { IItemContent } from "../../../services/types"
 import Clipboard from "@react-native-clipboard/clipboard"
+import { useTranslation } from "react-i18next"
 
 type TContent = {
 	toggleListItem: () => void
@@ -18,11 +19,13 @@ type TContent = {
 }
 
 const ContentItem: FC<TContent> = memo(({ data, toggleListItem, hidden }) => {
+	const { t } = useTranslation()
+
 	const copyToClipboard = () => {
 		if (!hidden) {
 			const copyText = `${data?.login} ${data?.password}`
 			data && Clipboard.setString(copyText)
-			data && ToastAndroid.show("скопировано!", 2000)
+			data && ToastAndroid.show(t("copy"), 2000)
 			data && Vibration.vibrate()
 		}
 

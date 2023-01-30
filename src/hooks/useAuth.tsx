@@ -9,6 +9,7 @@ import React, {
 	ReactNode,
 	useEffect,
 } from "react"
+import { useTranslation } from "react-i18next"
 import { clearEncrypted, clearLocal, setEncrypted } from "../api/asyncStorage"
 import { deleteUserAPI } from "../api/firebase/firebase"
 import {
@@ -49,11 +50,12 @@ type AuthProviderType = {
 }
 
 export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
+	const { t } = useTranslation()
 	const [user, setUser] = useState<DocumentData | undefined>()
 	const [isLoadingInitial, setIsLoadingInitial] = useState<boolean>(false)
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const { setMessage, setUser: setUserAC, setKey, setPin } = useActions()
-	const { pin } = useAppSelector(store => store.main)
+	const { pin, language } = useAppSelector(store => store.main)
 
 	const registerHandler = async (
 		email: string,
@@ -78,8 +80,9 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		} catch (error: any) {
 			if (error)
 				setMessage({
-					title: "Ошибка",
-					message: getErrorMessage(error.toString()) || error.toString(),
+					title: t("error"),
+					message:
+						getErrorMessage(error.toString(), language) || error.toString(),
 				})
 
 			console.log("error register: ", error)
@@ -96,8 +99,9 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		} catch (error: any) {
 			if (error)
 				setMessage({
-					title: "Ошибка",
-					message: getErrorMessage(error.toString()) || error.toString(),
+					title: t("error"),
+					message:
+						getErrorMessage(error.toString(), language) || error.toString(),
 				})
 
 			console.log("error login: ", error.toString())
@@ -112,13 +116,14 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			await recovery(email)
 			setMessage({
 				title: "",
-				message: `На почту ${email} отправлено письмо с инструкцией для сброса пароля.`,
+				message: t("email_recovery_password", { email }),
 			})
 		} catch (error: any) {
 			if (error)
 				setMessage({
-					title: "Ошибка",
-					message: getErrorMessage(error.toString()) || error.toString(),
+					title: t("error"),
+					message:
+						getErrorMessage(error.toString(), language) || error.toString(),
 				})
 
 			console.log("error recover: ", error.toString())
@@ -135,8 +140,9 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		} catch (error: any) {
 			if (error)
 				setMessage({
-					title: "Ошибка",
-					message: getErrorMessage(error.toString()) || error.toString(),
+					title: t("error"),
+					message:
+						getErrorMessage(error.toString(), language) || error.toString(),
 				})
 			console.log("error getUser: ", error.toString())
 		} finally {
@@ -156,8 +162,9 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		} catch (error: any) {
 			if (error)
 				setMessage({
-					title: "Ошибка",
-					message: getErrorMessage(error.toString()) || error.toString(),
+					title: t("error"),
+					message:
+						getErrorMessage(error.toString(), language) || error.toString(),
 				})
 			console.log("error logout: ", error)
 		} finally {
@@ -178,8 +185,9 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 		} catch (error: any) {
 			if (error)
 				setMessage({
-					title: "Ошибка",
-					message: getErrorMessage(error.toString()) || error.toString(),
+					title: t("error"),
+					message:
+						getErrorMessage(error.toString(), language) || error.toString(),
 				})
 			console.log("error delete user: ", error)
 		} finally {

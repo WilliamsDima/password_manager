@@ -15,6 +15,7 @@ import { useActions } from "../../../hooks/useActions"
 import { IItem, IItemContent } from "../../../services/types"
 import { useAppSelector } from "../../../hooks/hooks"
 import { DecryptData, EncryptData } from "../../../hooks/helpers"
+import { useTranslation } from "react-i18next"
 
 type IModal = {
 	setFormItem: (value: IItem | boolean) => void
@@ -22,6 +23,7 @@ type IModal = {
 }
 
 const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
+	const { t } = useTranslation()
 	const { setMessage, addItem, editItem } = useActions()
 	const { key } = useAppSelector(store => store.main)
 	const titleMax = 40
@@ -31,10 +33,17 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 
 	const isItem = typeof formItem === "object"
 
+	const keyError = () => {
+		setMessage({
+			title: t("error"),
+			message: t("key_message"),
+		})
+	}
+
 	const [data, setData] = useState<IItemContent | null>(null)
 
 	const [title, bindTitle, resetTitle] = useInput(
-		isItem && key ? DecryptData(formItem?.title, key) : ""
+		isItem && key ? DecryptData(formItem?.title, key, keyError) : ""
 	)
 	const [login, bindLogin, resetLogin, setLogin] = useInput("")
 	const [password, bindPassword, resetPassword, setPassword] = useInput("")
@@ -44,7 +53,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 	const descriptData = () => {
 		const isItem = typeof formItem === "object"
 		if (isItem && key) {
-			const data: IItemContent = DecryptData(formItem?.message, key, setMessage)
+			const data: IItemContent = DecryptData(formItem?.message, key, keyError)
 			setLogin(data?.login || "")
 			setPassword(data?.password || "")
 			setDescription(data?.description || "")
@@ -116,19 +125,19 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 					password,
 				},
 				key,
-				setMessage
+				keyError
 			)
 
 			const data = {
 				id: +new Date(),
-				title: EncryptData(title, key),
+				title: EncryptData(title, key, keyError),
 				message: dataEncript,
 			}
 
 			if (isItem) {
 				const editData = {
 					id: formItem.id,
-					title: EncryptData(title, key),
+					title: EncryptData(title, key, keyError),
 					message: dataEncript,
 				}
 				editItem(editData)
@@ -152,7 +161,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 			<ScrollView>
 				<View style={styles.item}>
 					<Input
-						placeholder='Заголовок'
+						placeholder={t("title_placeholder")}
 						overStyle={styles.input}
 						{...bindTitle}
 						maxLength={titleMax}
@@ -160,7 +169,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 				</View>
 				<View style={styles.item}>
 					<Input
-						placeholder='Логин'
+						placeholder={t("login_input")}
 						overStyle={styles.input}
 						{...bindLogin}
 						maxLength={loginMax}
@@ -168,7 +177,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 				</View>
 				<View style={styles.item}>
 					<Input
-						placeholder='Пароль'
+						placeholder={t("password_placeholder")}
 						overStyle={styles.input}
 						{...bindPassword}
 						maxLength={passwordMax}
@@ -176,7 +185,7 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 				</View>
 				<View style={styles.item}>
 					<Input
-						placeholder='Описание *'
+						placeholder={t("description_placeholder")}
 						overStyle={styles.input}
 						{...bindDescription}
 						multiline={true}
@@ -184,12 +193,10 @@ const FormItem: FC<IModal> = memo(({ setFormItem, formItem }) => {
 					/>
 				</View>
 				<View style={[styles.item, { alignItems: "flex-start" }]}>
-					<Text style={[styles.text, { marginTop: 0 }]}>
-						* - не обязательно
-					</Text>
+					<Text style={[styles.text, { marginTop: 0 }]}>{t("optional")}</Text>
 				</View>
 				<View style={styles.item}>
-					<Text style={styles.text}>Ваши данные будут зашифрованы</Text>
+					<Text style={styles.text}>{t("data_will_be_encrypted")}</Text>
 				</View>
 				<View style={styles.item}>
 					<PressedBtn overStyle={styles.btn} onPress={sendHandler}>

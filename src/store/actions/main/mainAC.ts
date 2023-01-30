@@ -1,3 +1,4 @@
+import { LANG } from "./../../../services/constants"
 import { updateProfileAPI } from "./../../../api/firebase/firebase"
 import { PayloadAction } from "@reduxjs/toolkit"
 import { setEncrypted, setLocal } from "../../../api/asyncStorage"
@@ -21,6 +22,8 @@ export type MainActions = {
 	addItem: (state: IStore, payload: PayloadAction<IItem>) => void
 	deleteItem: (state: IStore, payload: PayloadAction<number>) => void
 	editItem: (state: IStore, payload: PayloadAction<IItem>) => void
+
+	changeLanguage: (state: IStore, payload: PayloadAction<string>) => void
 }
 
 export const reducers: MainActions = {
@@ -94,5 +97,10 @@ export const reducers: MainActions = {
 		if (state.user) {
 			updateItemAPI(state.user, state.items)
 		}
+	},
+
+	changeLanguage: (state, { payload }) => {
+		state.language = payload
+		setLocal(LANG, payload)
 	},
 }

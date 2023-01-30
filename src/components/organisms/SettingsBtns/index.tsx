@@ -7,13 +7,15 @@ import IconAnt from "react-native-vector-icons/AntDesign"
 import IconFont from "react-native-vector-icons/FontAwesome"
 import { useAppSelector } from "../../../hooks/hooks"
 import { RoutesNames } from "../../../navigation/routes-names"
-import { useActions } from "../../../hooks/useActions"
+import { useTranslation } from "react-i18next"
 
-type TBtns = {}
+type TBtns = {
+	setLanguageModal: (value: boolean) => void
+}
 
-const SettingsBtns: FC<TBtns> = memo(({}) => {
+const SettingsBtns: FC<TBtns> = memo(({ setLanguageModal }) => {
+	const { t } = useTranslation()
 	const { pin } = useAppSelector(store => store.main)
-	const { setMessage } = useActions()
 
 	const { navigate } = useNavigation()
 
@@ -25,10 +27,7 @@ const SettingsBtns: FC<TBtns> = memo(({}) => {
 	}
 
 	const changeLanguageHandler = () => {
-		setMessage({
-			title: "",
-			message: "В разработке...",
-		})
+		setLanguageModal(true)
 	}
 
 	return (
@@ -39,9 +38,7 @@ const SettingsBtns: FC<TBtns> = memo(({}) => {
 						<IconAnt name={"lock"} size={26} color={COLORS.MAIN} />
 					</View>
 					<Text style={styles.btnText}>
-						{pin
-							? "изменить код для входа в приложение"
-							: "установить код для входа в приложение"}
+						{pin ? t("change_code") : t("set_code")}
 					</Text>
 				</PressedBtn>
 			</View>
@@ -50,7 +47,7 @@ const SettingsBtns: FC<TBtns> = memo(({}) => {
 					<View style={styles.wrappIcon}>
 						<IconFont name={"language"} size={26} color={COLORS.MAIN} />
 					</View>
-					<Text style={styles.btnText}>изменить язык</Text>
+					<Text style={styles.btnText}>{t("change_language")}</Text>
 				</PressedBtn>
 			</View>
 		</View>

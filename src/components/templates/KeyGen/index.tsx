@@ -14,21 +14,31 @@ import Clipboard from "@react-native-clipboard/clipboard"
 import { useActions } from "../../../hooks/useActions"
 import { EncryptData } from "../../../hooks/helpers"
 import QR from "../../atoms/QR/index"
+import { useTranslation } from "react-i18next"
 
 type TPin = {}
 
 const KeyGenTemplate: FC<TPin> = ({}) => {
-	const { setUser, setKey } = useActions()
+	const { t } = useTranslation()
+	const { setUser, setKey, setMessage } = useActions()
 	const { user } = useAuth()
+
+	const keyError = () => {
+		setMessage({
+			title: t("error"),
+			message: t("key_message"),
+		})
+	}
 
 	const key = EncryptData(
 		user?.uid + +new Date().toString(),
-		user?.accessToken?.toString()
+		user?.accessToken?.toString(),
+		keyError
 	)
 
 	const copyToClipboard = () => {
 		key && Clipboard.setString(key)
-		key && ToastAndroid.show("скопировано!", 2000)
+		key && ToastAndroid.show(t("copy"), 2000)
 		key && Vibration.vibrate()
 	}
 
@@ -51,14 +61,12 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 					<Text
 						style={[styles.text, { marginTop: 20, color: COLORS.TITLE_COLOR }]}
 					>
-						Сделайте скриншот экрана или сохраните ключ.
+						{t("screenshot")}
 					</Text>
 				</>
 			)}
 
-			<Text style={[styles.text, { marginTop: 10 }]}>
-				Без ключа вы не сможете восстановить доступ к вашим данным!
-			</Text>
+			<Text style={[styles.text, { marginTop: 10 }]}>{t("without_key")}</Text>
 			<TouchableOpacity
 				activeOpacity={1}
 				style={{ marginTop: 40 }}
@@ -70,7 +78,7 @@ const KeyGenTemplate: FC<TPin> = ({}) => {
 			</TouchableOpacity>
 
 			<PressedBtn overStyle={{ marginTop: 20 }} onPress={redy}>
-				<Text style={styles.btnText}>Я сохранил!</Text>
+				<Text style={styles.btnText}>{t("saved")}</Text>
 			</PressedBtn>
 		</View>
 	)

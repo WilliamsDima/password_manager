@@ -7,10 +7,12 @@ import SliderIndicators from "../../molecules/SliderIndicators"
 import SliderItem from "../../molecules/SliderItem"
 import { useNavigation } from "@react-navigation/native"
 import { RoutesNames } from "../../../navigation/routes-names"
+import { useTranslation } from "react-i18next"
 
 type TStartSlider = {}
 
 const StartSlider: FC<TStartSlider> = memo(() => {
+	const { t } = useTranslation()
 	const navigation = useNavigation()
 
 	const toPin = () => {
@@ -19,19 +21,21 @@ const StartSlider: FC<TStartSlider> = memo(() => {
 
 	const sliders = [
 		{
-			text: "Добро пожаловать в Passwords manager",
+			text: t("slide_1"),
 			source: require("../../../assets/images/technology.png"),
 		},
 		{
-			text: "Ваши данные зашифрованы и никто, кроме вас, не имеет доступ к ним",
+			text: t("slide_2"),
 			source: require("../../../assets/images/slide2.png"),
 		},
 		{
-			text: "Хотите установить пароль для входа в приложение? В любой момент вы можете изменить его в настройках",
+			text: t("slide_3"),
 			source: require("../../../assets/images/pin.png"),
 			btn: (
 				<PressedBtn overStyle={{ marginTop: 20 }} onPress={toPin}>
-					<Text style={{ color: COLORS.MAIN, fontSize: 16 }}>создать</Text>
+					<Text style={{ color: COLORS.MAIN, fontSize: 16 }}>
+						{t("create")}
+					</Text>
 				</PressedBtn>
 			),
 		},

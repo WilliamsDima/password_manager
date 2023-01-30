@@ -4,12 +4,14 @@ import { WIDTH } from "../../../services/constants"
 import { RNCamera } from "react-native-camera"
 import { useActions } from "../../../hooks/useActions"
 import COLORS from "../../../services/colors"
+import { useTranslation } from "react-i18next"
 
 type TCamera = {
 	setCamera: (value: boolean) => void
 }
 
 const CameraTemplate: FC<TCamera> = ({ setCamera }) => {
+	const { t } = useTranslation()
 	const { setKey } = useActions()
 
 	const cameraRef = useRef(null)
@@ -40,7 +42,7 @@ const CameraTemplate: FC<TCamera> = ({ setCamera }) => {
 							fontWeight: "700",
 						}}
 					>
-						Наведите камеру на QR код
+						{t("camera")}
 					</Text>
 				</View>
 			</RNCamera>

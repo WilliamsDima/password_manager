@@ -6,6 +6,7 @@ import PasswordSvg from "../../atoms/Icons/PasswordSvg"
 import UserSvg from "../../atoms/Icons/UserSvg"
 import Input from "../../atoms/Input/Input"
 import IconDesign from "react-native-vector-icons/AntDesign"
+import { useTranslation } from "react-i18next"
 
 interface IFilds {
 	recoveryMode: boolean
@@ -29,6 +30,7 @@ const FormFilds: FC<IFilds> = memo(
 		bindKey,
 		setCamera,
 	}) => {
+		const { t } = useTranslation()
 		return (
 			<>
 				<Input
@@ -37,8 +39,8 @@ const FormFilds: FC<IFilds> = memo(
 						recoveryMode
 							? "email"
 							: registerMode
-							? "логин (существующая почта)"
-							: "логин"
+							? t("login_input_register")
+							: t("login_input")
 					}
 					overStyle={styles.input}
 					overStyleWrapp={{ marginBottom: 15 }}
@@ -49,7 +51,7 @@ const FormFilds: FC<IFilds> = memo(
 				{registerMode && (
 					<Input
 						{...bindName}
-						placeholder={"имя"}
+						placeholder={t("name_placeholder")}
 						overStyle={styles.input}
 						overStyleWrapp={{ marginBottom: 15 }}
 					>
@@ -60,7 +62,7 @@ const FormFilds: FC<IFilds> = memo(
 				{!recoveryMode && (
 					<Input
 						{...bindPassword}
-						placeholder={"пароль"}
+						placeholder={t("password_placeholder")}
 						secureTextEntry={true}
 						overStyle={styles.input}
 						overStyleWrapp={{ marginBottom: 15 }}
@@ -72,7 +74,7 @@ const FormFilds: FC<IFilds> = memo(
 				{!registerMode && !recoveryMode && (
 					<Input
 						{...bindKey}
-						placeholder={"ключ"}
+						placeholder={t("key_placeholder")}
 						overStyle={styles.input}
 						overStyleWrapp={{ marginBottom: 15 }}
 					>
@@ -85,7 +87,7 @@ const FormFilds: FC<IFilds> = memo(
 				{registerMode && (
 					<Input
 						{...bindPassword2}
-						placeholder={"повторный пароль"}
+						placeholder={t("repeat_password")}
 						secureTextEntry={true}
 						overStyle={styles.input}
 						overStyleWrapp={{ marginBottom: 15 }}

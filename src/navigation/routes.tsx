@@ -3,25 +3,41 @@ import { NavigationContainer } from "@react-navigation/native"
 import { RoutesNames } from "./routes-names"
 import AuthRoutes from "./childrens/auth_routes"
 import { getEncrypted, getLocal } from "../api/asyncStorage"
-import { KEY, USER, USER_PIN } from "../services/constants"
+import { KEY, LANG, USER, USER_PIN } from "../services/constants"
 import { useActions } from "../hooks/useActions"
 import { useAppSelector } from "../hooks/hooks"
 import { createStackNavigator } from "@react-navigation/stack"
 import TabNavigation from "./tab"
+import { NativeModules } from "react-native"
+import i18n from "../i18n/i18n"
 
 const Stack = createStackNavigator()
 
 const Routes = () => {
-	const { pin, user, key } = useAppSelector(store => store.main)
-	const { setPin, setUser, setKey } = useActions()
+	const { pin, user, key, language } = useAppSelector(store => store.main)
+	const { setPin, setUser, setKey, changeLanguage } = useActions()
+
+	const locale = NativeModules.I18nManager.localeIdentifier
+
+	const changeLang = lang => {
+		i18n
+			.changeLanguage(lang)
+			.then(() => changeLanguage(lang))
+			.catch(err => console.log("language error", err))
+	}
 
 	const getLocalHandler = async () => {
 		const resPin = await getEncrypted(USER_PIN)
 		const resKey = await getEncrypted(KEY)
 		const resUser = await getLocal(USER)
+		const resLang = await getLocal(LANG)
 
 		if (!pin && resPin) {
 			setPin(resPin)
+		}
+
+		if (resLang) {
+			changeLang(resLang)
 		}
 
 		if (!key && resKey) {
@@ -36,9 +52,11 @@ const Routes = () => {
 	useEffect(() => {
 		// console.log("Routes user", user)
 		// console.log("key", key)
+		!language && changeLang(locale)
+		// console.log("locale", language)
 
 		getLocalHandler()
-	}, [user])
+	}, [user, language])
 
 	return (
 		<NavigationContainer>

@@ -8,10 +8,12 @@ import IconIonicons from "react-native-vector-icons/Ionicons"
 import IconFontisto from "react-native-vector-icons/Fontisto"
 import { urlAppStore } from "../../../services/constants"
 import { useAppSelector } from "../../../hooks/hooks"
+import { useTranslation } from "react-i18next"
 
 type TBtns = {}
 
 const DevInfo: FC<TBtns> = memo(({}) => {
+	const { t } = useTranslation()
 	const { user } = useAppSelector(store => store.main)
 	const toMySite = () => {
 		Linking.openURL("https://williams-dy.ru/")
@@ -58,7 +60,8 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 		<View style={[styles.itemCenter, styles.container]}>
 			<TouchableOpacity onPress={toMySite}>
 				<Text style={[{ color: COLORS.MAIN }]}>
-					сайт разработчика{": "}
+					{t("developer_site")}
+					{": "}
 					<Text style={{ textDecorationLine: "underline" }}>
 						williams-dy.ru
 					</Text>
@@ -70,7 +73,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 				onPress={toGoogleStore}
 			>
 				<IconFontisto name={"slightly-smile"} size={46} color={COLORS.MAIN} />
-				<Text style={[styles.text, { marginTop: 10 }]}>оставь отзыв</Text>
+				<Text style={[styles.text, { marginTop: 10 }]}>{t("feedback")}</Text>
 
 				<View style={[styles.itemCenter, styles.stars]}>
 					<IconAnt name={"star"} size={46} color={COLORS.GOLD} />
@@ -82,7 +85,7 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 			</TouchableOpacity>
 
 			<View style={[styles.itemCenter]}>
-				<Text style={styles.title}>контакты разработчика:</Text>
+				<Text style={styles.title}>{t("developer_contacts")}</Text>
 
 				<View style={[styles.itemCenter, styles.socials]}>
 					<TouchableOpacity onPress={toMyVk}>
@@ -101,20 +104,18 @@ const DevInfo: FC<TBtns> = memo(({}) => {
 			</View>
 
 			<View style={[styles.itemCenter]}>
-				<Text style={[styles.title, { marginBottom: 10 }]}>о приложении:</Text>
+				<Text style={[styles.title, { marginBottom: 10 }]}>
+					{t("about_application")}
+				</Text>
 
 				<TouchableOpacity onPress={toReactNative}>
 					<IconIonicons name={"logo-react"} size={63} color={COLORS.MAIN} />
 				</TouchableOpacity>
 
-				<Text style={[styles.text, { marginTop: 10 }]}>
-					версия приложения 1.0.3
-				</Text>
+				<Text style={[styles.text, { marginTop: 10 }]}>{t("VERSION")}</Text>
 
 				<TouchableOpacity onPress={toPrivacy}>
-					<Text style={[styles.text, { marginTop: 10 }]}>
-						политика конфиденциальности
-					</Text>
+					<Text style={[styles.text, { marginTop: 10 }]}>{t("privacy")}</Text>
 				</TouchableOpacity>
 			</View>
 		</View>

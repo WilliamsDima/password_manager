@@ -18,12 +18,14 @@ import PinInput from "../../molecules/PinInput"
 import KeyboardNumber from "../../organisms/KeyboardNumber"
 import { useAppSelector } from "../../../hooks/hooks"
 import { useActions } from "../../../hooks/useActions"
+import { useTranslation } from "react-i18next"
 
 type TPin = {
 	setVisible: (value: boolean) => void
 }
 
 const PinTemplate: FC<TPin> = ({ setVisible }) => {
+	const { t } = useTranslation()
 	const size = 4
 
 	const { params } = useRoute<any>()
@@ -59,7 +61,7 @@ const PinTemplate: FC<TPin> = ({ setVisible }) => {
 		Vibration.vibrate()
 		setError(true)
 		clearHandler()
-		ToastAndroid.show("пароли не совпадают!", 2000)
+		ToastAndroid.show(t("pssword_error_repeat"), 2000)
 	}
 
 	const canselHandler = () => {
@@ -144,7 +146,7 @@ const PinTemplate: FC<TPin> = ({ setVisible }) => {
 			<Text style={styles.title}>PIN</Text>
 			{params?.createMode && (
 				<Text style={styles.text}>
-					{step === 1 ? "придумайте пароль" : "повторите пароль"}
+					{step === 1 ? t("pick_password") : t("confirm_password")}
 				</Text>
 			)}
 			<PinInput numbers={pin} size={size} error={error} setError={setError} />
@@ -157,7 +159,7 @@ const PinTemplate: FC<TPin> = ({ setVisible }) => {
 
 			{params?.settingsMode && (
 				<TouchableOpacity onPress={canselHandler}>
-					<Text style={styles.text}>отмена</Text>
+					<Text style={styles.text}>{t("cancel")}</Text>
 				</TouchableOpacity>
 			)}
 		</View>

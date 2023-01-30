@@ -8,6 +8,7 @@ import { useAuth } from "../../../hooks/useAuth"
 import { RoutesNames } from "../../../navigation/routes-names"
 import { IUser } from "../../../services/types"
 import PressedBtn from "../../atoms/PressedBtn"
+import { useTranslation } from "react-i18next"
 
 type IBtns = {
 	recoveryMode: boolean
@@ -40,6 +41,7 @@ const FormBtns: FC<IBtns> = memo(
 		const { navigate, dispatch } = useNavigation()
 		const { setMessage } = useActions()
 		const { registerHandler, loginHandler, recoveryHandler } = useAuth()
+		const { t } = useTranslation()
 
 		const toAuth = () => {
 			navigate(RoutesNames.Auth.AuthStack as never)
@@ -73,8 +75,8 @@ const FormBtns: FC<IBtns> = memo(
 				clearFilds()
 			} else {
 				setMessage({
-					title: "Ошибка",
-					message: "Ключ обязателен!",
+					title: t("error"),
+					message: t("key_error"),
 				})
 			}
 		}
@@ -87,16 +89,16 @@ const FormBtns: FC<IBtns> = memo(
 		const register = async () => {
 			if (!name.trim() || name.trim().length < 3) {
 				setMessage({
-					title: "Ошибка",
-					message: "Имя должно состоять миниму из 3-х символов!",
+					title: t("error"),
+					message: t("name_error_min"),
 				})
 				return
 			}
 
 			if (name.trim().length > 30) {
 				setMessage({
-					title: "Ошибка",
-					message: "Имя не должно превышать 30 символов!",
+					title: t("error"),
+					message: t("name_error_max"),
 				})
 				return
 			}
@@ -110,8 +112,8 @@ const FormBtns: FC<IBtns> = memo(
 				// setKeyModal(true)
 			} else {
 				setMessage({
-					title: "Ошибка",
-					message: "Пароли не совпадают!",
+					title: t("error"),
+					message: t("pssword_error_repeat"),
 				})
 				resetPassword()
 				resetPassword2()
@@ -126,10 +128,10 @@ const FormBtns: FC<IBtns> = memo(
 				>
 					<Text style={{ color: COLORS.BLACK }}>
 						{recoveryMode
-							? "Сбросить пароль"
+							? t("recovery")
 							: registerMode
-							? "Зарегистрироваться"
-							: "Войти"}
+							? t("register_btn")
+							: t("auth_btn")}
 					</Text>
 				</Button>
 
@@ -141,7 +143,7 @@ const FormBtns: FC<IBtns> = memo(
 								onPress={toAuth}
 								colorPressed={"rgba(125, 156, 227, 0.1)"}
 							>
-								<Text style={{ color: COLORS.BLUE }}>Войти</Text>
+								<Text style={{ color: COLORS.BLUE }}>{t("auth_btn")}</Text>
 							</PressedBtn>
 						) : (
 							<>
@@ -150,7 +152,9 @@ const FormBtns: FC<IBtns> = memo(
 									onPress={toRegister}
 									colorPressed={"rgba(125, 156, 227, 0.1)"}
 								>
-									<Text style={{ color: COLORS.BLUE }}>Зарегистрироваться</Text>
+									<Text style={{ color: COLORS.BLUE }}>
+										{t("register_btn")}
+									</Text>
 								</PressedBtn>
 
 								{!recoveryMode ? (
@@ -160,7 +164,7 @@ const FormBtns: FC<IBtns> = memo(
 										colorPressed={"rgba(226,234,255, 0.1)"}
 									>
 										<Text style={{ color: COLORS.TITLE_COLOR }}>
-											Забыл пароль
+											{t("forgot_password_btn")}
 										</Text>
 									</PressedBtn>
 								) : (
@@ -169,7 +173,7 @@ const FormBtns: FC<IBtns> = memo(
 										onPress={toAuth}
 										colorPressed={"rgba(125, 156, 227, 0.1)"}
 									>
-										<Text style={{ color: COLORS.BLUE }}>Войти</Text>
+										<Text style={{ color: COLORS.BLUE }}>{t("auth_btn")}</Text>
 									</PressedBtn>
 								)}
 							</>

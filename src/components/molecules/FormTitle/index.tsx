@@ -1,4 +1,5 @@
 import React, { FC, memo } from "react"
+import { useTranslation } from "react-i18next"
 import { StyleSheet, View, Text } from "react-native"
 import COLORS from "../../../services/colors"
 
@@ -8,22 +9,18 @@ interface ITitle {
 }
 
 const FormTitle: FC<ITitle> = memo(({ recoveryMode, registerMode }) => {
+	const { t } = useTranslation()
 	return (
 		<View style={{ marginBottom: 20 }}>
 			<Text style={styles.title}>
 				{recoveryMode
-					? "Сброс пароля"
+					? t("recovery")
 					: registerMode
-					? "Зарегистрироваться"
-					: "Авторизация"}
+					? t("register_btn")
+					: t("auth_btn")}
 			</Text>
 
-			{recoveryMode && (
-				<Text style={styles.text}>
-					Вам придёт письмо с инструкцией на почту, которую вы указали. Следуйте
-					инструкции в письме.
-				</Text>
-			)}
+			{recoveryMode && <Text style={styles.text}>{t("form_text_email")}</Text>}
 		</View>
 	)
 })

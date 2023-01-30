@@ -21,10 +21,12 @@ import { useInput } from "../../../hooks/useInput"
 import Clipboard from "@react-native-clipboard/clipboard"
 import { BlurView } from "@react-native-community/blur"
 import { WIDTH } from "../../../services/constants"
+import { useTranslation } from "react-i18next"
 
 type TUser = {}
 
 const UserProfile: FC<TUser> = memo(({}) => {
+	const { t } = useTranslation()
 	const { user, key } = useAppSelector(store => store.main)
 	const { deleteUserHandler } = useAuth()
 	const { setMessage, updateProfile, setKey } = useActions()
@@ -36,8 +38,8 @@ const UserProfile: FC<TUser> = memo(({}) => {
 	const deleteProfile = () => {
 		if (user) {
 			setMessage({
-				title: "Внимание!",
-				message: "Все ваши данные будут безвозвратно удалены, вы уверены?",
+				title: t("attention"),
+				message: t("data_will_be_deleted"),
 				callback: () => {
 					deleteUserHandler(user.id)
 				},
@@ -48,8 +50,8 @@ const UserProfile: FC<TUser> = memo(({}) => {
 	const saveProfile = () => {
 		if (!name.trim() || name.trim().length < 3) {
 			setMessage({
-				title: "Ошибка",
-				message: "Имя должно состоять миниму из 3-х символов!",
+				title: t("error"),
+				message: t("name_error_min"),
 				callback: () => {
 					setEditeMode(false)
 					setName(user?.displayName)
@@ -60,8 +62,8 @@ const UserProfile: FC<TUser> = memo(({}) => {
 
 		if (name.trim().length > 30) {
 			setMessage({
-				title: "Ошибка",
-				message: "Имя не должно превышать 30 символов!",
+				title: t("error"),
+				message: t("name_error_max"),
 				callback: () => {
 					setEditeMode(false)
 					setName(user?.displayName)
@@ -76,7 +78,7 @@ const UserProfile: FC<TUser> = memo(({}) => {
 
 	const copyToClipboard = () => {
 		keyUser && Clipboard.setString(keyUser)
-		keyUser && ToastAndroid.show("скопировано!", 2000)
+		keyUser && ToastAndroid.show(t("copy"), 2000)
 		keyUser && Vibration.vibrate()
 		setShow(false)
 	}
@@ -165,7 +167,7 @@ const UserProfile: FC<TUser> = memo(({}) => {
 				overStyle={styles.delete}
 				onPress={deleteProfile}
 			>
-				<Text style={styles.textBtn}>удалить аккаунт</Text>
+				<Text style={styles.textBtn}>{t("delete_account")}</Text>
 			</PressedBtn>
 		</View>
 	)

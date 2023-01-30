@@ -6,8 +6,10 @@ import COLORS from "../../../services/colors"
 import IconMaterial from "react-native-vector-icons/MaterialIcons"
 import QR from "../../atoms/QR"
 import { useAppSelector } from "../../../hooks/hooks"
+import { useTranslation } from "react-i18next"
 
 const ProfileTemplate = () => {
+	const { t } = useTranslation()
 	const { key } = useAppSelector(store => store.main)
 
 	return (
@@ -18,7 +20,7 @@ const ProfileTemplate = () => {
 				{key && <QR keyUser={key} visible={false} />}
 
 				<View style={styles.textBlock}>
-					<Text style={styles.text}>Ваши данные защищены</Text>
+					<Text style={styles.text}>{t("data_protected")}</Text>
 					<IconMaterial name={"done"} size={18} color={COLORS.MAIN} />
 				</View>
 			</View>

@@ -1,12 +1,5 @@
 import React, { FC, memo, ReactNode } from "react"
-import {
-	View,
-	StyleSheet,
-	StatusBar,
-	Modal,
-	TouchableOpacity,
-	ScrollView,
-} from "react-native"
+import { StyleSheet, StatusBar, Modal, TouchableOpacity } from "react-native"
 import COLORS from "../../../services/colors"
 
 type TModal = {

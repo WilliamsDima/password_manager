@@ -24,6 +24,7 @@ import IconEntypo from "react-native-vector-icons/Entypo"
 import { useAppSelector } from "../../../hooks/hooks"
 import { getDateDisplay, DecryptData } from "../../../hooks/helpers"
 import ContentItem from "../../atoms/ContentItem"
+import { useTranslation } from "react-i18next"
 
 type TListItem = {
 	item: IItem
@@ -32,13 +33,21 @@ type TListItem = {
 }
 
 const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
+	const { t } = useTranslation()
 	const { deleteItem, setMessage } = useActions()
 	const { key } = useAppSelector(store => store.main)
 
 	const [data, setData] = useState<IItemContent | null>(null)
 
+	const keyError = () => {
+		setMessage({
+			title: t("error"),
+			message: t("key_message"),
+		})
+	}
+
 	const decryptHandler = () => {
-		key && setData(DecryptData(item.message, key, setMessage))
+		key && setData(DecryptData(item.message, key, keyError))
 	}
 
 	const [hidden, setHidden] = useState(true)
@@ -101,8 +110,8 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 			useNativeDriver: true,
 		}).start(() => {
 			setMessage({
-				title: "Внимание!",
-				message: "Данные будут безвозвратно удалены!",
+				title: t("attention"),
+				message: t("data_will_be_deleted"),
 				callback: () => {
 					setAnimDeleteStart(true)
 					animItem(true)
@@ -156,7 +165,7 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
 					<View style={styles.titleBlock}>
 						<Text style={styles.title}>
-							{!!key && DecryptData(item.title, key)}
+							{!!key && DecryptData(item.title, key, keyError)}
 						</Text>
 						<Text style={styles.date}>{getDateDisplay(item.id)}</Text>
 					</View>

@@ -1,17 +1,19 @@
 import React, { FC, memo } from "react"
+import { useTranslation } from "react-i18next"
 import { StyleSheet, View, Image, Text } from "react-native"
 import COLORS from "../../../services/colors"
 
 type IEmpty = {}
 
 const Empty: FC<IEmpty> = memo(() => {
+	const { t } = useTranslation()
 	return (
 		<View style={styles.imgWrapper}>
 			<Image
 				style={styles.img}
 				source={require("../../../assets/images/empty.png")}
 			/>
-			<Text style={styles.text}>у вас пока нет данных</Text>
+			<Text style={styles.text}>{t("empty")}</Text>
 		</View>
 	)
 })

@@ -8,4 +8,5 @@ export interface IStore {
 	items: IItem[]
 	keyGenModal: boolean
 	key: string | null
+	language: string
 }
