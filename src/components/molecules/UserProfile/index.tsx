@@ -146,7 +146,7 @@ const UserProfile: FC<TUser> = memo(({}) => {
 				<TouchableOpacity onPress={copyToClipboard}>
 					<Text
 						selectable={true}
-						style={[styles.textBtn, { textAlign: "center", marginVertical: 5 }]}
+						style={[styles.textBtn, { textAlign: "center", margin: 5 }]}
 					>
 						{keyUser}
 					</Text>
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
 		width: WIDTH,
 		justifyContent: "center",
 		alignItems: "center",
-		paddingVertical: 5,
+		padding: 5,
 	},
 	btnWrapper: {
 		position: "absolute",
