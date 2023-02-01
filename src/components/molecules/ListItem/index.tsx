@@ -165,7 +165,7 @@ const ListItem: FC<TListItem> = memo(({ item, index, setFormItem }) => {
 				<View style={[styles.item, hidden && { paddingBottom: 15 }]}>
 					<View style={styles.titleBlock}>
 						<Text style={styles.title}>
-							{!!key && DecryptData(item.title, key, keyError)}
+							{!!key && DecryptData(item?.title, key)}
 						</Text>
 						<Text style={styles.date}>{getDateDisplay(item.id)}</Text>
 					</View>

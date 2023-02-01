@@ -181,7 +181,6 @@ export const AuthProvider: FC<AuthProviderType> = ({ children }) => {
 			await deleteUserAPI(id)
 			setUserAC(null)
 			setKey(null)
-			setPin(pin)
 		} catch (error: any) {
 			if (error)
 				setMessage({

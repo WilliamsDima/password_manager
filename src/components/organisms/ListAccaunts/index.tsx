@@ -12,9 +12,9 @@ type TList = {
 const ListAccaunts: FC<TList> = memo(({ setFormItem }) => {
 	const { items } = useAppSelector(store => store.main)
 
-	// console.log("items", items)
-
-	useEffect(() => {}, [items])
+	useEffect(() => {
+		// console.log("items", items)
+	}, [items])
 
 	return (
 		<>
