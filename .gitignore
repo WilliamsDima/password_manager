@@ -78,3 +78,12 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+
+# Release signing secrets
+*.jks
+*.pepk
+
+# Claude Code local secrets / data backups
+.claude/settings.local.json
+.claude/telegram.json
+backups/
