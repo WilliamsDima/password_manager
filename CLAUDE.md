@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-React Native 0.68 (React 17, TypeScript) password manager for Android (package `com.eclipse.account_manager`, published on Google Play). Users store login/password entries that are encrypted on-device before being saved to Firebase Firestore. UI languages: ru (default `ru_RU`), en, uk.
+React Native 0.68 (React 17, TypeScript) password manager for Android (package `com.eclipse.account_manager`; formerly on Google Play, now distributed only as an APK to the owner and possibly friends; registration stays open, so per-user isolation relies on Firestore rules). Users store login/password entries that are encrypted on-device before being saved to Firebase Firestore. UI languages: ru (default `ru_RU`), en, uk.
 
 ## Commands
 

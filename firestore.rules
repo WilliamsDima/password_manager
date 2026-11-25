@@ -1,0 +1,13 @@
+rules_version = '2';
+
+// Access only to the owner's own document users/{uid}.
+// Everything else is denied (no match = deny).
+// Compatible with the v1 app: register (create), load (read), save items/profile (update),
+// delete account (delete).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
