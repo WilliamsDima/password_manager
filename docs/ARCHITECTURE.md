@@ -45,8 +45,9 @@ UI (React)  →  RTK Query endpoints  →  Repository (класс)  →  Сер�
    вызовы библиотеки, без бизнес-логики. Примеры:
    - `IRemoteStore` → `FirestoreSdkStore` (firebase SDK) | `FirestoreRestStore` (fetch/REST)
    - `IAuthService` → `FirebaseAuthService`
-   - `ICryptoService` → `AesGcmCryptoService`; для миграции старых данных `LegacyCryptoJsService`
-   - `ISecureStorage` → `KeychainSecureStorage`; `IKeyValueStorage` → `MmkvStorage`
+   - `ICryptoService` → `NobleCryptoService` (AES-GCM, HKDF); `IKdf` → `NobleScryptKdf`;
+     `IRandom` → `ExpoRandom`; для миграции `ILegacyDecryptor` → `CryptoJsLegacyDecryptor`
+   - `ISecureStorage` → `ExpoSecureStorage`; `IKeyValueStorage` → `MmkvStorage`
    - `IBiometrics`, `IHaptics`, `IClipboard`
 2. **Репозиторий** (`entities/<entity>/api/`). Класс, который получает адаптеры через конструктор
    и реализует операции сущности: `EntryRepository(remoteStore, crypto, session)` →
@@ -75,8 +76,9 @@ export const entryApi = baseApi.injectEndpoints({
 ```ts
 export const createContainer = (): AppDependencies => {
   const remoteStore: IRemoteStore = new FirestoreSdkStore(firebaseApp)
-  const crypto: ICryptoService = new AesGcmCryptoService()
-  const session = new SessionService(new KeychainSecureStorage())
+  const random: IRandom = new ExpoRandom()
+  const crypto: ICryptoService = new NobleCryptoService(random)
+  const session = new VaultLockService(new ExpoSecureStorage(), crypto, new NobleScryptKdf(), random)
   return {
     entryRepository: new EntryRepository(remoteStore, crypto, session),
     haptics: new HapticsService(),
@@ -96,6 +98,8 @@ export const createContainer = (): AppDependencies => {
 - Тесты подменяют адаптеры фейковыми классами через тот же интерфейс.
 - React-компоненты **не** импортируют адаптеры и библиотеки I/O напрямую. Только хуки RTK Query или
   хуки `useHaptics()`/`useClipboard()` из контекста.
+
+Модель шифрования, ключи и миграция: [CRYPTO.md](CRYPTO.md).
 
 ## 4. Стандарты кода
 
