@@ -3,7 +3,7 @@
 //
 //   node scripts/backup-firestore.mjs
 //
-// - Reads apiKey/projectId from src/config/firebase.ts.
+// - Reads apiKey/projectId from legacy/src/config/firebase.ts.
 // - Asks for email + password (Firebase Auth REST), downloads users/{uid}.
 // - Saves backups/firestore-<uid>-<timestamp>.json (data stays encrypted, as in Firestore).
 // - Optionally asks for the encryption key and checks that EVERY item decrypts with it.
@@ -19,22 +19,29 @@ import { fileURLToPath } from "node:url"
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 if (process.argv.includes("--help")) {
-	console.log("Usage: node scripts/backup-firestore.mjs\nInteractive: asks email, password, then (optional) encryption key.")
+	console.log(
+		"Usage: node scripts/backup-firestore.mjs\nInteractive: asks email, password, then (optional) encryption key.",
+	)
 	process.exit(0)
 }
 
 function readFirebaseConfig() {
-	const src = fs.readFileSync(path.join(root, "src/config/firebase.ts"), "utf8")
+	const src = fs.readFileSync(path.join(root, "legacy/src/config/firebase.ts"), "utf8")
 	const get = name => src.match(new RegExp(`["']?${name}["']?\\s*:\\s*["']([^"']+)["']`))?.[1]
 	const apiKey = get("apiKey")
 	const projectId = get("projectId")
-	if (!apiKey || !projectId) throw new Error("apiKey/projectId не найдены в src/config/firebase.ts")
+	if (!apiKey || !projectId)
+		throw new Error("apiKey/projectId не найдены в legacy/src/config/firebase.ts")
 	return { apiKey, projectId }
 }
 
 function ask(question, hidden = false) {
 	return new Promise(resolve => {
-		const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true })
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+			terminal: true,
+		})
 		if (hidden) {
 			rl._writeToOutput = s => {
 				if (s.startsWith(question)) rl.output.write(question)
@@ -83,10 +90,17 @@ function cryptoJsDecrypt(cipherB64, passphrase) {
 	let derived = Buffer.alloc(0)
 	let block = Buffer.alloc(0)
 	while (derived.length < 48) {
-		block = crypto.createHash("md5").update(Buffer.concat([block, pass, salt])).digest()
+		block = crypto
+			.createHash("md5")
+			.update(Buffer.concat([block, pass, salt]))
+			.digest()
 		derived = Buffer.concat([derived, block])
 	}
-	const decipher = crypto.createDecipheriv("aes-256-cbc", derived.subarray(0, 32), derived.subarray(32, 48))
+	const decipher = crypto.createDecipheriv(
+		"aes-256-cbc",
+		derived.subarray(0, 32),
+		derived.subarray(32, 48),
+	)
 	return Buffer.concat([decipher.update(data.subarray(16)), decipher.final()]).toString("utf8")
 }
 
@@ -113,13 +127,13 @@ async function main() {
 
 	const authRes = await postJson(
 		`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
-		{ email, password, returnSecureToken: true }
+		{ email, password, returnSecureToken: true },
 	)
 	const uid = authRes.localId
 
 	const res = await fetch(
 		`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}`,
-		{ headers: { Authorization: `Bearer ${authRes.idToken}` } }
+		{ headers: { Authorization: `Bearer ${authRes.idToken}` } },
 	)
 	const raw = await res.json()
 	if (!res.ok) throw new Error(`Firestore: ${raw.error?.message || res.status}`)
@@ -144,8 +158,8 @@ async function main() {
 				rawFirestore: raw,
 			},
 			null,
-			2
-		)
+			2,
+		),
 	)
 	console.log(`\nСохранено: ${file}`)
 	console.log(`Записей (items): ${items.length}`)
@@ -163,6 +177,8 @@ async function main() {
 main().catch(err => {
 	console.error(`\nОшибка: ${err.message}`)
 	if (/API_KEY|referer|android/i.test(err.message))
-		console.error("Похоже, API-ключ ограничен Android-приложением. Нужен Web API key из Firebase Console (Project settings → General).")
+		console.error(
+			"Похоже, API-ключ ограничен Android-приложением. Нужен Web API key из Firebase Console (Project settings → General).",
+		)
 	process.exit(1)
 })

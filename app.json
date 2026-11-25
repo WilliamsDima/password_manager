@@ -1,4 +1,46 @@
 {
-	"name": "account_manager",
-	"displayName": "account_manager"
+	"expo": {
+		"name": "Password Manager",
+		"slug": "password-manager",
+		"version": "2.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/icon.png",
+		"userInterfaceStyle": "automatic",
+		"platforms": ["android"],
+		"android": {
+			"package": "com.eclipse.account_manager",
+			"versionCode": 9,
+			"allowBackup": false,
+			"googleServicesFile": "./google-services.json",
+			"adaptiveIcon": {
+				"backgroundColor": "#E6F4FE",
+				"foregroundImage": "./assets/android-icon-foreground.png",
+				"backgroundImage": "./assets/android-icon-background.png",
+				"monochromeImage": "./assets/android-icon-monochrome.png"
+			},
+			"blockedPermissions": [
+				"android.permission.RECORD_AUDIO",
+				"android.permission.READ_EXTERNAL_STORAGE",
+				"android.permission.WRITE_EXTERNAL_STORAGE",
+				"android.permission.SYSTEM_ALERT_WINDOW"
+			],
+			"predictiveBackGestureEnabled": false
+		},
+		"plugins": [
+			[
+				"expo-build-properties",
+				{
+					"android": {
+						"kotlinVersion": "2.4.20",
+						"enableMinifyInReleaseBuilds": true,
+						"enableShrinkResourcesInReleaseBuilds": true,
+						"usesCleartextTraffic": false,
+						"networkInspector": false
+					}
+				}
+			],
+			"@react-native-firebase/app",
+			"@react-native-firebase/auth"
+		]
+	}
 }

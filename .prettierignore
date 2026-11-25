@@ -1,0 +1,11 @@
+legacy/
+android/
+ios/
+.expo/
+node_modules/
+coverage/
+backups/
+package-lock.json
+# Documentation is formatted by hand (tables, Russian text)
+*.md
+package.json

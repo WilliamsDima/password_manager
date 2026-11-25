@@ -11,7 +11,7 @@
 
 ## Текущий статус
 
-- **Сейчас:** Фаза 3 готова → Фаза 4, задача 4.1 (скелет проекта на Expo)
+- **Сейчас:** Фаза 4: 4.1 готово (debug APK собирается) → далее 4.1a (каркас FSD, интерфейсы, DI)
 - **Последнее обновление:** 2026-11-25
 
 ---
@@ -58,7 +58,7 @@
 
 ## Фаза 4. Обновление стека
 
-- [ ] 4.1 Скелет проекта на **Expo** (актуальный SDK, prebuild) + TypeScript strict, ESLint/Prettier (запрет `let`/`any`, границы FSD), Jest; R8 в release, `usesCleartextTraffic=false`, логгер выключен в release (A2, A4, O1); **выбор Firebase SDK** (JS / `@react-native-firebase`, CRYPTO.md §8)
+- [x] 4.1 Скелет проекта на **Expo** (актуальный SDK, prebuild) + TypeScript strict, ESLint/Prettier (запрет `let`/`any`, границы FSD), Jest; R8 в release, `usesCleartextTraffic=false`, логгер выключен в release (A2, A4, O1); **выбор Firebase SDK** (JS / `@react-native-firebase`, CRYPTO.md §8)
 - [ ] 4.1a Каркас FSD-слоёв, интерфейсы сервисов (`ICryptoService`, `IKdf`, `IRandom`, `ILegacyDecryptor`, `ISecureStorage`, `IRemoteStore`…), `app/di/container.ts`, `baseApi` RTK Query с `extraArgument`; **проверка `expo-secure-store`** (биометрия, аннулирование, Auto Backup; CRYPTO.md §8)
 - [ ] 4.2 Замена устаревших пакетов: `react-native-camera` → `expo-camera` (сканер QR), `crypto-js` → `@noble/ciphers` + `@noble/hashes` + `expo-crypto`; полное удаление Yandex Ads (пакет, нативный код, манифест); убрать лишние разрешения `RECORD_AUDIO`, `READ/WRITE_EXTERNAL_STORAGE` (A3)
 - [ ] 4.3 Навигация, состояние (Redux Toolkit без сайд-эффектов в редьюсерах, либо Zustand); в хранилище только нужные поля профиля, без Firebase `User` с токенами (L4)
@@ -106,6 +106,10 @@
 | 2026-11-25 | После 10 неверных паролей ключ НЕ стирается, только растущие задержки (иначе посторонний может уничтожить доступ) |
 | 2026-11-25 | В приложении кнопки «Сохранить бэкап» (зашифрованный JSON) и «Загрузить бэкап» (полная замена данных после предупреждения и подтверждения) |
 | 2026-11-25 | `docs/CRYPTO.md` утверждён. Ключ восстановления сохраняется копированием или в файл (не бумага, не скриншот), подтверждение вставкой всего ключа |
+| 2026-11-25 | Firebase SDK v2: нативный `@react-native-firebase` 27 (офлайн-очередь, App Check, ограничение ключа по пакету) |
+| 2026-11-25 | Старый код перенесён в `legacy/` (только для справки и миграции, удаляется в фазе 7); v2 — Expo SDK 58 в корне репозитория |
+| 2026-11-25 | `kotlinVersion` зафиксирован 2.4.20: firebase-auth 25 (BoM 35.2) собран на Kotlin 2.4, а у Expo-плагина `pika-compiler` нет сборки под 2.4.21. Пересматривать при обновлении Expo SDK |
+| 2026-11-25 | `versionCode` v2 всегда > 8 (версия в Google Play), пакет `com.eclipse.account_manager` не меняется |
 | 2026-11-25 | Иконку приложения, сплэш и иконки интерфейса Claude делает заново на своё усмотрение (фаза 6) |
 | 2026-11-25 | v2 — новый проект на Expo (prebuild, локальная сборка APK), а не апгрейд RN 0.68 на месте |
 | 2026-11-25 | Регистрация остаётся открытой: приложением могут пользоваться друзья. Изоляция пользователей только через правила Firestore |

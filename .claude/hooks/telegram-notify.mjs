@@ -86,8 +86,7 @@ function lastAssistantText(transcriptPath) {
 		}
 		const content = entry.message?.content
 		if (entry.type === "user") {
-			const isToolResult =
-				Array.isArray(content) && content.some(c => c.type === "tool_result")
+			const isToolResult = Array.isArray(content) && content.some(c => c.type === "tool_result")
 			if (!isToolResult && !entry.isMeta) break
 			continue
 		}
@@ -118,7 +117,10 @@ async function main() {
 			console.log("Нет сообщений. Напишите боту /start в Telegram и повторите --setup.")
 			return
 		}
-		fs.writeFileSync(configPath, JSON.stringify({ ...file, token, chatId: String(chat.id) }, null, 2))
+		fs.writeFileSync(
+			configPath,
+			JSON.stringify({ ...file, token, chatId: String(chat.id) }, null, 2),
+		)
 		console.log(`Сохранён chatId ${chat.id} (${chat.username || chat.first_name || chat.title}).`)
 		return
 	}

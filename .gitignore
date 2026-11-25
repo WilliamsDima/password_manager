@@ -1,89 +1,65 @@
-# Object file
-*.o
-
-# Ada Library Information
-*.ali
-# OSX
-#
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.production
-
-
-# Xcode
-#
-build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-project.xcworkspace
-
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
-local.properties
-google-services.json
-*.iml
-*.hprof
-
-config/
-firebase.ts
-
-Android/
-.aab
-
-# node.js
-#
+# dependencies
 node_modules/
-npm-debug.log
-yarn-error.log
 
-# BUCK
-buck-out/
-\.buckd/
-*.keystore
-!debug.keystore
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
+# Generated native folders (Continuous Native Generation: `npm run prebuild`)
+/android
+/ios
+.kotlin/
+*.orig.*
 
-*/fastlane/report.xml
-*/fastlane/Preview.html
-*/fastlane/screenshots
+# Metro / TypeScript / test
+.metro-health-check*
+*.tsbuildinfo
+coverage/
 
-# Bundle artifact
-*.jsbundle
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
-# CocoaPods
-/ios/Pods/
+# OS / IDE
+.DS_Store
+.idea/
+*.iml
 
-# Release signing secrets
+# local env files
+.env
+.env*.local
+
+# Secrets (never commit)
+google-services.json
+GoogleService-Info.plist
 *.jks
+*.keystore
 *.pepk
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Legacy v1 app (kept for reference until phase 7, see docs/ROADMAP.md)
+legacy/src/config/
+legacy/node_modules/
+legacy/Android/build/
+legacy/Android/app/build/
+legacy/Android/.gradle/
+legacy/Android/local.properties
+!legacy/Android/app/debug.keystore
 
 # Claude Code local secrets / data backups
 .claude/settings.local.json
 .claude/telegram.json
 backups/
+
+# Build outputs / service accounts
+*.apk
+*.aab
+*firebase-adminsdk*.json
+service-account*.json
