@@ -27,6 +27,12 @@ If not given, review `git diff HEAD` plus untracked files (`git status --porcela
    - **Data safety:** any path that can lose or corrupt my stored entries (overwrites, races,
      failed migrations without rollback, missing error handling around decrypt/encrypt).
    - **Correctness:** logic bugs, unhandled promises, wrong React hook deps, state mutations.
+   - **Architecture (docs/ARCHITECTURE.md), for v2 code:** FSD import direction and public API
+     (`index.ts`) only; no cross-slice imports within a layer; components never import I/O
+     libraries or adapters directly; classes get dependencies via constructor only, and
+     implementations are created only in `app/di/container.ts`. Code standards: no `let`/`var`,
+     no `any`/`as any`/`@ts-ignore`, TS strict, no mutation, no hardcoded colors (theme tokens),
+     no stray `console.log`.
    - **CLAUDE.md rules:** i18n keys added to all three JSON files + the type, typo'd folder
      names kept, etc.
    - **Simplicity:** dead code, needless abstraction (lower priority).
