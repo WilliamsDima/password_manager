@@ -1,11 +1,13 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
 
+import { sessionSlice } from "@/entities/session"
 import { baseApi } from "@/shared/api"
 
 import type { AppDependencies } from "../di/container"
 
 const rootReducer = combineReducers({
 	[baseApi.reducerPath]: baseApi.reducer,
+	[sessionSlice.reducerPath]: sessionSlice.reducer,
 })
 
 /**

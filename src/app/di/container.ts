@@ -1,3 +1,5 @@
+import type { SessionApiDependencies } from "@/entities/session"
+import { FirebaseAuthService } from "@/shared/services/auth"
 import { ExpoSecureStorage, type ISecureStorage } from "@/shared/services/secure-storage"
 
 /**
@@ -5,7 +7,7 @@ import { ExpoSecureStorage, type ISecureStorage } from "@/shared/services/secure
  * Grows as an intersection of the dependency types declared by entities, e.g.
  * `EntryApiDependencies & SessionApiDependencies`, so the compiler checks the container.
  */
-export type AppDependencies = {
+export type AppDependencies = SessionApiDependencies & {
 	/** Temporary until `VaultLockService` (entities/session, 5.3) owns it. */
 	readonly secureStorage: ISecureStorage
 }
@@ -15,5 +17,6 @@ export type AppDependencies = {
  * Replacing a library = a new adapter class + one line here.
  */
 export const createContainer = (): AppDependencies => ({
+	authService: new FirebaseAuthService(),
 	secureStorage: new ExpoSecureStorage(),
 })

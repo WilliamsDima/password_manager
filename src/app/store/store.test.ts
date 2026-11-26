@@ -1,6 +1,7 @@
 import { baseApi, toQueryResult } from "@/shared/api"
 import { AppError } from "@/shared/lib/errors"
 import type { ISecureStorage } from "@/shared/services/secure-storage"
+import { FakeAuthService } from "@/shared/testing"
 
 import type { AppDependencies } from "../di/container"
 import { createAppStore } from "./store"
@@ -58,7 +59,7 @@ describe("createAppStore", () => {
 	it("passes the DI container to queryFn as `extra`", async () => {
 		const secureStorage = new FakeSecureStorage()
 		await secureStorage.set("k", "v")
-		const store = createAppStore({ secureStorage })
+		const store = createAppStore({ authService: new FakeAuthService(), secureStorage })
 
 		const result = await store.dispatch(
 			testApi.endpoints.readTestValue.initiate("k", { subscribe: false }),
@@ -68,7 +69,10 @@ describe("createAppStore", () => {
 	})
 
 	it("stores errors in serializable AppError form", async () => {
-		const store = createAppStore({ secureStorage: new FakeSecureStorage() })
+		const store = createAppStore({
+			authService: new FakeAuthService(),
+			secureStorage: new FakeSecureStorage(),
+		})
 
 		const result = await store.dispatch(
 			testApi.endpoints.failTestValue.initiate("k", { subscribe: false }),
@@ -78,7 +82,10 @@ describe("createAppStore", () => {
 	})
 
 	it("wraps unknown errors without leaking their message", async () => {
-		const store = createAppStore({ secureStorage: new FakeSecureStorage() })
+		const store = createAppStore({
+			authService: new FakeAuthService(),
+			secureStorage: new FakeSecureStorage(),
+		})
 		const leaky = baseApi.injectEndpoints({
 			endpoints: build => ({
 				leakyTestValue: build.query<string, string>({

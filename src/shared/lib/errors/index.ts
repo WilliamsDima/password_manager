@@ -13,6 +13,15 @@ export type AppErrorCode =
 	| "secure-storage"
 	/** Decryption failed (wrong key, tampered or corrupted data) or the format is unknown. */
 	| "crypto"
+	/** Wrong email or password (also unknown account: the two are deliberately not told apart). */
+	| "invalid-credentials"
+	| "invalid-email"
+	| "email-in-use"
+	| "weak-password"
+	| "too-many-requests"
+	| "user-disabled"
+	/** Firebase wants a fresh sign-in before a sensitive operation (account deletion). */
+	| "reauth-required"
 	| "network"
 	| "permission-denied"
 	| "not-found"
