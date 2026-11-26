@@ -51,6 +51,23 @@ export const entryApi = baseApi.injectEndpoints({
 				const { entryRepository } = extra as EntryApiDependencies
 				return toQueryResult(() => entryRepository.setFavorite(uid, entryId, favorite))
 			},
+			// Optimistic: the star changes at once, the save (a fresh read, a write, a refetch) runs in
+			// the background and takes seconds on a mobile network. A failure puts the star back.
+			onQueryStarted: async ({ uid, entryId, favorite }, { dispatch, queryFulfilled }) => {
+				const patch = dispatch(
+					entryApi.util.updateQueryData("getEntries", uid, current => ({
+						...current,
+						entries: current.entries.map(item =>
+							item.id === entryId ? { ...item, favorite } : item,
+						),
+					})),
+				)
+				try {
+					await queryFulfilled
+				} catch {
+					patch.undo()
+				}
+			},
 			invalidatesTags: ["Entry"],
 		}),
 		deleteEntry: build.mutation<EntryRemoved, { readonly uid: string; readonly entryId: string }>({

@@ -184,7 +184,7 @@ export const strings = {
 		signOutCancel: "Отмена",
 		appearance: "Оформление",
 		themeNames: {
-			system: "Системная",
+			system: "Система",
 			light: "Светлая",
 			dark: "Тёмная",
 		},

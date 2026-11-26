@@ -29,6 +29,8 @@ export const FavoriteButton = ({
 	const [requested, setRequested] = useState<boolean | null>(null)
 	const favorite = entry.favorite === true
 	const waiting = isLoading || (requested !== null && requested !== favorite)
+	// The star already shows the new value (optimistic); dimmed while the save is still running.
+	styles.useVariants({ pending: waiting })
 
 	const onPress = useCallback(async () => {
 		if (user === null) return
@@ -83,6 +85,7 @@ export const FavoriteButton = ({
 // margin keeps the star aligned with the right edge of the row.
 const styles = StyleSheet.create(theme => ({
 	button: {
+		variants: { pending: { true: { opacity: 0.5 }, false: {} } },
 		minWidth: 48,
 		minHeight: 48,
 		alignItems: "center",

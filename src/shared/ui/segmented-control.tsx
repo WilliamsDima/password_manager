@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react"
-import { Pressable, View } from "react-native"
+import { useCallback, useMemo, useState } from "react"
+import { type LayoutChangeEvent, PixelRatio, Pressable, View } from "react-native"
 import { StyleSheet } from "react-native-unistyles"
 
 import { useHaptics } from "@/shared/services/haptics"
@@ -11,14 +11,16 @@ export type SegmentOption<T extends string> = { readonly value: T; readonly labe
 const SegmentItem = <T extends string>({
 	option,
 	value,
+	stacked,
 	onChange,
 }: {
 	readonly option: SegmentOption<T>
 	readonly value: T
+	readonly stacked: boolean
 	readonly onChange: (value: T) => void
 }) => {
 	const selected = option.value === value
-	styles.useVariants({ selected })
+	styles.useVariants({ selected, stacked })
 	const haptics = useHaptics()
 	const onPress = useCallback(() => {
 		if (!selected) haptics.selection()
@@ -55,34 +57,59 @@ export const SegmentedControl = <T extends string>({
 	readonly value: T
 	readonly onChange: (value: T) => void
 }) => {
+	const [width, setWidth] = useState(0)
+	const onLayout = useCallback((event: LayoutChangeEvent) => {
+		setWidth(event.nativeEvent.layout.width)
+	}, [])
+
+	// Decided from the real width and font size: when the longest label does not fit one segment,
+	// the options are stacked, so a word is never broken (phones differ in width and font scale).
+	const stacked = useMemo(() => {
+		if (width === 0) return false
+		const longest = Math.max(...options.map(option => Array.from(option.label).length))
+		const needed =
+			longest * LABEL_FONT_SIZE * CHAR_WIDTH_EM * PixelRatio.getFontScale() + SEGMENT_PADDING
+		return (width - ROW_PADDING) / options.length < needed
+	}, [width, options])
+
+	styles.useVariants({ stacked })
 	const items = useMemo(
 		() =>
 			options.map(option => (
-				<SegmentItem key={option.value} option={option} value={value} onChange={onChange} />
+				<SegmentItem
+					key={option.value}
+					option={option}
+					value={value}
+					stacked={stacked}
+					onChange={onChange}
+				/>
 			)),
-		[options, value, onChange],
+		[options, value, stacked, onChange],
 	)
 	return (
-		<View accessibilityRole="radiogroup" style={styles.row}>
+		<View accessibilityRole="radiogroup" style={styles.row} onLayout={onLayout}>
 			{items}
 		</View>
 	)
 }
 
-/** From this font scale on the options are stacked: three labels no longer fit in one row. */
-const STACK_FROM_FONT_SCALE = 1.25
+/** Average width of a semibold Cyrillic letter in em, label size, and the paddings it needs. */
+const CHAR_WIDTH_EM = 0.62
+const LABEL_FONT_SIZE = 16
+const SEGMENT_PADDING = 16
+const ROW_PADDING = 8
 
-const styles = StyleSheet.create((theme, rt) => ({
+const styles = StyleSheet.create(theme => ({
 	row: {
-		flexDirection: rt.fontScale >= STACK_FROM_FONT_SCALE ? "column" : "row",
 		backgroundColor: theme.colors.surfaceMuted,
 		borderRadius: theme.radius.md,
 		padding: theme.spacing.xs,
+		variants: {
+			stacked: { true: { flexDirection: "column" }, false: { flexDirection: "row" } },
+		},
 	},
 	segment: {
 		// Equal widths whatever the label length; a long label wraps instead of touching the edge.
-		flex: rt.fontScale >= STACK_FROM_FONT_SCALE ? undefined : 1,
-		flexBasis: rt.fontScale >= STACK_FROM_FONT_SCALE ? undefined : 0,
 		alignSelf: "stretch",
 		alignItems: "center",
 		justifyContent: "center",
@@ -92,6 +119,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 		paddingVertical: theme.spacing.sm,
 		paddingHorizontal: theme.spacing.sm,
 		variants: {
+			stacked: { true: {}, false: { flex: 1, flexBasis: 0 } },
 			selected: {
 				true: { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary },
 				false: { backgroundColor: "transparent", borderColor: "transparent" },
