@@ -19,6 +19,8 @@ const transformIgnorePatterns = expoPreset.transformIgnorePatterns.map((pattern,
 module.exports = {
 	preset: "jest-expo",
 	roots: ["<rootDir>/src"],
+	// Reanimated 4 ships its own resolver: it swaps native-only modules for their web versions in Jest.
+	resolver: "react-native-reanimated/jest/resolver",
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/src/$1",
 	},

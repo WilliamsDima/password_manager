@@ -10,7 +10,17 @@ import {
 } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { lockErrorMessage } from "@/shared/lib/lock-error-message"
-import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
+import { useHaptics } from "@/shared/services/haptics"
+import {
+	AppText,
+	ErrorText,
+	FormInput,
+	LinkButton,
+	PrimaryButton,
+	Screen,
+	ShakeView,
+	useShake,
+} from "@/shared/ui"
 
 /**
  * First start on this phone: the recovery key opens the account's DEK (checked against the
@@ -20,6 +30,8 @@ import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from
 export const VaultSetupPage = () => {
 	const user = useSelector(selectSessionUser)
 	const lock = useVaultLock()
+	const haptics = useHaptics()
+	const shake = useShake()
 	const recovery = useVaultRecovery()
 	const [signOut] = useSignOutMutation()
 	const [keyText, setKeyText] = useState("")
@@ -46,11 +58,13 @@ export const VaultSetupPage = () => {
 			setDek(recovered)
 			setKeyText("")
 		} catch (caught) {
+			haptics.notify("error")
+			shake.shake()
 			setError(lockErrorMessage(caught))
 		} finally {
 			setBusy(false)
 		}
-	}, [user, recovery, keyText])
+	}, [user, recovery, keyText, haptics, shake])
 
 	const view = useMemo(
 		() => ({
@@ -83,15 +97,17 @@ export const VaultSetupPage = () => {
 			<Screen>
 				<AppText variant="title">{strings.setup.title}</AppText>
 				<AppText>{strings.setup.recoveryHint}</AppText>
-				<FormInput
-					placeholder={strings.setup.recoveryPlaceholder}
-					value={keyText}
-					onChangeText={setKeyText}
-					autoCapitalize="characters"
-					multiline
-					editable={!busy}
-				/>
-				<ErrorText message={error} />
+				<ShakeView style={shake.style}>
+					<FormInput
+						placeholder={strings.setup.recoveryPlaceholder}
+						value={keyText}
+						onChangeText={setKeyText}
+						autoCapitalize="characters"
+						multiline
+						editable={!busy}
+					/>
+					<ErrorText message={error} />
+				</ShakeView>
 				<PrimaryButton
 					label={strings.setup.recoveryNext}
 					onPress={onCheckKey}

@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 import { ActivityIndicator, Pressable, type PressableStateCallbackType } from "react-native"
 
+import { useHaptics } from "@/shared/services/haptics"
 import { useAppTheme, useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 
 import { AppText } from "./app-text"
@@ -10,6 +11,15 @@ type ButtonProps = {
 	readonly onPress: () => void
 	readonly disabled?: boolean
 	readonly loading?: boolean
+}
+
+/** Light tap feedback before the action, so every button feels the same. */
+const useTapFeedback = (onPress: () => void) => {
+	const haptics = useHaptics()
+	return useCallback(() => {
+		haptics.impact("light")
+		onPress()
+	}, [haptics, onPress])
 }
 
 const createStyles = ({ colors, radius, spacing }: Theme) =>
@@ -62,10 +72,11 @@ export const PrimaryButton = ({
 	const styles = useThemedStyles(createStyles)
 	const inactive = disabled || loading
 	const pressableStyle = usePressableStyle("primary", inactive)
+	const handlePress = useTapFeedback(onPress)
 	return (
 		<Pressable
 			style={pressableStyle}
-			onPress={onPress}
+			onPress={handlePress}
 			disabled={inactive}
 			accessibilityRole="button"
 			accessibilityState={{ disabled: inactive, busy: loading }}
@@ -92,10 +103,11 @@ export const SecondaryButton = ({
 	const { colors } = useAppTheme()
 	const inactive = disabled || loading
 	const pressableStyle = usePressableStyle("secondary", inactive)
+	const handlePress = useTapFeedback(onPress)
 	return (
 		<Pressable
 			style={pressableStyle}
-			onPress={onPress}
+			onPress={handlePress}
 			disabled={inactive}
 			accessibilityRole="button"
 			accessibilityState={{ disabled: inactive, busy: loading }}
@@ -116,9 +128,10 @@ export const LinkButton = ({ label, onPress, disabled = false }: Omit<ButtonProp
 	const { spacing } = useAppTheme()
 	const styles = useThemedStyles(createStyles)
 	const pressableStyle = usePressableStyle("link", disabled)
+	const handlePress = useTapFeedback(onPress)
 	return (
 		<Pressable
-			onPress={onPress}
+			onPress={handlePress}
 			disabled={disabled}
 			accessibilityRole="button"
 			accessibilityState={{ disabled }}

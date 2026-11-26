@@ -4,6 +4,7 @@ import { Pressable, View } from "react-native"
 import { MIN_PASSWORD_LENGTH, type LockMode } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { lockErrorMessage } from "@/shared/lib/lock-error-message"
+import { useHaptics } from "@/shared/services/haptics"
 import { useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 import { AppText, ErrorText, FormInput, PrimaryButton } from "@/shared/ui"
 
@@ -33,9 +34,11 @@ type ModeOptionProps = {
 const ModeOption = ({ value, title, hint, current, onSelect }: ModeOptionProps) => {
 	const styles = useThemedStyles(createStyles)
 	const selected = current === value
+	const haptics = useHaptics()
 	const onPress = useCallback(() => {
+		if (!selected) haptics.selection()
 		onSelect(value)
-	}, [onSelect, value])
+	}, [haptics, onSelect, value, selected])
 	const view = useMemo(
 		() => ({
 			state: { checked: selected },

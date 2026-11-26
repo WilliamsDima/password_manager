@@ -1,9 +1,19 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useSignInMutation, useSignUpMutation } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { authErrorMessage } from "@/shared/lib/auth-error-message"
-import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
+import { useHaptics } from "@/shared/services/haptics"
+import {
+	AppText,
+	ErrorText,
+	FormInput,
+	LinkButton,
+	PrimaryButton,
+	Screen,
+	ShakeView,
+	useShake,
+} from "@/shared/ui"
 
 type Mode = "sign-in" | "sign-up"
 
@@ -14,6 +24,8 @@ export const SignInPage = () => {
 	const [signIn, signInState] = useSignInMutation()
 	const [signUp, signUpState] = useSignUpMutation()
 
+	const haptics = useHaptics()
+	const shake = useShake()
 	const isRegister = mode === "sign-up"
 	const { isLoading, error } = isRegister ? signUpState : signInState
 	const canSubmit = !isLoading && email.trim().length > 0 && password.length > 0
@@ -28,6 +40,13 @@ export const SignInPage = () => {
 		signUpState.reset()
 		setMode(isRegister ? "sign-in" : "sign-up")
 	}, [signInState, signUpState, isRegister])
+
+	// A failed attempt: vibrate and shake the fields once per new error.
+	useEffect(() => {
+		if (error === undefined) return
+		haptics.notify("error")
+		shake.shake()
+	}, [error, haptics, shake])
 
 	const view = useMemo(
 		() => ({
@@ -44,24 +63,26 @@ export const SignInPage = () => {
 	return (
 		<Screen>
 			<AppText variant="title">{view.title}</AppText>
-			<FormInput
-				placeholder={strings.signIn.email}
-				value={email}
-				onChangeText={setEmail}
-				keyboardType="email-address"
-				autoComplete="email"
-				editable={!isLoading}
-			/>
-			<FormInput
-				placeholder={strings.signIn.password}
-				value={password}
-				onChangeText={setPassword}
-				secureTextEntry
-				autoComplete={view.passwordAutoComplete}
-				editable={!isLoading}
-				onSubmitEditing={view.onSubmitEditing}
-			/>
-			<ErrorText message={view.errorMessage} />
+			<ShakeView style={shake.style}>
+				<FormInput
+					placeholder={strings.signIn.email}
+					value={email}
+					onChangeText={setEmail}
+					keyboardType="email-address"
+					autoComplete="email"
+					editable={!isLoading}
+				/>
+				<FormInput
+					placeholder={strings.signIn.password}
+					value={password}
+					onChangeText={setPassword}
+					secureTextEntry
+					autoComplete={view.passwordAutoComplete}
+					editable={!isLoading}
+					onSubmitEditing={view.onSubmitEditing}
+				/>
+				<ErrorText message={view.errorMessage} />
+			</ShakeView>
 			<PrimaryButton
 				label={view.submitLabel}
 				onPress={submit}

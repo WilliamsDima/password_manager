@@ -1,9 +1,11 @@
 import { useMemo } from "react"
-import { ScrollView, View, type ViewProps } from "react-native"
+import { ScrollView, type ViewProps } from "react-native"
+import Animated from "react-native-reanimated"
 
 import { useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 
 import { AppText } from "./app-text"
+import { CARD_LAYOUT, SCREEN_ENTERING } from "./motion"
 
 const createStyles = ({ colors, radius, spacing }: Theme) =>
 	({
@@ -29,7 +31,11 @@ const createStyles = ({ colors, radius, spacing }: Theme) =>
 /** Full-screen background with the standard padding and gap; content is centered vertically. */
 export const Screen = ({ children }: { readonly children: React.ReactNode }) => {
 	const styles = useThemedStyles(createStyles)
-	return <View style={styles.screen}>{children}</View>
+	return (
+		<Animated.View style={styles.screen} entering={SCREEN_ENTERING}>
+			{children}
+		</Animated.View>
+	)
 }
 
 /** Scrolling screen for long content (settings). */
@@ -49,7 +55,7 @@ export const ScrollScreen = ({ children }: { readonly children: React.ReactNode 
 export const Card = ({ style, ...props }: ViewProps) => {
 	const styles = useThemedStyles(createStyles)
 	const cardStyle = useMemo(() => [styles.card, style], [styles, style])
-	return <View {...props} style={cardStyle} />
+	return <Animated.View {...props} style={cardStyle} layout={CARD_LAYOUT} />
 }
 
 export const ErrorText = ({ message }: { readonly message: string | null }) =>

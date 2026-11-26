@@ -56,6 +56,7 @@ const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies 
 		vaultLock: new VaultLockService(secureStorage, crypto, new NobleScryptKdf(), random, Date.now),
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: { copySensitive: () => Promise.resolve(), clear: () => Promise.resolve() },
+		haptics: { impact: () => undefined, notify: () => undefined, selection: () => undefined },
 		themeStore: { load: () => Promise.resolve("system" as const), save: () => Promise.resolve() },
 		fileStorage: {
 			saveToFolder: () => Promise.resolve("canceled"),

@@ -11,12 +11,25 @@ import {
 } from "@/entities/session"
 import { LockModeForm, type LockModeSubmit } from "@/features/lock-mode"
 import { strings } from "@/shared/config"
+import { isAppError } from "@/shared/lib/errors"
 import { formatWait, lockErrorMessage } from "@/shared/lib/lock-error-message"
-import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
+import { useHaptics } from "@/shared/services/haptics"
+import {
+	AppText,
+	ErrorText,
+	FormInput,
+	LinkButton,
+	PrimaryButton,
+	Screen,
+	ShakeView,
+	useShake,
+} from "@/shared/ui"
 
 /** Lock screen: password / fingerprint, with the recovery key as the way back in (docs/CRYPTO.md §4). */
 export const UnlockPage = () => {
 	const lock = useVaultLock()
+	const haptics = useHaptics()
+	const shake = useShake()
 	const recovery = useVaultRecovery()
 	const { status, mode, biometricInvalidated } = useVaultLockState()
 	const user = useSelector(selectSessionUser)
@@ -65,13 +78,25 @@ export const UnlockPage = () => {
 		}
 	}, [waitMs, refreshWait])
 
+	/** A canceled fingerprint prompt is the user's own choice, not a failure: no vibration, no shake. */
+	const signalFailure = useCallback(
+		(caught: unknown) => {
+			if (isAppError(caught) && caught.code === "auth-canceled") return
+			haptics.notify("error")
+			shake.shake()
+		},
+		[haptics, shake],
+	)
+
 	const run = useCallback(
 		async (action: () => Promise<void>) => {
 			setBusy(true)
 			setError(null)
 			try {
 				await action()
+				haptics.notify("success")
 			} catch (caught) {
+				signalFailure(caught)
 				if (caught instanceof LockoutError) setWaitMs(caught.retryAfterMs)
 				else setError(lockErrorMessage(caught))
 				await refreshWait()
@@ -79,7 +104,7 @@ export const UnlockPage = () => {
 				setBusy(false)
 			}
 		},
-		[refreshWait],
+		[refreshWait, haptics, signalFailure],
 	)
 
 	const unlockBiometric = useCallback(
@@ -156,10 +181,16 @@ export const UnlockPage = () => {
 	// Fingerprint prompt right away, unless Android dropped the key.
 	useEffect(() => {
 		if (mode !== "biometric" || biometricInvalidated) return
-		lock.unlockWithBiometrics().catch((caught: unknown) => {
-			setError(lockErrorMessage(caught))
-		})
-	}, [mode, biometricInvalidated, lock])
+		lock.unlockWithBiometrics().then(
+			() => {
+				haptics.notify("success")
+			},
+			(caught: unknown) => {
+				signalFailure(caught)
+				setError(lockErrorMessage(caught))
+			},
+		)
+	}, [mode, biometricInvalidated, lock, haptics, signalFailure])
 
 	const view = useMemo(() => {
 		const recoveryOnly = mode === "biometric" && biometricInvalidated
@@ -170,11 +201,12 @@ export const UnlockPage = () => {
 			biometricAvailable: lock.canUseBiometrics(),
 			canRecover: keyText.trim().length > 0 && user !== null,
 			waiting,
+			hasError: error !== null,
 			passwordEditable: !busy && !waiting,
 			canSubmitPassword: password.length > 0 && !waiting,
 			retryText: `${strings.lock.retryIn} ${formatWait(waitMs)}`,
 		}
-	}, [mode, biometricInvalidated, useRecovery, lock, keyText, user, waitMs, busy, password])
+	}, [mode, biometricInvalidated, useRecovery, lock, keyText, user, waitMs, busy, password, error])
 
 	if (status === "init-failed") {
 		return (
@@ -207,15 +239,17 @@ export const UnlockPage = () => {
 			{view.showRecovery ? (
 				<>
 					<AppText>{strings.setup.recoveryHint}</AppText>
-					<FormInput
-						placeholder={strings.setup.recoveryPlaceholder}
-						value={keyText}
-						onChangeText={setKeyText}
-						autoCapitalize="characters"
-						multiline
-						editable={!busy}
-					/>
-					<ErrorText message={error} />
+					<ShakeView style={shake.style}>
+						<FormInput
+							placeholder={strings.setup.recoveryPlaceholder}
+							value={keyText}
+							onChangeText={setKeyText}
+							autoCapitalize="characters"
+							multiline
+							editable={!busy}
+						/>
+						<ErrorText message={error} />
+					</ShakeView>
 					<PrimaryButton
 						label={strings.setup.recoveryNext}
 						disabled={!view.canRecover}
@@ -232,16 +266,18 @@ export const UnlockPage = () => {
 				<>
 					{mode === "password" ? (
 						<>
-							<FormInput
-								placeholder={strings.lock.password}
-								value={password}
-								onChangeText={setPassword}
-								secureTextEntry
-								editable={view.passwordEditable}
-								onSubmitEditing={onSubmitPassword}
-							/>
-							{view.waiting ? <AppText tone="danger">{view.retryText}</AppText> : <></>}
-							<ErrorText message={error} />
+							<ShakeView style={shake.style}>
+								<FormInput
+									placeholder={strings.lock.password}
+									value={password}
+									onChangeText={setPassword}
+									secureTextEntry
+									editable={view.passwordEditable}
+									onSubmitEditing={onSubmitPassword}
+								/>
+								{view.waiting ? <AppText tone="danger">{view.retryText}</AppText> : <></>}
+								<ErrorText message={error} />
+							</ShakeView>
 							<PrimaryButton
 								label={strings.lock.unlock}
 								disabled={!view.canSubmitPassword}
@@ -251,7 +287,13 @@ export const UnlockPage = () => {
 						</>
 					) : (
 						<>
-							<ErrorText message={error} />
+							{view.hasError ? (
+								<ShakeView style={shake.style}>
+									<ErrorText message={error} />
+								</ShakeView>
+							) : (
+								<></>
+							)}
 							<PrimaryButton label={strings.lock.biometric} loading={busy} onPress={onBiometric} />
 						</>
 					)}

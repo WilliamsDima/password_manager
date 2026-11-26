@@ -5,6 +5,7 @@ import { Provider } from "react-redux"
 
 import { SessionServicesProvider } from "@/entities/session"
 import { BackupServicesProvider } from "@/features/vault-backup"
+import { HapticsProvider } from "@/shared/services/haptics"
 import { AppThemeProvider, useAppTheme } from "@/shared/theme"
 
 import { StyleSheet, View } from "react-native"
@@ -53,11 +54,13 @@ export const App = () => {
 	return (
 		<Provider store={store}>
 			<AppThemeProvider store={container.themeStore}>
-				<SessionServicesProvider lock={container.vaultLock} recovery={container.vaultRecovery}>
-					<BackupServicesProvider backup={container.vaultBackup} files={container.fileStorage}>
-						<AppContent authService={container.authService} lock={container.vaultLock} />
-					</BackupServicesProvider>
-				</SessionServicesProvider>
+				<HapticsProvider haptics={container.haptics}>
+					<SessionServicesProvider lock={container.vaultLock} recovery={container.vaultRecovery}>
+						<BackupServicesProvider backup={container.vaultBackup} files={container.fileStorage}>
+							<AppContent authService={container.authService} lock={container.vaultLock} />
+						</BackupServicesProvider>
+					</SessionServicesProvider>
+				</HapticsProvider>
 			</AppThemeProvider>
 		</Provider>
 	)

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react"
 import { Pressable, View } from "react-native"
 
+import { useHaptics } from "@/shared/services/haptics"
 import { useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 
 import { AppText } from "./app-text"
@@ -37,9 +38,11 @@ const SegmentItem = <T extends string>({
 }) => {
 	const styles = useThemedStyles(createStyles)
 	const selected = option.value === value
+	const haptics = useHaptics()
 	const onPress = useCallback(() => {
+		if (!selected) haptics.selection()
 		onChange(option.value)
-	}, [onChange, option.value])
+	}, [haptics, onChange, option.value, selected])
 	const view = useMemo(
 		() => ({
 			state: { checked: selected },
