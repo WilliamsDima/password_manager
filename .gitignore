@@ -1,80 +1,66 @@
-# Object file
-*.o
-
-# Ada Library Information
-*.ali
-# OSX
-#
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.production
-
-
-# Xcode
-#
-build/
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-*.xccheckout
-*.moved-aside
-DerivedData
-*.hmap
-*.ipa
-*.xcuserstate
-project.xcworkspace
-
-# Android/IntelliJ
-#
-build/
-.idea
-.gradle
-local.properties
-google-services.json
-*.iml
-*.hprof
-
-config/
-firebase.ts
-
-Android/
-.aab
-
-# node.js
-#
+# dependencies
 node_modules/
-npm-debug.log
-yarn-error.log
 
-# BUCK
-buck-out/
-\.buckd/
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Generated native folders (Continuous Native Generation: `npm run prebuild`)
+/android
+/ios
+.kotlin/
+*.orig.*
+
+# Metro / TypeScript / test
+.metro-health-check*
+*.tsbuildinfo
+coverage/
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# OS / IDE
+.DS_Store
+.idea/
+*.iml
+
+# local env files
+.env
+.env*.local
+
+# Secrets (never commit)
+google-services.json
+GoogleService-Info.plist
+*.jks
 *.keystore
-!debug.keystore
+*.pepk
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
+# Legacy v1 app (kept for reference until phase 7, see docs/ROADMAP.md)
+!
+# Claude Code local secrets / data backups
+.claude/settings.local.json
+.claude/telegram.json
+backups/
 
-*/fastlane/report.xml
-*/fastlane/Preview.html
-*/fastlane/screenshots
+# Build outputs / service accounts
+*.apk
+*.aab
+*firebase-adminsdk*.json
+service-account*.json
 
-# Bundle artifact
-*.jsbundle
-
-# CocoaPods
-/ios/Pods/
+# Local copies of every secret (keys, Firebase configs, signing keystore): never commit
+/secrets/
+firestore-debug.log
+ui-debug.log
+modules/*/android/build/
+modules/*/android/.cxx/
+modules/*/android/.gradle/

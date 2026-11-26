@@ -1,33 +1,46 @@
-Шаблон для разработки мобильных приложений на React Native
+# Password Manager
 
----
+Личный менеджер паролей для Android (пакет `com.eclipse.account_manager`). Записи шифруются
+на устройстве (AES-256-GCM) и хранятся в Firebase Firestore; сервер видит только шифротекст.
+Приложение ставится APK-файлом, в магазинах не публикуется. Язык интерфейса: русский.
 
-## Techstack
-[![node](https://img.shields.io/static/v1?label=node&message=14.5.0&color=026E00&style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/en/)
-[![react](https://img.shields.io/static/v1?label=react&message=17.0.2&color=61DBFB&style=for-the-badge&logo=react&logoColor=white)](https://ru.reactjs.org/)
-[![react native](https://img.shields.io/static/v1?label=react-native&message=0.68.2&color=61DBFB&style=for-the-badge&logo=react&logoColor=white)](https://reactnative.dev/)
-[![redux](https://img.shields.io/static/v1?label=redux&message=8.0.2&color=764ABD&style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![redux](https://img.shields.io/static/v1?label=redux%20toolkit&message=1.8.4&color=764ABD&style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+Стек: Expo SDK 58, React Native 0.88, React 19, TypeScript 6, Redux Toolkit + RTK Query,
+Unistyles 3, Reanimated 4, нативный `@react-native-firebase`.
 
+## Что умеет
 
----
+- Вход в аккаунт и ключ восстановления (56 символов): без него данные на новом телефоне не открыть.
+- Защита входа в приложение: пароль приложения, отпечаток пальца или без проверки; автоблокировка.
+- Записи: список с поиском, сортировкой и избранным, карточка, создание, правка, удаление,
+  раздельное копирование логина и пароля (буфер очищается через 2 минуты), генератор паролей
+  с индикатором надёжности, адрес сайта открывается в браузере.
+- Перенос данных из старой версии (v1) на новую модель шифрования.
+- Резервная копия: зашифрованный файл (сохранить, отправить, загрузить).
+- Светлая, тёмная и системная тема.
 
-## Работа с шаблоном
-В шаблоне все наследуется от стандартного `create-react-native-app`. Однако, в шаблоне присуствуют некоторые архитектурные паттерны:
-- `models` - дирректория, которая хранит в себе структуры данных или их типы/интерфейсы/абстракции
-- `repositories` - дирректория, которая хранит в себе классы, которые делают запросы по API. Для HTTP запросов внутри есть базовый NetAPI класс, который по DI принимает Http клиент и делает запросы по внешним API. Также есть базовый LocalAPI, который записывает или берет данные с локального хранилища. Для работы с последующими репозиториями, надо наследоваться от одного из базовых классов.
-- `services` - дирректория, которая хранит в себе классы, которые производят какие либо вычесления, или служат оберткой для сторонних зависимостей.
-- `modules` - дирректория, которая создает контекст для хранения инстанции классов репозиториев или сервисов, для реализации DI(Dependency Injection).
+## Запуск и сборка
 
-Также, в шаблоне структурированы компоненты по Atomic Design. Компоненты деляться на:
+```bash
+npm install
+npm run check                 # типы, линтер, форматирование, тесты
+npm run android               # debug-сборка на телефон или эмулятор (нужен dev build, не Expo Go)
 
-- `/atoms/*` – тут расположены примитивные компоненты: кнопки, заголовки, поля ввода и пр.
-- `/molecules/*` – тут расположены связки/группы примитивов: группы кнопок, карточки и пр.
-- `/organisms/*` – тут расположены связки/группы молекул. То есть компоненты, которая состоит из молекул, которые состоят из примитивов: шапка, списки карточек, модальные окна и пр.
-- `/templates/*` – тут расположены шаблоны страницы
+npm run prebuild              # после смены app.json или нативных пакетов
+cd android && ./gradlew assembleRelease
+# → android/app/build/outputs/apk/release/app-release.apk
+```
 
-Подробнее можно почитать:
+Для release нужны два файла вне репозитория (см. `CLAUDE.md`, раздел про секреты):
+ключ подписи `~/.android-keys/password-manager/release.jks` и пароли в `~/.gradle/gradle.properties`.
+Копия всех секретов собирается командой `npm run secrets:collect` в папку `secrets/` (в git не попадает).
 
-- [Atomic Design Methodology](https://atomicdesign.bradfrost.com/chapter-2/)
-- [Atomic Design in practice](https://blog.ippon.tech/atomic-design-in-practice/)
+Новая версия ставится поверх старой только с большим `versionCode` в `app.json`. Старое приложение
+v1 подписано другим ключом: его нужно удалить перед установкой v2.
 
+## Документация
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): слои (FSD), сервисы и внедрение зависимостей.
+- [docs/CRYPTO.md](docs/CRYPTO.md): ключи, формат записей, схема Firestore, миграция, бэкап.
+- [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md): проблемы v1 и требования к v2.
+- [docs/ROADMAP.md](docs/ROADMAP.md): план работ и журнал решений.
+- [CLAUDE.md](CLAUDE.md): правила для работы с кодом (стиль, JSX, тесты, коммиты).
