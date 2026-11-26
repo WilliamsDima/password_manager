@@ -39,6 +39,7 @@
 					}
 				}
 			],
+			"./plugins/with-release-signing",
 			"@react-native-firebase/app",
 			"@react-native-firebase/auth",
 			"expo-secure-store",

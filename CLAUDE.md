@@ -30,7 +30,7 @@ npx expo install <pkg>    # always use instead of npm i for Expo/RN packages (SD
 
 ### Required untracked files
 - `google-services.json` in the repo root (copy of `legacy/Android/app/google-services.json`). Needed by `@react-native-firebase` at prebuild.
-- Release signing key (`key.jks`, in `legacy/Android/app/`): wired up in task 4.4.
+- Release signing key: a **new** v2 key (not the v1 Play key), outside the repo at `~/.android-keys/password-manager/release.jks`, alias `pm-release`. Path and passwords are in `~/.gradle/gradle.properties` (`PM_RELEASE_STORE_FILE`, `PM_RELEASE_KEY_ALIAS`, `PM_RELEASE_STORE_PASSWORD`, `PM_RELEASE_KEY_PASSWORD`). On another machine copy both files; without them `assembleRelease` fails (it never falls back to the debug key). Wired by the config plugin `plugins/with-release-signing.js`. Build: `cd android && ./gradlew assembleRelease` → `android/app/build/outputs/apk/release/app-release.apk`. v1 (Play key) cannot be updated in place: uninstall it first.
 
 ## v2 setup notes
 
