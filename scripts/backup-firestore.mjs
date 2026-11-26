@@ -30,7 +30,8 @@ function readFirebaseConfig() {
 	const file = ["google-services.json", "secrets/firebase/google-services.json"]
 		.map(name => path.join(root, name))
 		.find(candidate => fs.existsSync(candidate))
-	if (!file) throw new Error("google-services.json не найден (корень репозитория или secrets/firebase/)")
+	if (!file)
+		throw new Error("google-services.json не найден (корень репозитория или secrets/firebase/)")
 	const json = JSON.parse(fs.readFileSync(file, "utf8"))
 	const apiKey = json.client?.[0]?.api_key?.[0]?.current_key
 	const projectId = json.project_info?.project_id
