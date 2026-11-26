@@ -2,7 +2,10 @@ import type { Entry } from "../model/types"
 
 export type EntrySortOrder = "title" | "updated" | "created"
 
-export const ENTRY_SORT_ORDERS: readonly EntrySortOrder[] = ["title", "updated", "created"]
+/** Shown in this order; the first one is the default (newest added first). */
+export const ENTRY_SORT_ORDERS: readonly EntrySortOrder[] = ["created", "updated", "title"]
+
+export const DEFAULT_ENTRY_SORT_ORDER: EntrySortOrder = "created"
 
 export type EntryListOptions = {
 	readonly query: string

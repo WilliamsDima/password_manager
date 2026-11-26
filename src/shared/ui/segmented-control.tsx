@@ -38,7 +38,14 @@ const SegmentItem = <T extends string>({
 			onPress={onPress}
 			style={styles.segment}
 		>
-			<AppText variant="label" tone={view.tone}>
+			<AppText
+				variant="label"
+				tone={view.tone}
+				align="center"
+				numberOfLines={1}
+				adjustsFontSizeToFit
+				minimumFontScale={0.7}
+			>
 				{option.label}
 			</AppText>
 		</Pressable>
@@ -77,11 +84,16 @@ const styles = StyleSheet.create(theme => ({
 		padding: theme.spacing.xs,
 	},
 	segment: {
+		// Equal widths whatever the label length; a long label wraps instead of touching the edge.
 		flex: 1,
+		flexBasis: 0,
 		alignItems: "center",
+		justifyContent: "center",
+		minHeight: 44,
 		borderRadius: theme.radius.sm,
 		borderWidth: 1,
-		paddingVertical: theme.spacing.sm + 2,
+		paddingVertical: theme.spacing.sm,
+		paddingHorizontal: theme.spacing.sm,
 		variants: {
 			selected: {
 				true: { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary },

@@ -17,9 +17,9 @@ export const strings = {
 		title: "Хранилище",
 		search: "Поиск по записям",
 		sortNames: {
-			title: "По названию",
-			updated: "По изменению",
-			created: "По созданию",
+			title: "Название",
+			updated: "Изменено",
+			created: "Создано",
 		},
 		favoritesOnly: "Только избранные",
 		favoriteAdd: "Добавить в избранное",
@@ -130,7 +130,7 @@ export const strings = {
 		signOutCancel: "Отмена",
 		appearance: "Оформление",
 		themeNames: {
-			system: "Как в системе",
+			system: "Системная",
 			light: "Светлая",
 			dark: "Тёмная",
 		},

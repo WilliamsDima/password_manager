@@ -6,6 +6,7 @@ export {
 } from "./lib/legacy-items"
 export { EntryCodec } from "./lib/entry-codec"
 export {
+	DEFAULT_ENTRY_SORT_ORDER,
 	ENTRY_SORT_ORDERS,
 	visibleEntries,
 	type EntryListOptions,

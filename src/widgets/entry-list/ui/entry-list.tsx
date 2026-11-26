@@ -5,6 +5,7 @@ import { useSelector } from "react-redux"
 import { StyleSheet } from "react-native-unistyles"
 
 import {
+	DEFAULT_ENTRY_SORT_ORDER,
 	ENTRY_SORT_ORDERS,
 	type Entry,
 	type EntrySortOrder,
@@ -34,7 +35,7 @@ export const EntryList = () => {
 		user === null ? skipToken : user.uid,
 	)
 	const [query, setQuery] = useState("")
-	const [order, setOrder] = useState<EntrySortOrder>("title")
+	const [order, setOrder] = useState<EntrySortOrder>(DEFAULT_ENTRY_SORT_ORDER)
 	const [favoritesOnly, setFavoritesOnly] = useState(false)
 	// Only a pull by the user shows the refresh spinner, not every background refetch.
 	const [pulling, setPulling] = useState(false)

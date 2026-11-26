@@ -3,6 +3,7 @@ import { Pressable } from "react-native"
 import { StyleSheet } from "react-native-unistyles"
 
 import { useHaptics } from "@/shared/services/haptics"
+import { useAppTheme } from "@/shared/theme"
 
 import { AppText } from "./app-text"
 
@@ -17,6 +18,7 @@ export const ChipToggle = ({
 	readonly onToggle: (selected: boolean) => void
 }) => {
 	styles.useVariants({ selected })
+	const { spacing } = useAppTheme()
 	const haptics = useHaptics()
 	const onPress = useCallback(() => {
 		haptics.selection()
@@ -28,6 +30,7 @@ export const ChipToggle = ({
 		<Pressable
 			accessibilityRole="switch"
 			accessibilityState={state}
+			hitSlop={spacing.md}
 			onPress={onPress}
 			style={styles.chip}
 		>

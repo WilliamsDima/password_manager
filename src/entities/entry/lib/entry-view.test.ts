@@ -1,5 +1,10 @@
 import type { Entry } from "../model/types"
-import { visibleEntries, type EntryListOptions } from "./entry-view"
+import {
+	DEFAULT_ENTRY_SORT_ORDER,
+	ENTRY_SORT_ORDERS,
+	visibleEntries,
+	type EntryListOptions,
+} from "./entry-view"
 
 const entry = (id: string, title: string, extra: Partial<Entry> = {}): Entry => ({
 	id,
@@ -19,6 +24,18 @@ const options = (extra: Partial<EntryListOptions> = {}): EntryListOptions => ({
 })
 
 const ids = (entries: readonly Entry[]) => entries.map(item => item.id)
+
+describe("default order", () => {
+	it("is newest added first and is the first option of the control", () => {
+		expect(DEFAULT_ENTRY_SORT_ORDER).toBe("created")
+		expect(ENTRY_SORT_ORDERS[0]).toBe(DEFAULT_ENTRY_SORT_ORDER)
+		const data = [entry("old", "A", { createdAt: 1000 }), entry("new", "B", { createdAt: 3000 })]
+		expect(ids(visibleEntries(data, options({ order: DEFAULT_ENTRY_SORT_ORDER })))).toEqual([
+			"new",
+			"old",
+		])
+	})
+})
 
 describe("visibleEntries", () => {
 	const all = [

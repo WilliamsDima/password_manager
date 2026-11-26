@@ -7,7 +7,6 @@ import { type Entry, useSetEntryFavoriteMutation } from "@/entities/entry"
 import { selectSessionUser } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { useHaptics } from "@/shared/services/haptics"
-import { useAppTheme } from "@/shared/theme"
 import { AppText } from "@/shared/ui"
 
 /**
@@ -22,7 +21,6 @@ export const FavoriteButton = ({
 	readonly entry: Entry
 	readonly onNotice: (notice: string | null) => void
 }) => {
-	const { spacing } = useAppTheme()
 	const user = useSelector(selectSessionUser)
 	const haptics = useHaptics()
 	const [setFavorite, { isLoading }] = useSetEntryFavoriteMutation()
@@ -71,7 +69,6 @@ export const FavoriteButton = ({
 			accessibilityLabel={view.label}
 			accessibilityState={view.state}
 			disabled={waiting}
-			hitSlop={spacing.sm}
 			onPress={onPressStar}
 			style={styles.button}
 		>
@@ -82,6 +79,14 @@ export const FavoriteButton = ({
 	)
 }
 
+// The star itself stays small; the button is a 48 dp touch target (Android minimum). The negative
+// margin keeps the star aligned with the right edge of the row.
 const styles = StyleSheet.create(theme => ({
-	button: { padding: theme.spacing.xs },
+	button: {
+		minWidth: 48,
+		minHeight: 48,
+		alignItems: "center",
+		justifyContent: "center",
+		marginRight: -theme.spacing.sm,
+	},
 }))

@@ -5,7 +5,7 @@ import { StyleSheet } from "react-native-unistyles"
 
 import { useVaultLock, useVaultLockState } from "@/entities/session"
 import { strings } from "@/shared/config"
-import { LinkButton, Page } from "@/shared/ui"
+import { LinkButton, Page, SwipeArea } from "@/shared/ui"
 import { EntryList } from "@/widgets/entry-list"
 
 /** Main screen: the entry list with the lock and settings shortcuts. */
@@ -19,13 +19,19 @@ export const VaultPage = () => {
 	}, [navigation])
 
 	return (
-		<Page>
-			<View style={styles.toolbar}>
-				<LinkButton label={strings.vault.settings} onPress={onOpenSettings} />
-				{mode === "none" ? <></> : <LinkButton label={strings.vault.lockNow} onPress={lock.lock} />}
-			</View>
-			<EntryList />
-		</Page>
+		<SwipeArea onSwipeRight={onOpenSettings}>
+			<Page>
+				<View style={styles.toolbar}>
+					<LinkButton label={strings.vault.settings} onPress={onOpenSettings} />
+					{mode === "none" ? (
+						<></>
+					) : (
+						<LinkButton label={strings.vault.lockNow} onPress={lock.lock} />
+					)}
+				</View>
+				<EntryList />
+			</Page>
+		</SwipeArea>
 	)
 }
 
