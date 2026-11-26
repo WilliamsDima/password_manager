@@ -79,7 +79,13 @@ export class VaultMigrationService {
 	public readonly detect = async (uid: string): Promise<AccountSetupKind> => {
 		const profile = await this.remote.getProfile(uid, "server")
 		if (profile === null) return "new"
-		if (profile.crypto !== null) return "has-keys"
+		if (profile.crypto !== null) {
+			// An unfinished run left its pair on this phone: finish the check (§6.6) instead of asking
+			// for the key, otherwise the pair would stay behind unprotected.
+			const owner = ownerOfPending(await this.secureStorage.get(PENDING_MIGRATION_KEY))
+			if (owner !== uid) return "has-keys"
+			return Array.isArray(profile.legacyItems) ? "resume-migrate" : "resume-new"
+		}
 		if (!Array.isArray(profile.legacyItems)) return "unsupported"
 		return profile.legacyItems.length === 0 ? "migrate-empty" : "migrate"
 	}
@@ -239,6 +245,13 @@ export class VaultMigrationService {
 	public readonly clearPending = (): Promise<void> =>
 		this.secureStorage.remove(PENDING_MIGRATION_KEY)
 
+	/** Like `clearPending`, but leaves the pair of another account alone. */
+	public readonly clearPendingFor = async (uid: string): Promise<void> => {
+		if (ownerOfPending(await this.secureStorage.get(PENDING_MIGRATION_KEY)) === uid) {
+			await this.clearPending()
+		}
+	}
+
 	/**
 	 * DEK change after a leak (§2): new RK + new DEK, every entry re-encrypted. Reads from the
 	 * server and decrypts with the current `dek` first, so a bad entry stops it before anything is
@@ -397,7 +410,7 @@ export class VaultMigrationService {
 		// overwriting it would lose that key. Finish (or roll back) that account first.
 		const owner = ownerOfPending(await this.secureStorage.get(PENDING_MIGRATION_KEY))
 		if (owner !== null && owner !== uid) {
-			throw new AppError("conflict", "Unfinished setup of another account on this phone")
+			throw new AppError("setup-pending", "Unfinished setup of another account on this phone")
 		}
 		const recoveryKey = this.vaultKeys.generateRecoveryKey()
 		const dek = this.vaultKeys.generateDek()

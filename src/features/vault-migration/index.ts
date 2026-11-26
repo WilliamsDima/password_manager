@@ -6,3 +6,4 @@ export type {
 	NewAccountPlan,
 } from "./model/types"
 export { PENDING_MIGRATION_KEY, VaultMigrationService } from "./model/vault-migration-service"
+export { MigrationServicesProvider, useVaultMigration } from "./ui/migration-services"

@@ -56,7 +56,7 @@ export const SettingsPage = () => {
 	)
 
 	return (
-		<ScrollScreen>
+		<ScrollScreen underHeader>
 			<Card>
 				<AppText variant="heading">{strings.settings.appearance}</AppText>
 				<ThemeSwitcher />

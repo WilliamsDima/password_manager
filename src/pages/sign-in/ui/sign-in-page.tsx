@@ -70,6 +70,7 @@ export const SignInPage = () => {
 					onChangeText={setEmail}
 					keyboardType="email-address"
 					autoComplete="email"
+					importantForAutofill="yes"
 					editable={!isLoading}
 				/>
 				<FormInput
@@ -78,6 +79,7 @@ export const SignInPage = () => {
 					onChangeText={setPassword}
 					secureTextEntry
 					autoComplete={view.passwordAutoComplete}
+					importantForAutofill="yes"
 					editable={!isLoading}
 					onSubmitEditing={view.onSubmitEditing}
 				/>

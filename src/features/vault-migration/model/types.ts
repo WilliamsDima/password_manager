@@ -13,6 +13,10 @@ export type AccountSetupKind =
 	| "unsupported"
 	/** No profile: create a v2 account. */
 	| "new"
+	/** `crypto` exists and this phone holds the saved pair of an unfinished migration: run the check. */
+	| "resume-migrate"
+	/** `crypto` exists and this phone holds the saved pair of an unfinished new-account setup. */
+	| "resume-new"
 
 /** A fresh account's keys between "generated" and "profile created" (docs/CRYPTO.md §5). */
 export type NewAccountPlan = {

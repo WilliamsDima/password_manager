@@ -344,7 +344,9 @@ describe("VaultMigrationService: v1 → v2", () => {
 		)
 
 		// That account may have shown its recovery key already: never replace the pair silently.
-		await expect(ctx.service.prepare(UID, LEGACY_KEY)).rejects.toMatchObject({ code: "conflict" })
+		await expect(ctx.service.prepare(UID, LEGACY_KEY)).rejects.toMatchObject({
+			code: "setup-pending",
+		})
 		expect(ctx.secureStorage.values.get(PENDING_MIGRATION_KEY)).toContain("someone-else")
 	})
 
@@ -599,6 +601,9 @@ describe("VaultMigrationService: setup kind and new account", () => {
 
 		const plan = await fresh.service.prepareNewAccount(UID)
 		await fresh.service.commitNewAccount(plan, { email: "a@b.c", displayName: null })
+		// The saved pair is still on the phone until the check ends: the run is resumed.
+		expect(await fresh.service.detect(UID)).toBe("resume-new")
+		await fresh.service.clearPending()
 		expect(await fresh.service.detect(UID)).toBe("has-keys")
 	})
 
@@ -702,7 +707,9 @@ describe("VaultMigrationService: setup kind and new account", () => {
 		await ctx.service.prepareNewAccount("someone-else")
 		const saved = ctx.secureStorage.values.get(PENDING_MIGRATION_KEY)
 
-		await expect(ctx.service.prepareNewAccount(UID)).rejects.toMatchObject({ code: "conflict" })
+		await expect(ctx.service.prepareNewAccount(UID)).rejects.toMatchObject({
+			code: "setup-pending",
+		})
 		expect(ctx.secureStorage.values.get(PENDING_MIGRATION_KEY)).toBe(saved)
 	})
 
@@ -725,6 +732,55 @@ describe("VaultMigrationService: setup kind and new account", () => {
 		await expect(
 			ctx.service.commitNewAccount(ours, { email: "a@b.c", displayName: null }),
 		).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(false)
+	})
+
+	it("resumes an unfinished new account after a restart instead of asking for the key", async () => {
+		const ctx = empty()
+		const plan = await ctx.service.prepareNewAccount(UID)
+		ctx.remote.failNextTransaction = "after-commit"
+		await expect(
+			ctx.service.commitNewAccount(plan, { email: "a@b.c", displayName: null }),
+		).rejects.toMatchObject({ code: "network" })
+
+		expect(await ctx.service.detect(UID)).toBe("resume-new")
+		await ctx.service.clearPending()
+		expect(await ctx.service.detect(UID)).toBe("has-keys")
+	})
+
+	it("resumes an unfinished migration after a restart", async () => {
+		const ctx = setup()
+		const plan = await ctx.service.prepare(UID, LEGACY_KEY)
+		ctx.remote.failNextTransaction = "after-commit"
+		await expect(ctx.service.commit(plan)).rejects.toMatchObject({ code: "network" })
+
+		expect(await ctx.service.detect(UID)).toBe("resume-migrate")
+		const again = await ctx.service.prepare(UID, LEGACY_KEY)
+		expect(again.stage).toBe("verify")
+		expect((await ctx.service.verify(again)).status).toBe("verified")
+	})
+
+	it("does not resume with another account's saved pair", async () => {
+		const ctx = empty()
+		await ctx.service.prepareNewAccount("someone-else")
+		const plan = await setup()
+			.service.prepareNewAccount(UID)
+			.catch(() => null)
+		expect(plan).toBeNull()
+		ctx.remote.seedProfile({
+			...v1Profile(LEGACY_ITEMS),
+			schemaVersion: 2,
+			crypto: { wrappedDek: "v2.x.y", kdf: "hkdf-sha256", rkVersion: 1, createdAt: 1 },
+		})
+		expect(await ctx.service.detect(UID)).toBe("has-keys")
+	})
+
+	it("clears only its own saved pair", async () => {
+		const ctx = empty()
+		await ctx.service.prepareNewAccount("someone-else")
+		await ctx.service.clearPendingFor(UID)
+		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(true)
+		await ctx.service.clearPendingFor("someone-else")
 		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(false)
 	})
 })

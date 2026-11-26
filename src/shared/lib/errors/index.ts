@@ -37,6 +37,8 @@ export type AppErrorCode =
 	| "conflict"
 	/** Migration rollback is no longer allowed by the rules (24 h after `migratedAt`). */
 	| "rollback-expired"
+	/** A setup of another account is unfinished on this phone: its saved keys must not be replaced. */
+	| "setup-pending"
 	/** The change is larger than one transaction is trusted to carry. */
 	| "limit-exceeded"
 	| "unknown"

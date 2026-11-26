@@ -5,6 +5,9 @@ import { Provider } from "react-redux"
 
 import { SessionServicesProvider } from "@/entities/session"
 import { BackupServicesProvider } from "@/features/vault-backup"
+import { MigrationServicesProvider } from "@/features/vault-migration"
+import { ClipboardProvider } from "@/shared/services/clipboard"
+import { FileStorageProvider } from "@/shared/services/file-storage"
 import { HapticsProvider } from "@/shared/services/haptics"
 import { AppThemeProvider, useColorScheme } from "@/shared/theme"
 
@@ -19,6 +22,13 @@ import { useAuthSync } from "./session/use-auth-sync"
 import { useVaultLockSync } from "./session/use-vault-lock-sync"
 import { createAppStore } from "./store/store"
 
+/**
+ * Debug builds only: with `EXPO_PUBLIC_ALLOW_SCREENSHOTS=1` the screen-capture block is skipped so
+ * that layouts can be checked from screenshots. `__DEV__` is `false` in release bundles, so this
+ * is a constant `false` there and the block can never be lifted in an installed APK.
+ */
+const ALLOW_DEV_SCREENSHOTS = __DEV__ && process.env.EXPO_PUBLIC_ALLOW_SCREENSHOTS === "1"
+
 const AppContent = ({
 	authService,
 	lock,
@@ -30,6 +40,7 @@ const AppContent = ({
 	// Deliberately not the hook: its cleanup calls `allowScreenCapture` while the activity is already
 	// gone, which rejects. The flag must never be lifted anyway.
 	useEffect(() => {
+		if (ALLOW_DEV_SCREENSHOTS) return
 		preventScreenCaptureAsync().catch(() => undefined)
 	}, [])
 	const scheme = useColorScheme()
@@ -55,11 +66,23 @@ export const App = () => {
 		<Provider store={store}>
 			<AppThemeProvider store={container.themeStore}>
 				<HapticsProvider haptics={container.haptics}>
-					<SessionServicesProvider lock={container.vaultLock} recovery={container.vaultRecovery}>
-						<BackupServicesProvider backup={container.vaultBackup} files={container.fileStorage}>
-							<AppContent authService={container.authService} lock={container.vaultLock} />
-						</BackupServicesProvider>
-					</SessionServicesProvider>
+					<ClipboardProvider clipboard={container.clipboard}>
+						<FileStorageProvider files={container.fileStorage}>
+							<MigrationServicesProvider migration={container.vaultMigration}>
+								<SessionServicesProvider
+									lock={container.vaultLock}
+									recovery={container.vaultRecovery}
+								>
+									<BackupServicesProvider
+										backup={container.vaultBackup}
+										files={container.fileStorage}
+									>
+										<AppContent authService={container.authService} lock={container.vaultLock} />
+									</BackupServicesProvider>
+								</SessionServicesProvider>
+							</MigrationServicesProvider>
+						</FileStorageProvider>
+					</ClipboardProvider>
 				</HapticsProvider>
 			</AppThemeProvider>
 		</Provider>

@@ -11,6 +11,10 @@ export const FormInput = (props: Omit<TextInputProps, "style">) => {
 			placeholderTextColor={colors.textMuted}
 			autoCapitalize="none"
 			autoCorrect={false}
+			// Keys and passwords of the vault must never reach the Google/OEM autofill service (it
+			// offers to save them to the Google account). Only the account login opts in explicitly.
+			autoComplete="off"
+			importantForAutofill="no"
 			selectionColor={colors.primary}
 			{...props}
 			style={styles.input}
