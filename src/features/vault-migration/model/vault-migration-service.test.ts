@@ -783,4 +783,23 @@ describe("VaultMigrationService: setup kind and new account", () => {
 		await ctx.service.clearPendingFor("someone-else")
 		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(false)
 	})
+
+	it("does not roll back a resumed run whose entries changed since the migration", async () => {
+		const ctx = setup()
+		const plan = await ctx.service.prepare(UID, LEGACY_KEY)
+		ctx.remote.failNextTransaction = "after-commit"
+		await expect(ctx.service.commit(plan)).rejects.toMatchObject({ code: "network" })
+
+		// Later the user worked with the entries: one was deleted, so they differ from the v1 data.
+		const firstId = [...ctx.remote.entries.keys()][0] ?? ""
+		ctx.remote.entries.delete(firstId)
+		const resumed = await ctx.service.prepare(UID, LEGACY_KEY)
+		expect(resumed.stage).toBe("verify")
+
+		const outcome = await ctx.service.verify(resumed)
+		expect(outcome.status).toBe("mismatch")
+		expect(ctx.remote.rollbackCalls).toBe(0)
+		expect(ctx.remote.entries.size).toBe(2)
+		expect(ctx.remote.profiles.get(UID)?.crypto).not.toBeNull()
+	})
 })

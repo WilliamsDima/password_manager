@@ -46,6 +46,9 @@ type LocalWrapper = {
 const isMode = (value: string | null): value is LockMode =>
 	value === "password" || value === "biometric" || value === "none"
 
+/** Weakest scrypt cost a stored password wrapper may carry (the calibration never goes below it). */
+const MIN_WRAPPER_N = 2 ** 14
+
 const parseWrapper = (raw: string | null): LocalWrapper | null => {
 	if (raw === null) return null
 	try {
@@ -59,6 +62,8 @@ const parseWrapper = (raw: string | null): LocalWrapper | null => {
 			value.kdf === "scrypt" &&
 			"N" in value &&
 			typeof value.N === "number" &&
+			// A wrapper with a tiny N would be a cheap target: refuse it like a missing one.
+			value.N >= MIN_WRAPPER_N &&
 			"r" in value &&
 			typeof value.r === "number" &&
 			"p" in value &&

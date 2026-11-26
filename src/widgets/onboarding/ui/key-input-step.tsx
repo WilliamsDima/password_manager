@@ -38,6 +38,8 @@ export const KeyInputStep = ({
 		() => ({
 			canSubmit: text.trim().length > 0,
 			multiline: !secure,
+			// Plain-text keys: this keyboard type stops the keyboard from learning what was typed.
+			keyboardType: secure ? ("default" as const) : ("visible-password" as const),
 			autoCapitalize: secure ? ("none" as const) : ("characters" as const),
 		}),
 		[text, secure],
@@ -59,6 +61,7 @@ export const KeyInputStep = ({
 				onChangeText={setText}
 				secureTextEntry={secure}
 				multiline={view.multiline}
+				keyboardType={view.keyboardType}
 				autoCapitalize={view.autoCapitalize}
 				editable={!busy}
 			/>

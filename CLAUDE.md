@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Password manager for Android (package `com.eclipse.account_manager`). It was on Google Play; now it is distributed only as an APK to the owner and possibly friends. Registration stays open, so per-user isolation relies on Firestore rules ([firestore.rules](firestore.rules)). Entries are encrypted on the device before they are saved to Firebase Firestore. UI language: Russian only.
 
-The repo is mid-rewrite (branch `feature/v2-rework`):
+The v2 rewrite is feature-complete on branch `feature/v2-rework` (release build checked on a phone, 2026-11-26); what is left is in [docs/ROADMAP.md](docs/ROADMAP.md) (phase 7):
 - **Root = v2**: a new Expo app (Expo SDK 58, React Native 0.88, React 19, TypeScript 6) built per [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/CRYPTO.md](docs/CRYPTO.md).
-- **[legacy/](legacy/) = v1**: the old RN 0.68 app, kept read-only as reference for porting and migration until phase 7. Do not modify it. It is excluded from tsc, ESLint, Prettier and Jest.
+- **[legacy/](legacy/) = v1**: the old RN 0.68 app, kept read-only until the final backup (7.3) is done: `scripts/backup-firestore.mjs` still reads the Firebase config from `legacy/src/config/firebase.ts`. It is deleted after that. Do not modify it. It is excluded from tsc, ESLint, Prettier and Jest.
 
 ## Commands (v2, repo root)
 
@@ -24,6 +24,7 @@ npm run format            # prettier --write
 npm test                  # jest (preset jest-expo); single file: npx jest src/shared/lib/logger
 npm run test:rules        # Firestore rules in the emulator (firestore.rules; needs Java, downloads the emulator once)
 npm run check             # typecheck + lint + format:check + test; run before declaring a task done
+cd android && ./gradlew assembleRelease   # release APK (after `npm run prebuild`) → android/app/build/outputs/apk/release/app-release.apk
 npx expo install <pkg>    # always use instead of npm i for Expo/RN packages (SDK-compatible versions)
 ```
 
@@ -83,4 +84,6 @@ The v1 encryption key (text/QR) is not a file: store it in your password manager
 - Encryption, key handling, Firestore schema, migration and in-app backup: [docs/CRYPTO.md](docs/CRYPTO.md).
 - Git: all rework happens on branch `feature/v2-rework`. Commit messages follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `build:`, `test:`, `style:`, `perf:`, `ci:`; optional scope, e.g. `feat(crypto): ...`; imperative, English subject line). **Never commit or push without the user's explicit permission in the current conversation**: after a task is done, propose the commit message and wait.
 - Telegram notifications: `.claude/hooks/telegram-notify.mjs` (Stop/Notification hooks), secrets in gitignored `.claude/telegram.json`.
-- Data backup: `node scripts/backup-firestore.mjs` → `backups/` (gitignored, ciphertext only; v1 format until task 5.2 adds `entries`).
+- Data backup: `node scripts/backup-firestore.mjs` → `backups/` (gitignored, ciphertext only; exports the v1 `items` and the v2 `entries`).
+- **Release build:** raise `android.versionCode` in `app.json` for every APK that is given to the owner (the phone installs a build only if the code is not lower), run `npm run prebuild`, then `./gradlew assembleRelease`. Check the result with `apksigner verify --print-certs` (certificate SHA-256 must end in `…4B:40:00`, see the secrets table) and `aapt dump badging` (no CAMERA permission until the QR scanner exists). The release APK is signed with the key from `~/.gradle/gradle.properties`; it never falls back to the debug key. Release builds are `arm64-v8a` only (`buildArchs` in `app.json`, ~34 MB; a universal APK is ~125 MB). **After every release build send the APK to the owner's Telegram bot**: `node .claude/hooks/telegram-notify.mjs --document <apk> "<version, versionCode, SHA-256>"` (the Bot API accepts files up to 50 MB; the script refuses larger ones) and copy it to `~/Downloads/password-manager-<version>-build<versionCode>-arm64-release.apk`.
+- Source layout (FSD): `entities/{entry,session}`, `features/{copy-secret,delete-entry,edit-entry,lock-mode,open-url,switch-theme,toggle-favorite,vault-backup,vault-migration}`, `widgets/{entry-list,onboarding}`, `pages/{entry-details,entry-edit,settings,sign-in,unlock,vault,vault-setup}`.

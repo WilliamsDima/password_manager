@@ -53,6 +53,11 @@ export type MigrationOutcome =
 	| { readonly status: "verified"; readonly dek: Uint8Array }
 	/** The server data did not match the v1 data; everything was rolled back, `items` are intact. */
 	| { readonly status: "rolled-back" }
+	/**
+	 * A resumed run found data that differs from v1. Nothing is rolled back: the entries may have
+	 * been changed or added since the migration, and deleting them would lose that work.
+	 */
+	| { readonly status: "mismatch" }
 
 /** A DEK change prepared in memory; nothing is written until `commitDekChange`. */
 export type DekChangePlan = {

@@ -82,6 +82,22 @@ describe("VaultLockService: setup and unlock", () => {
 		expect([...storage.values.values()].join("")).not.toContain(toBase64(DEK))
 	})
 
+	it("refuses a stored wrapper with a tiny scrypt cost like a missing one", async () => {
+		const { create, storage } = await enrolledPassword()
+		const wrapper = JSON.parse(storage.values.get("pm.lock.wrapper") ?? "{}") as Record<
+			string,
+			unknown
+		>
+		storage.values.set("pm.lock.wrapper", JSON.stringify({ ...wrapper, N: 2 }))
+
+		const next = create()
+		await next.initialize(UID)
+		await expect(next.unlockWithPassword(PASSWORD)).rejects.toMatchObject({
+			code: "secure-storage",
+		})
+		expect(next.getState().status).toBe("locked")
+	})
+
 	it("rejects a short password and a wrong password without unlocking", async () => {
 		const { service } = setup()
 		await service.initialize(UID)

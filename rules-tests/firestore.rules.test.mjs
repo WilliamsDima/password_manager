@@ -135,6 +135,11 @@ describe("v2 profile (after migration)", () => {
 		await seed(migrated())
 		await assertSucceeds(setDoc(profile(as(UID)), v1Profile))
 	})
+	it("rejects a rollback after the keys were changed (rkVersion above 1)", async () => {
+		const base = migrated()
+		await seed({ ...base, crypto: cryptoV(2) })
+		await assertFails(setDoc(profile(as(UID)), v1Profile))
+	})
 	it("rejects rollback that changes items", async () => {
 		await seed(migrated())
 		await assertFails(setDoc(profile(as(UID)), { ...v1Profile, items: [] }))

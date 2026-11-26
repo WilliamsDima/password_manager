@@ -9,6 +9,7 @@
 //   node .claude/hooks/telegram-notify.mjs notification  (Notification hook)
 //   node .claude/hooks/telegram-notify.mjs --setup       (write /start to the bot first; saves chatId)
 //   node .claude/hooks/telegram-notify.mjs --test        (send a test message)
+//   node .claude/hooks/telegram-notify.mjs --document <file> [caption]   (send a file, e.g. the release APK)
 //
 // A hook must never break the session: every error is swallowed and the exit code is always 0.
 
@@ -55,6 +56,31 @@ async function send(text) {
 		disable_web_page_preview: true,
 	})
 	return true
+}
+
+/** The Bot API accepts files up to 50 MB (the local Bot API server would allow more). */
+const MAX_DOCUMENT_BYTES = 50 * 1024 * 1024
+
+async function sendDocument(filePath, caption) {
+	const { token, chatId } = loadConfig()
+	if (!token || !chatId) throw new Error("Нет token/chatId в конфиге.")
+	const size = fs.statSync(filePath).size
+	if (size > MAX_DOCUMENT_BYTES) {
+		throw new Error(
+			`Файл ${(size / 1048576).toFixed(1)} МБ: Telegram принимает от бота не больше 50 МБ. Соберите APK только под arm64-v8a.`,
+		)
+	}
+	const form = new FormData()
+	form.append("chat_id", chatId)
+	if (caption) form.append("caption", caption.slice(0, 1000))
+	form.append("document", new Blob([fs.readFileSync(filePath)]), path.basename(filePath))
+	const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+		method: "POST",
+		body: form,
+		signal: AbortSignal.timeout(180000),
+	})
+	const json = await res.json()
+	if (!json.ok) throw new Error(`sendDocument: ${json.description}`)
 }
 
 function readStdin() {
@@ -122,6 +148,17 @@ async function main() {
 			JSON.stringify({ ...file, token, chatId: String(chat.id) }, null, 2),
 		)
 		console.log(`Сохранён chatId ${chat.id} (${chat.username || chat.first_name || chat.title}).`)
+		return
+	}
+
+	if (mode === "--document") {
+		const file = process.argv[3]
+		if (!file || !fs.existsSync(file)) {
+			console.log("Укажите существующий файл: --document <file> [caption]")
+			return
+		}
+		await sendDocument(file, process.argv[4] ?? `[${PROJECT}] ${path.basename(file)}`)
+		console.log(`Отправлено: ${path.basename(file)}`)
 		return
 	}
 

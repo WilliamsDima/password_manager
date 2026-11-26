@@ -149,6 +149,12 @@ export const useOnboarding = (): OnboardingState => {
 					if (!(isAppError(caught) && caught.code === "conflict")) throw caught
 				}
 				const outcome = await migration.verify(flow.plan)
+				if (outcome.status === "mismatch") {
+					// Nothing was deleted. The saved pair is no longer needed: the keys are in the profile.
+					await migration.clearPendingFor(uid).catch(() => undefined)
+					go({ name: "restart", message: strings.onboarding.mismatchAfterResume })
+					return
+				}
 				if (outcome.status === "rolled-back") {
 					// The saved pair stays: a new attempt shows the same recovery key (§6.3).
 					go({ name: "restart", message: strings.onboarding.rolledBack })

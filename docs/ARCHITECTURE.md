@@ -16,10 +16,11 @@
 ```
 src/
   app/        точка входа: провайдеры, навигация, store, тема, DI-контейнер (composition root)
-  pages/      экраны: unlock, vault, entry-details, entry-edit, settings
-  widgets/    крупные блоки экрана: список записей с поиском, шапка и т.п.
-  features/   действия пользователя: unlock-biometric, copy-secret, generate-password,
-              edit-entry, delete-entry, switch-theme
+  pages/      экраны: sign-in, unlock, vault-setup, vault, entry-details, entry-edit, settings
+  widgets/    крупные блоки экрана: entry-list (список с поиском), onboarding (первая настройка)
+  features/   действия пользователя: copy-secret, edit-entry (форма и генератор паролей),
+              delete-entry, toggle-favorite, open-url, lock-mode, switch-theme,
+              vault-backup, vault-migration
   entities/   бизнес-сущности: entry (запись), session (пользователь/сессия/ключ)
   shared/     без бизнес-логики: ui-kit, theme, lib, config, services (интерфейсы + реализации)
 ```

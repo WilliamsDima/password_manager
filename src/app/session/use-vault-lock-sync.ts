@@ -3,6 +3,7 @@ import { AppState } from "react-native"
 import { useDispatch, useSelector } from "react-redux"
 
 import { selectSessionStatus, selectSessionUser, type VaultLockService } from "@/entities/session"
+import type { VaultMigrationService } from "@/features/vault-migration"
 import { baseApi } from "@/shared/api"
 
 import { startCacheReset } from "./cache-reset"
@@ -15,7 +16,10 @@ const AUTO_LOCK_CHECK_MS = 5000
  *   (never while the status is still `initializing`, or a cold start would erase the keys);
  * - background longer than the grace period, or idling, locks the vault.
  */
-export const useVaultLockSync = (lock: VaultLockService): void => {
+export const useVaultLockSync = (
+	lock: VaultLockService,
+	migration: VaultMigrationService,
+): void => {
 	const status = useSelector(selectSessionStatus)
 	const uid = useSelector(selectSessionUser)?.uid
 	const dispatch = useDispatch()
@@ -31,8 +35,13 @@ export const useVaultLockSync = (lock: VaultLockService): void => {
 
 	useEffect(() => {
 		if (status === "signed-in" && uid !== undefined) void lock.initialize(uid)
-		else if (status === "signed-out") void lock.wipe()
-	}, [status, uid, lock])
+		else if (status === "signed-out") {
+			void lock.wipe()
+			// An unfinished setup keeps RK and DEK in the key store without authentication: sign-out
+			// removes them too (the recovery key the user confirmed opens the account again).
+			void migration.clearPending().catch(() => undefined)
+		}
+	}, [status, uid, lock, migration])
 
 	useEffect(() => {
 		const subscription = AppState.addEventListener("change", state => {

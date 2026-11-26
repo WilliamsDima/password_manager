@@ -226,6 +226,12 @@ export class VaultMigrationService {
 			this.remote.listEntries(plan.uid, "server"),
 		])
 		const matches = this.matchesLegacy(plan, profile, entries)
+		if (!matches && plan.stage === "verify") {
+			// Resuming after a restart: hours may have passed and the entries may have been changed or
+			// added on this or another device. A mismatch is no proof of a bad migration here, and a
+			// rollback would delete that work. Leave everything as it is and let the user decide.
+			return { status: "mismatch" }
+		}
 		if (!matches) {
 			// Either our recovery key opened the server DEK and the content differs, or the profile
 			// has no `crypto` at all (nothing committed). A foreign DEK throws `conflict` earlier.

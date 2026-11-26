@@ -16,6 +16,7 @@ import { AppThemeProvider, useColorScheme } from "@/shared/theme"
 import { StyleSheet, View } from "react-native"
 
 import type { VaultLockService } from "@/entities/session"
+import type { VaultMigrationService } from "@/features/vault-migration"
 import type { IAuthService } from "@/shared/services/auth"
 
 import { createContainer } from "./di/container"
@@ -34,9 +35,11 @@ const ALLOW_DEV_SCREENSHOTS = __DEV__ && process.env.EXPO_PUBLIC_ALLOW_SCREENSHO
 const AppContent = ({
 	authService,
 	lock,
+	migration,
 }: {
 	readonly authService: IAuthService
 	readonly lock: VaultLockService
+	readonly migration: VaultMigrationService
 }) => {
 	// FLAG_SECURE for the whole app life: no screenshots, blank preview in recents (SECURITY_AUDIT L1).
 	// Deliberately not the hook: its cleanup calls `allowScreenCapture` while the activity is already
@@ -48,7 +51,7 @@ const AppContent = ({
 	const scheme = useColorScheme()
 	const statusBarStyle = useMemo(() => (scheme === "dark" ? "light" : "dark"), [scheme])
 	useAuthSync(authService)
-	useVaultLockSync(lock)
+	useVaultLockSync(lock, migration)
 
 	return (
 		// Any touch counts as activity for the idle auto-lock; the handler never consumes the event.
@@ -84,6 +87,7 @@ export const App = () => {
 												<AppContent
 													authService={container.authService}
 													lock={container.vaultLock}
+													migration={container.vaultMigration}
 												/>
 											</BackupServicesProvider>
 										</SessionServicesProvider>

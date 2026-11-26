@@ -61,6 +61,7 @@ service cloud.firestore {
       let cur = resource.data;
       return schemaOf(cur) == 2
         && 'items' in cur && 'migratedAt' in cur
+        && cur.crypto.rkVersion == 1
         && next.get('items', null) == cur.items
         && !('crypto' in next) && !('schemaVersion' in next) && !('migratedAt' in next)
         && request.time < cur.migratedAt + duration.value(24, 'h');

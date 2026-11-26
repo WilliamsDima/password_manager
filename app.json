@@ -9,7 +9,7 @@
 		"platforms": ["android"],
 		"android": {
 			"package": "com.eclipse.account_manager",
-			"versionCode": 10,
+			"versionCode": 11,
 			"allowBackup": false,
 			"googleServicesFile": "./google-services.json",
 			"adaptiveIcon": {
@@ -23,7 +23,9 @@
 				"android.permission.READ_EXTERNAL_STORAGE",
 				"android.permission.WRITE_EXTERNAL_STORAGE",
 				"android.permission.SYSTEM_ALERT_WINDOW",
-				"android.permission.CAMERA"
+				"android.permission.CAMERA",
+				"android.permission.READ_MEDIA_IMAGES",
+				"android.permission.DETECT_SCREEN_CAPTURE"
 			],
 			"predictiveBackGestureEnabled": false
 		},
@@ -36,20 +38,16 @@
 						"enableMinifyInReleaseBuilds": true,
 						"enableShrinkResourcesInReleaseBuilds": true,
 						"usesCleartextTraffic": false,
-						"networkInspector": false
+						"networkInspector": false,
+						"buildArchs": ["arm64-v8a"]
 					}
 				}
 			],
 			"./plugins/with-release-signing",
+			"./plugins/with-secure-window",
 			"@react-native-firebase/app",
 			"@react-native-firebase/auth",
 			"expo-secure-store",
-			[
-				"expo-camera",
-				{
-					"recordAudioAndroid": false
-				}
-			],
 			"expo-sharing",
 			[
 				"expo-splash-screen",

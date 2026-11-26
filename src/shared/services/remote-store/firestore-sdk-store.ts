@@ -115,10 +115,10 @@ const toProfile = (uid: string, data: Record<string, unknown>): RemoteProfile =>
 
 const toEntry = (snapshot: DocumentSnapshot): RemoteEntry => {
 	const data: unknown = snapshot.data()
-	if (!isRecord(data) || typeof data.ct !== "string") {
-		throw new AppError("crypto", "Invalid entry document")
-	}
-	return { id: snapshot.id, ct: data.ct, updatedAt: millisOf(data.updatedAt) }
+	// A document without a string `ct` gets an empty one: it fails to decrypt and is reported as
+	// unreadable, instead of one bad document breaking the whole list, backup and migration check.
+	const ct = isRecord(data) && typeof data.ct === "string" ? data.ct : ""
+	return { id: snapshot.id, ct, updatedAt: isRecord(data) ? millisOf(data.updatedAt) : null }
 }
 
 const cryptoFields = (input: RemoteCryptoInput): Record<string, unknown> => ({
