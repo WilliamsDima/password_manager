@@ -1,5 +1,5 @@
 import { EntryCodec } from "@/entities/entry"
-import { VaultKeyService } from "@/entities/session"
+import { VaultKeyService, VaultLockService, VaultRecoveryService } from "@/entities/session"
 import { baseApi, toQueryResult } from "@/shared/api"
 import { AppError } from "@/shared/lib/errors"
 import { NobleCryptoService, NobleScryptKdf } from "@/shared/services/crypto"
@@ -52,6 +52,9 @@ const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies 
 			random,
 			secureStorage,
 		),
+		vaultLock: new VaultLockService(secureStorage, crypto, new NobleScryptKdf(), random, Date.now),
+		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
+		clipboard: { copySensitive: () => Promise.resolve(), clear: () => Promise.resolve() },
 	}
 }
 

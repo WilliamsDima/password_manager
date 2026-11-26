@@ -53,6 +53,7 @@ The v1 encryption key (text/QR) is not a file: store it in your password manager
 - Firebase: native `@react-native-firebase` (app, auth, firestore), modular API. Plugins in `app.json`.
 - `expo-build-properties`: R8 + resource shrinking in release, `usesCleartextTraffic=false`, network inspector off. Unneeded permissions are removed via `android.blockedPermissions`. `allowBackup=false`.
 - `versionCode` must stay greater than the Play version (8) so v2 installs over it.
+- `modules/pm-kdf/`: local Expo module (Kotlin, BouncyCastle scrypt) for the app-password KDF, autolinked from `modules/`; it needs a native rebuild (`npm run android`), not just a JS reload. JS side: `shared/services/crypto/native-scrypt-kdf.ts`.
 - Path alias `@/*` → `src/*` (tsconfig `paths`, jest `moduleNameMapper`).
 - ESLint enforces the FSD rules from ARCHITECTURE.md: layer direction and no cross-slice imports (`eslint-plugin-boundaries`), public-API-only imports (`no-restricted-imports`), no `let`, no `any`, no `@ts-ignore`, `no-console` (only `src/shared/lib/logger` may use console). Release bundles strip `console.*` (babel `transform-remove-console`), and the logger is disabled when `!__DEV__`.
 - TypeScript 6: `types` defaults to empty, so `tsconfig.json` lists `"types": ["jest"]`. `baseUrl` is deprecated, so don't add it.

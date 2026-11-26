@@ -2,6 +2,8 @@ import {
 	type IVaultKeyService,
 	type SessionApiDependencies,
 	VaultKeyService,
+	VaultLockService,
+	VaultRecoveryService,
 } from "@/entities/session"
 import { EntryCodec } from "@/entities/entry"
 import { VaultMigrationService } from "@/features/vault-migration"
@@ -9,10 +11,11 @@ import { FirebaseAuthService } from "@/shared/services/auth"
 import {
 	type ICryptoService,
 	type IKdf,
+	NativeScryptKdf,
 	NobleCryptoService,
-	NobleScryptKdf,
 } from "@/shared/services/crypto"
 import { CryptoJsLegacyDecryptor, type ILegacyDecryptor } from "@/shared/services/legacy-decryptor"
+import { ExpoClipboard, type IClipboard } from "@/shared/services/clipboard"
 import { ExpoRandom, type IRandom } from "@/shared/services/random"
 import { FirestoreSdkStore, type IRemoteStore } from "@/shared/services/remote-store"
 import { ExpoSecureStorage, type ISecureStorage } from "@/shared/services/secure-storage"
@@ -35,6 +38,10 @@ export type AppDependencies = SessionApiDependencies & {
 	readonly remoteStore: IRemoteStore
 	/** v1 → v2 migration and DEK change (5.2); screens arrive with 5.3 / 6.4. */
 	readonly vaultMigration: VaultMigrationService
+	/** Modes, local wrapper, attempt limit and auto-lock (5.3). */
+	readonly vaultLock: VaultLockService
+	readonly vaultRecovery: VaultRecoveryService
+	readonly clipboard: IClipboard
 }
 
 /**
@@ -49,12 +56,14 @@ export const createContainer = (): AppDependencies => {
 	const entryCodec = new EntryCodec(crypto)
 	const legacyDecryptor = new CryptoJsLegacyDecryptor()
 	const remoteStore = new FirestoreSdkStore()
+	// Native: pure-JS scrypt takes ~5 s for N=2^14 in Hermes (5.3 measurement); `NobleScryptKdf` stays for tests.
+	const kdf = new NativeScryptKdf()
 	return {
 		authService: new FirebaseAuthService(),
 		secureStorage,
 		random,
 		crypto,
-		kdf: new NobleScryptKdf(),
+		kdf,
 		vaultKeys,
 		entryCodec,
 		legacyDecryptor,
@@ -67,5 +76,8 @@ export const createContainer = (): AppDependencies => {
 			random,
 			secureStorage,
 		),
+		vaultLock: new VaultLockService(secureStorage, crypto, kdf, random, Date.now),
+		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
+		clipboard: new ExpoClipboard(),
 	}
 }

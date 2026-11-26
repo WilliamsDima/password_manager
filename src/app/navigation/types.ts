@@ -2,4 +2,5 @@
 export type RootStackParamList = {
 	SignIn: undefined
 	Vault: undefined
+	Settings: undefined
 }

@@ -15,6 +15,8 @@ export type AppErrorCode =
 	| "crypto"
 	/** Wrong email or password (also unknown account: the two are deliberately not told apart). */
 	| "invalid-credentials"
+	/** The recovery key text is malformed (wrong length, character or checksum). */
+	| "invalid-recovery-key"
 	| "invalid-email"
 	| "email-in-use"
 	| "weak-password"

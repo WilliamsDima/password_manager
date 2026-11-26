@@ -68,3 +68,6 @@ service-account*.json
 /secrets/
 firestore-debug.log
 ui-debug.log
+modules/*/android/build/
+modules/*/android/.cxx/
+modules/*/android/.gradle/

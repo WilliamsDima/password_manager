@@ -1,0 +1,20 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.eclipse.account_manager'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.pmkdf"
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}
+
+dependencies {
+  // scrypt on the JVM (JIT): pure-JS scrypt in Hermes needs ~5 s for N=2^14 (task 5.3 measurement).
+  implementation "org.bouncycastle:bcprov-jdk18on:1.80"
+}
