@@ -25,6 +25,12 @@ export type AppErrorCode =
 	| "network"
 	| "permission-denied"
 	| "not-found"
+	/** A transaction precondition failed: the data changed under us or was already migrated. */
+	| "conflict"
+	/** Migration rollback is no longer allowed by the rules (24 h after `migratedAt`). */
+	| "rollback-expired"
+	/** The change is larger than one transaction is trusted to carry. */
+	| "limit-exceeded"
 	| "unknown"
 
 export class AppError extends Error {

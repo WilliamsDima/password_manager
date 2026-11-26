@@ -1,13 +1,81 @@
 rules_version = '2';
 
-// Access only to the owner's own document users/{uid}.
-// Everything else is denied (no match = deny).
-// Compatible with the v1 app: register (create), load (read), save items/profile (update),
-// delete account (delete).
+// v2 rules (docs/CRYPTO.md §5). Only the owner touches users/{uid} and users/{uid}/entries/*.
+// A profile is either v1 (no schemaVersion, `items` array) or v2 (schemaVersion 2, `crypto`).
+// After migration the v1 app cannot rewrite `items` or delete the profile, and `crypto` can only
+// stay the same or be replaced by a valid one with rkVersion + 1.
+// Tested in the emulator: `npm run test:rules`.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function schemaOf(data) {
+      return data.get('schemaVersion', 1);
+    }
+
+    function validCrypto(c) {
+      return c is map
+        && c.keys().hasAll(['wrappedDek', 'kdf', 'rkVersion', 'createdAt'])
+        && c.wrappedDek is string && c.wrappedDek.matches('^v2[.].+')
+        && c.kdf == 'hkdf-sha256'
+        && c.rkVersion is int && c.rkVersion >= 1;
+    }
+
+    // A profile is either v1-shaped (no schemaVersion 2, no crypto) or v2-shaped
+    // (schemaVersion 2 with a valid first-generation crypto). Nothing in between can be written,
+    // so an account can never get stuck without crypto (§5: "no profile without crypto and items").
+    function validProfileShape(next) {
+      return (next.get('schemaVersion', 1) != 2 && !('crypto' in next))
+        || (next.get('schemaVersion', 1) == 2 && 'crypto' in next
+            && validCrypto(next.crypto) && next.crypto.rkVersion == 1);
+    }
+
+    // v1 profile: as before, including the migration itself (adds crypto + schemaVersion 2 +
+    // migratedAt, validated above).
+    function isV1Update() {
+      let next = request.resource.data;
+      return schemaOf(resource.data) != 2
+        && validProfileShape(next)
+        && (next.get('schemaVersion', 1) != 2 || next.get('migratedAt', null) is timestamp);
+    }
+
+    // v2 profile: crypto is unchanged, or valid with rkVersion + 1 (RK reissue / DEK change);
+    // `items` may only be removed as a whole; schemaVersion stays 2.
+    function isV2Update() {
+      let next = request.resource.data;
+      let cur = resource.data;
+      return schemaOf(cur) == 2
+        && next.get('schemaVersion', 0) == 2
+        && 'crypto' in next
+        && (next.crypto == cur.crypto
+            || (validCrypto(next.crypto) && next.crypto.rkVersion == cur.crypto.rkVersion + 1))
+        && (!('items' in next) || next.items == cur.get('items', null));
+    }
+
+    // Migration rollback (§6.6): drop crypto/schemaVersion/migratedAt, items untouched,
+    // only within 24 h of migratedAt.
+    function isRollback() {
+      let next = request.resource.data;
+      let cur = resource.data;
+      return schemaOf(cur) == 2
+        && 'items' in cur && 'migratedAt' in cur
+        && next.get('items', null) == cur.items
+        && !('crypto' in next) && !('schemaVersion' in next) && !('migratedAt' in next)
+        && request.time < cur.migratedAt + duration.value(24, 'h');
+    }
+
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validProfileShape(request.resource.data);
+      allow update: if isOwner(uid) && (isV1Update() || isV2Update() || isRollback());
+      allow delete: if isOwner(uid)
+        && (schemaOf(resource.data) != 2 || resource.data.get('deleteRequested', false) == true);
+
+      match /entries/{entryId} {
+        allow read, write: if isOwner(uid);
+      }
     }
   }
 }

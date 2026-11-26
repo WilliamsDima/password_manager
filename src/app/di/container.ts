@@ -4,6 +4,7 @@ import {
 	VaultKeyService,
 } from "@/entities/session"
 import { EntryCodec } from "@/entities/entry"
+import { VaultMigrationService } from "@/features/vault-migration"
 import { FirebaseAuthService } from "@/shared/services/auth"
 import {
 	type ICryptoService,
@@ -13,6 +14,7 @@ import {
 } from "@/shared/services/crypto"
 import { CryptoJsLegacyDecryptor, type ILegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import { ExpoRandom, type IRandom } from "@/shared/services/random"
+import { FirestoreSdkStore, type IRemoteStore } from "@/shared/services/remote-store"
 import { ExpoSecureStorage, type ISecureStorage } from "@/shared/services/secure-storage"
 
 /**
@@ -30,6 +32,9 @@ export type AppDependencies = SessionApiDependencies & {
 	readonly vaultKeys: IVaultKeyService
 	readonly entryCodec: EntryCodec
 	readonly legacyDecryptor: ILegacyDecryptor
+	readonly remoteStore: IRemoteStore
+	/** v1 → v2 migration and DEK change (5.2); screens arrive with 5.3 / 6.4. */
+	readonly vaultMigration: VaultMigrationService
 }
 
 /**
@@ -39,14 +44,28 @@ export type AppDependencies = SessionApiDependencies & {
 export const createContainer = (): AppDependencies => {
 	const random = new ExpoRandom()
 	const crypto = new NobleCryptoService(random)
+	const secureStorage = new ExpoSecureStorage()
+	const vaultKeys = new VaultKeyService(crypto, random)
+	const entryCodec = new EntryCodec(crypto)
+	const legacyDecryptor = new CryptoJsLegacyDecryptor()
+	const remoteStore = new FirestoreSdkStore()
 	return {
 		authService: new FirebaseAuthService(),
-		secureStorage: new ExpoSecureStorage(),
+		secureStorage,
 		random,
 		crypto,
 		kdf: new NobleScryptKdf(),
-		vaultKeys: new VaultKeyService(crypto, random),
-		entryCodec: new EntryCodec(crypto),
-		legacyDecryptor: new CryptoJsLegacyDecryptor(),
+		vaultKeys,
+		entryCodec,
+		legacyDecryptor,
+		remoteStore,
+		vaultMigration: new VaultMigrationService(
+			remoteStore,
+			legacyDecryptor,
+			vaultKeys,
+			entryCodec,
+			random,
+			secureStorage,
+		),
 	}
 }

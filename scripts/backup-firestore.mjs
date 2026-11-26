@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-// Backup of my Firestore document users/{uid} (ciphertext only).
+// Backup of my Firestore profile users/{uid} and its entries users/{uid}/entries/* (ciphertext only).
 //
 //   node scripts/backup-firestore.mjs
 //
 // - Reads apiKey/projectId from legacy/src/config/firebase.ts.
 // - Asks for email + password (Firebase Auth REST), downloads users/{uid}.
-// - Saves backups/firestore-<uid>-<timestamp>.json (data stays encrypted, as in Firestore).
+// - Saves backups/firestore-<uid>-<timestamp>.json (data stays encrypted, as in Firestore):
+//   `data` = profile (v1 `items` and/or v2 `crypto`), `entries` = v2 entry documents.
 // - Optionally asks for the encryption key and checks that EVERY item decrypts with it.
 //   Decrypted data is never printed or written, only counts are shown.
 // No npm dependencies (Node 18+).
@@ -104,6 +105,33 @@ function cryptoJsDecrypt(cipherB64, passphrase) {
 	return Buffer.concat([decipher.update(data.subarray(16)), decipher.final()]).toString("utf8")
 }
 
+const status = { entriesSkipped: false }
+
+// users/{uid}/entries/* (v2): [{ id, ct, updatedAt }], all pages.
+async function fetchEntries({ projectId, uid, idToken }) {
+	const base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}/entries`
+	const collect = async (pageToken, acc) => {
+		const url = `${base}?pageSize=300${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ""}`
+		const res = await fetch(url, { headers: { Authorization: `Bearer ${idToken}` } })
+		// Rules v1 have no `entries` match: 403 means "not deployed yet / nothing to export".
+		if (res.status === 403 && acc.length === 0) {
+			status.entriesSkipped = true
+			console.warn("entries: доступ запрещён (правила v2 ещё не задеплоены?), пропускаем")
+			return acc
+		}
+		const text = await res.text()
+		if (!res.ok) throw new Error(`Firestore entries: HTTP ${res.status} ${text.slice(0, 200)}`)
+		const body = JSON.parse(text)
+		const page = (body.documents || []).map(doc => {
+			const fields = fromFields(doc.fields || {})
+			return { id: doc.name.split("/").pop(), ct: fields.ct, updatedAt: fields.updatedAt ?? null }
+		})
+		const all = [...acc, ...page]
+		return body.nextPageToken ? collect(body.nextPageToken, all) : all
+	}
+	return collect(undefined, [])
+}
+
 function verifyKey(items, key) {
 	let ok = 0
 	const failed = []
@@ -140,6 +168,7 @@ async function main() {
 
 	const data = fromFields(raw.fields || {})
 	const items = Array.isArray(data.items) ? data.items : []
+	const entries = await fetchEntries({ projectId, uid, idToken: authRes.idToken })
 
 	const dir = path.join(root, "backups")
 	fs.mkdirSync(dir, { recursive: true })
@@ -149,12 +178,13 @@ async function main() {
 		file,
 		JSON.stringify(
 			{
-				format: "password-manager-firestore-backup/v1",
+				format: "password-manager-firestore-backup/v2",
 				exportedAt: new Date().toISOString(),
 				projectId,
 				path: `users/${uid}`,
 				updateTime: raw.updateTime,
 				data,
+				entries,
 				rawFirestore: raw,
 			},
 			null,
@@ -162,7 +192,10 @@ async function main() {
 		),
 	)
 	console.log(`\nСохранено: ${file}`)
-	console.log(`Записей (items): ${items.length}`)
+	console.log(`Записей v1 (items): ${items.length}`)
+	console.log(`Записей v2 (entries): ${entries.length}`)
+	if (status.entriesSkipped)
+		console.log("⚠️ entries НЕ выгружены: доступ запрещён (правила v2 не задеплоены?)")
 
 	const key = await ask("\nКлюч шифрования для проверки (Enter, чтобы пропустить): ", true)
 	if (key) {

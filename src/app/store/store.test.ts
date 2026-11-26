@@ -5,32 +5,11 @@ import { AppError } from "@/shared/lib/errors"
 import { NobleCryptoService, NobleScryptKdf } from "@/shared/services/crypto"
 import { CryptoJsLegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import type { ISecureStorage } from "@/shared/services/secure-storage"
-import { FakeAuthService, FakeRandom } from "@/shared/testing"
+import { VaultMigrationService } from "@/features/vault-migration"
+import { FakeAuthService, FakeRandom, FakeRemoteStore, FakeSecureStorage } from "@/shared/testing"
 
 import type { AppDependencies } from "../di/container"
 import { createAppStore } from "./store"
-
-class FakeSecureStorage implements ISecureStorage {
-	private readonly values = new Map<string, string>()
-
-	public get(key: string): Promise<string | null> {
-		return Promise.resolve(this.values.get(key) ?? null)
-	}
-
-	public set(key: string, value: string): Promise<void> {
-		this.values.set(key, value)
-		return Promise.resolve()
-	}
-
-	public remove(key: string): Promise<void> {
-		this.values.delete(key)
-		return Promise.resolve()
-	}
-
-	public canUseBiometricAuthentication(): boolean {
-		return false
-	}
-}
 
 // Same pattern an entity uses: queryFn takes its dependencies from `extra`.
 const testApi = baseApi.injectEndpoints({
@@ -51,15 +30,28 @@ const testApi = baseApi.injectEndpoints({
 const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies => {
 	const random = new FakeRandom()
 	const crypto = new NobleCryptoService(random)
+	const vaultKeys = new VaultKeyService(crypto, random)
+	const entryCodec = new EntryCodec(crypto)
+	const legacyDecryptor = new CryptoJsLegacyDecryptor()
+	const remoteStore = new FakeRemoteStore()
 	return {
 		authService: new FakeAuthService(),
 		secureStorage,
 		random,
 		crypto,
 		kdf: new NobleScryptKdf(),
-		vaultKeys: new VaultKeyService(crypto, random),
-		entryCodec: new EntryCodec(crypto),
-		legacyDecryptor: new CryptoJsLegacyDecryptor(),
+		vaultKeys,
+		entryCodec,
+		legacyDecryptor,
+		remoteStore,
+		vaultMigration: new VaultMigrationService(
+			remoteStore,
+			legacyDecryptor,
+			vaultKeys,
+			entryCodec,
+			random,
+			secureStorage,
+		),
 	}
 }
 

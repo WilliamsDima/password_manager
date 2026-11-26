@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "test": "jest",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
-    "secrets:collect": "node scripts/collect-secrets.mjs"
+    "secrets:collect": "node scripts/collect-secrets.mjs",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-pm-rules \"node --test rules-tests/*.test.mjs\""
   },
   "dependencies": {
     "@noble/ciphers": "^2.4.0",
@@ -38,6 +39,7 @@
     "react-redux": "^9.3.1"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
     "babel-plugin-transform-remove-console": "^6.9.4",
@@ -48,6 +50,7 @@
     "eslint-import-resolver-typescript": "^3.10.1",
     "eslint-plugin-boundaries": "^7.4.5",
     "eslint-plugin-import": "^2.32.0",
+    "firebase-tools": "^15.37.0",
     "globals": "^17.14.0",
     "jest": "^30.5.2",
     "jest-expo": "^58.0.15",

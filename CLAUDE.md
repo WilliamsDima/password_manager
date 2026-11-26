@@ -21,6 +21,7 @@ npm run typecheck         # tsc --noEmit
 npm run lint              # eslint (flat config: eslint.config.js)
 npm run format            # prettier --write
 npm test                  # jest (preset jest-expo); single file: npx jest src/shared/lib/logger
+npm run test:rules        # Firestore rules in the emulator (firestore.rules; needs Java, downloads the emulator once)
 npm run check             # typecheck + lint + format:check + test; run before declaring a task done
 npx expo install <pkg>    # always use instead of npm i for Expo/RN packages (SDK-compatible versions)
 ```

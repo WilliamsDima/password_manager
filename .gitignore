@@ -66,3 +66,5 @@ service-account*.json
 
 # Local copies of every secret (keys, Firebase configs, signing keystore): never commit
 /secrets/
+firestore-debug.log
+ui-debug.log
