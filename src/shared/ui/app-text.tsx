@@ -1,37 +1,47 @@
-import { useMemo } from "react"
-import { StyleSheet, Text, type TextProps } from "react-native"
+import { Text, type TextProps } from "react-native"
+import { StyleSheet } from "react-native-unistyles"
 
-import { typography, useThemedStyles, type TextVariant, type Theme } from "@/shared/theme"
+import { typography, type TextVariant } from "@/shared/theme"
 
-export type TextTone = "default" | "muted" | "primary" | "danger" | "success"
-
-const variantStyles = StyleSheet.create({
-	title: typography.title,
-	heading: typography.heading,
-	body: typography.body,
-	label: typography.label,
-	caption: typography.caption,
-} satisfies Record<TextVariant, object>)
-
-const createToneStyles = ({ colors }: Theme) =>
-	({
-		default: { color: colors.text },
-		muted: { color: colors.textMuted },
-		primary: { color: colors.primary },
-		danger: { color: colors.danger },
-		success: { color: colors.success },
-	}) satisfies Record<TextTone, object>
+export type TextTone = "text" | "muted" | "primary" | "danger" | "success" | "onPrimary"
+export type TextAlign = "start" | "center"
 
 export const AppText = ({
 	variant = "body",
-	tone = "default",
-	style,
+	tone = "text",
+	align = "start",
 	...props
-}: TextProps & { readonly variant?: TextVariant; readonly tone?: TextTone }) => {
-	const tones = useThemedStyles(createToneStyles)
-	const textStyle = useMemo(
-		() => [variantStyles[variant], tones[tone], style],
-		[variant, tones, tone, style],
-	)
-	return <Text {...props} style={textStyle} />
+}: Omit<TextProps, "style"> & {
+	readonly variant?: TextVariant
+	readonly tone?: TextTone
+	readonly align?: TextAlign
+}) => {
+	styles.useVariants({ variant, tone, align })
+	return <Text {...props} style={styles.text} />
 }
+
+const styles = StyleSheet.create(theme => ({
+	text: {
+		variants: {
+			variant: {
+				title: typography.title,
+				heading: typography.heading,
+				body: typography.body,
+				label: typography.label,
+				caption: typography.caption,
+			},
+			tone: {
+				text: { color: theme.colors.text },
+				muted: { color: theme.colors.textMuted },
+				primary: { color: theme.colors.primary },
+				danger: { color: theme.colors.danger },
+				success: { color: theme.colors.success },
+				onPrimary: { color: theme.colors.onPrimary },
+			},
+			align: {
+				start: {},
+				center: { textAlign: "center" },
+			},
+		},
+	},
+}))

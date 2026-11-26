@@ -1,31 +1,12 @@
 import { useCallback, useMemo } from "react"
 import { Pressable, View } from "react-native"
+import { StyleSheet } from "react-native-unistyles"
 
 import { useHaptics } from "@/shared/services/haptics"
-import { useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 
 import { AppText } from "./app-text"
 
 export type SegmentOption<T extends string> = { readonly value: T; readonly label: string }
-
-const createStyles = ({ colors, radius, spacing }: Theme) =>
-	({
-		row: {
-			flexDirection: "row",
-			backgroundColor: colors.surfaceMuted,
-			borderRadius: radius.md,
-			padding: spacing.xs,
-		},
-		segment: {
-			flex: 1,
-			alignItems: "center",
-			borderRadius: radius.sm,
-			borderWidth: 1,
-			paddingVertical: spacing.sm + spacing.xs / 2,
-		},
-		segmentSelected: { backgroundColor: colors.surface, borderColor: colors.primary },
-		segmentIdle: { backgroundColor: "transparent", borderColor: "transparent" },
-	}) satisfies ThemedStyleSet
 
 const SegmentItem = <T extends string>({
 	option,
@@ -36,8 +17,8 @@ const SegmentItem = <T extends string>({
 	readonly value: T
 	readonly onChange: (value: T) => void
 }) => {
-	const styles = useThemedStyles(createStyles)
 	const selected = option.value === value
+	styles.useVariants({ selected })
 	const haptics = useHaptics()
 	const onPress = useCallback(() => {
 		if (!selected) haptics.selection()
@@ -46,17 +27,16 @@ const SegmentItem = <T extends string>({
 	const view = useMemo(
 		() => ({
 			state: { checked: selected },
-			style: [styles.segment, selected ? styles.segmentSelected : styles.segmentIdle],
 			tone: selected ? ("primary" as const) : ("muted" as const),
 		}),
-		[selected, styles],
+		[selected],
 	)
 	return (
 		<Pressable
 			accessibilityRole="radio"
 			accessibilityState={view.state}
 			onPress={onPress}
-			style={view.style}
+			style={styles.segment}
 		>
 			<AppText variant="label" tone={view.tone}>
 				{option.label}
@@ -75,7 +55,6 @@ export const SegmentedControl = <T extends string>({
 	readonly value: T
 	readonly onChange: (value: T) => void
 }) => {
-	const styles = useThemedStyles(createStyles)
 	const items = useMemo(
 		() =>
 			options.map(option => (
@@ -89,3 +68,25 @@ export const SegmentedControl = <T extends string>({
 		</View>
 	)
 }
+
+const styles = StyleSheet.create(theme => ({
+	row: {
+		flexDirection: "row",
+		backgroundColor: theme.colors.surfaceMuted,
+		borderRadius: theme.radius.md,
+		padding: theme.spacing.xs,
+	},
+	segment: {
+		flex: 1,
+		alignItems: "center",
+		borderRadius: theme.radius.sm,
+		borderWidth: 1,
+		paddingVertical: theme.spacing.sm + 2,
+		variants: {
+			selected: {
+				true: { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary },
+				false: { backgroundColor: "transparent", borderColor: "transparent" },
+			},
+		},
+	},
+}))

@@ -80,3 +80,6 @@ export const createTheme = (scheme: ColorScheme): Theme => ({
 	spacing,
 	radius,
 })
+
+/** Both themes, registered in Unistyles by `unistyles.ts`. */
+export const themes = { light: createTheme("light"), dark: createTheme("dark") } as const

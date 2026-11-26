@@ -19,6 +19,8 @@ const transformIgnorePatterns = expoPreset.transformIgnorePatterns.map((pattern,
 module.exports = {
 	preset: "jest-expo",
 	roots: ["<rootDir>/src"],
+	// Unistyles mocks first, then the app themes (UI modules call StyleSheet.create(theme => ...) on import).
+	setupFiles: ["react-native-unistyles/mocks", "<rootDir>/jest.setup.js"],
 	// Reanimated 4 ships its own resolver: it swaps native-only modules for their web versions in Jest.
 	resolver: "react-native-reanimated/jest/resolver",
 	moduleNameMapper: {

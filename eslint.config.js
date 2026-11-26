@@ -96,7 +96,7 @@ module.exports = defineConfig([
 				},
 				{
 					selector:
-						"JSXAttribute > JSXExpressionContainer > :matches(ConditionalExpression, LogicalExpression, TemplateLiteral, CallExpression, BinaryExpression)",
+						"JSXAttribute > JSXExpressionContainer > :matches(ConditionalExpression, LogicalExpression, TemplateLiteral, CallExpression, BinaryExpression, ObjectExpression, ArrayExpression)",
 					message:
 						"No computed values in JSX props. Compute them in useMemo above the JSX and pass the result.",
 				},

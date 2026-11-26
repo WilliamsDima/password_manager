@@ -1,38 +1,11 @@
-import { useMemo } from "react"
 import { TextInput, type TextInputProps } from "react-native"
+import { StyleSheet } from "react-native-unistyles"
 
-import {
-	typography,
-	useAppTheme,
-	useThemedStyles,
-	type Theme,
-	type ThemedStyleSet,
-} from "@/shared/theme"
+import { typography, useAppTheme } from "@/shared/theme"
 
-const createStyles = ({ colors, radius, spacing }: Theme) =>
-	({
-		input: {
-			...typography.body,
-			borderWidth: 1,
-			minHeight: 48,
-			paddingVertical: spacing.sm + spacing.xs / 2,
-			paddingHorizontal: spacing.lg,
-			color: colors.text,
-			backgroundColor: colors.surface,
-			borderColor: colors.inputBorder,
-			borderRadius: radius.md,
-		},
-		disabled: { opacity: 0.6 },
-	}) satisfies ThemedStyleSet
-
-export const FormInput = (props: TextInputProps) => {
+export const FormInput = (props: Omit<TextInputProps, "style">) => {
 	const { colors } = useAppTheme()
-	const styles = useThemedStyles(createStyles)
-	const { editable, style } = props
-	const inputStyle = useMemo(
-		() => [styles.input, editable === false && styles.disabled, style],
-		[styles, editable, style],
-	)
+	styles.useVariants({ disabled: props.editable === false })
 	return (
 		<TextInput
 			placeholderTextColor={colors.textMuted}
@@ -40,7 +13,22 @@ export const FormInput = (props: TextInputProps) => {
 			autoCorrect={false}
 			selectionColor={colors.primary}
 			{...props}
-			style={inputStyle}
+			style={styles.input}
 		/>
 	)
 }
+
+const styles = StyleSheet.create(theme => ({
+	input: {
+		...typography.body,
+		borderWidth: 1,
+		minHeight: 48,
+		paddingVertical: theme.spacing.sm + 2,
+		paddingHorizontal: theme.spacing.lg,
+		color: theme.colors.text,
+		backgroundColor: theme.colors.surface,
+		borderColor: theme.colors.inputBorder,
+		borderRadius: theme.radius.md,
+		variants: { disabled: { true: { opacity: 0.6 }, false: {} } },
+	},
+}))

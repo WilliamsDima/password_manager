@@ -1,4 +1,4 @@
-import type { ColorScheme } from "./tokens"
+import { UnistylesRuntime } from "react-native-unistyles"
 
 /** What the user picked; `system` follows the phone setting. */
 export type ThemeMode = "light" | "dark" | "system"
@@ -9,8 +9,12 @@ export const THEME_MODES: readonly ThemeMode[] = ["system", "light", "dark"]
 export const parseThemeMode = (value: string | null): ThemeMode =>
 	value === "light" || value === "dark" || value === "system" ? value : "system"
 
-/** `system` falls back to light when the phone reports no preference. */
-export const resolveColorScheme = (
-	mode: ThemeMode,
-	system: ColorScheme | null | undefined,
-): ColorScheme => (mode === "system" ? (system === "dark" ? "dark" : "light") : mode)
+/** Switches Unistyles to the mode: `system` = adaptive themes, otherwise a fixed theme. */
+export const applyThemeMode = (mode: ThemeMode): void => {
+	if (mode === "system") {
+		UnistylesRuntime.setAdaptiveThemes(true)
+		return
+	}
+	UnistylesRuntime.setAdaptiveThemes(false)
+	UnistylesRuntime.setTheme(mode)
+}

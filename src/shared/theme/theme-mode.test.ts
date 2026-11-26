@@ -1,7 +1,10 @@
-import { parseThemeMode, resolveColorScheme } from "./theme-mode"
-import { SecureStorageThemeStore } from "./theme-store"
-import { createTheme, darkColors, lightColors } from "./tokens"
+import { UnistylesRuntime } from "react-native-unistyles"
+
 import { FakeSecureStorage } from "@/shared/testing"
+
+import { applyThemeMode, parseThemeMode } from "./theme-mode"
+import { SecureStorageThemeStore } from "./theme-store"
+import { darkColors, lightColors, themes } from "./tokens"
 
 describe("theme mode", () => {
 	it("parses stored values and falls back to system", () => {
@@ -12,17 +15,23 @@ describe("theme mode", () => {
 		expect(parseThemeMode(null)).toBe("system")
 	})
 
-	it("resolves the scheme: explicit choice wins, system follows the phone", () => {
-		expect(resolveColorScheme("dark", "light")).toBe("dark")
-		expect(resolveColorScheme("light", "dark")).toBe("light")
-		expect(resolveColorScheme("system", "dark")).toBe("dark")
-		expect(resolveColorScheme("system", "light")).toBe("light")
-		expect(resolveColorScheme("system", null)).toBe("light")
+	it("applies system as adaptive themes, other modes as a fixed theme", () => {
+		const calls: string[] = []
+		jest.spyOn(UnistylesRuntime, "setAdaptiveThemes").mockImplementation(enabled => {
+			calls.push(`adaptive:${String(enabled)}`)
+		})
+		jest.spyOn(UnistylesRuntime, "setTheme").mockImplementation(name => {
+			calls.push(`theme:${name}`)
+		})
+		applyThemeMode("system")
+		applyThemeMode("dark")
+		expect(calls).toEqual(["adaptive:true", "adaptive:false", "theme:dark"])
 	})
 
-	it("builds the palette for the scheme", () => {
-		expect(createTheme("dark").colors).toBe(darkColors)
-		expect(createTheme("light").colors).toBe(lightColors)
+	it("has a palette per scheme", () => {
+		expect(themes.dark.colors).toBe(darkColors)
+		expect(themes.light.colors).toBe(lightColors)
+		expect(themes.dark.scheme).toBe("dark")
 	})
 })
 

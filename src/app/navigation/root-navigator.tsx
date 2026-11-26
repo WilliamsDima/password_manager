@@ -6,8 +6,8 @@ import {
 	type Theme as NavigationTheme,
 } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { useMemo } from "react"
 import { ActivityIndicator, View } from "react-native"
+import { StyleSheet } from "react-native-unistyles"
 import { useSelector } from "react-redux"
 
 import { selectSessionStatus, useVaultLockState } from "@/entities/session"
@@ -17,7 +17,7 @@ import { UnlockPage } from "@/pages/unlock"
 import { VaultPage } from "@/pages/vault"
 import { VaultSetupPage } from "@/pages/vault-setup"
 import { strings } from "@/shared/config"
-import { useAppTheme, useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
+import { themes, useAppTheme, useColorScheme, type Theme } from "@/shared/theme"
 
 import type { RootStackParamList } from "./types"
 
@@ -38,15 +38,14 @@ const toNavigationTheme = ({ scheme, colors }: Theme): NavigationTheme => {
 	}
 }
 
-const createSplashStyles = ({ colors }: Theme) =>
-	({
-		splash: {
-			flex: 1,
-			alignItems: "center",
-			justifyContent: "center",
-			backgroundColor: colors.background,
-		},
-	}) satisfies ThemedStyleSet
+const NAVIGATION_THEMES = {
+	light: toNavigationTheme(themes.light),
+	dark: toNavigationTheme(themes.dark),
+}
+
+const VAULT_OPTIONS = { title: strings.vault.title }
+const SETTINGS_OPTIONS = { title: strings.settings.title }
+const SIGN_IN_OPTIONS = { headerShown: false }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -57,9 +56,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
  * so no screen of it can be shown or reached.
  */
 export const RootNavigator = () => {
-	const appTheme = useAppTheme()
-	const styles = useThemedStyles(createSplashStyles)
-	const theme = useMemo(() => toNavigationTheme(appTheme), [appTheme])
+	const { colors } = useAppTheme()
+	const scheme = useColorScheme()
+	const theme = NAVIGATION_THEMES[scheme]
 	const status = useSelector(selectSessionStatus)
 	const lock = useVaultLockState()
 
@@ -69,10 +68,7 @@ export const RootNavigator = () => {
 	if (waiting) {
 		return (
 			<View style={styles.splash}>
-				<ActivityIndicator
-					color={appTheme.colors.primary}
-					accessibilityLabel={strings.common.loading}
-				/>
+				<ActivityIndicator color={colors.primary} accessibilityLabel={strings.common.loading} />
 			</View>
 		)
 	}
@@ -90,21 +86,22 @@ export const RootNavigator = () => {
 			<Stack.Navigator>
 				{status === "signed-in" ? (
 					<>
-						<Stack.Screen
-							name="Vault"
-							component={VaultPage}
-							options={{ title: strings.vault.title }}
-						/>
-						<Stack.Screen
-							name="Settings"
-							component={SettingsPage}
-							options={{ title: strings.settings.title }}
-						/>
+						<Stack.Screen name="Vault" component={VaultPage} options={VAULT_OPTIONS} />
+						<Stack.Screen name="Settings" component={SettingsPage} options={SETTINGS_OPTIONS} />
 					</>
 				) : (
-					<Stack.Screen name="SignIn" component={SignInPage} options={{ headerShown: false }} />
+					<Stack.Screen name="SignIn" component={SignInPage} options={SIGN_IN_OPTIONS} />
 				)}
 			</Stack.Navigator>
 		</NavigationContainer>
 	)
 }
+
+const styles = StyleSheet.create(theme => ({
+	splash: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: theme.colors.background,
+	},
+}))

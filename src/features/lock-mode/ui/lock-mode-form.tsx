@@ -1,26 +1,12 @@
 import { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
+import { StyleSheet } from "react-native-unistyles"
 
 import { MIN_PASSWORD_LENGTH, type LockMode } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { lockErrorMessage } from "@/shared/lib/lock-error-message"
 import { useHaptics } from "@/shared/services/haptics"
-import { useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 import { AppText, ErrorText, FormInput, PrimaryButton } from "@/shared/ui"
-
-const createStyles = ({ colors, radius, spacing }: Theme) =>
-	({
-		form: { gap: spacing.md },
-		option: {
-			borderWidth: 2,
-			gap: spacing.xs,
-			backgroundColor: colors.surface,
-			borderRadius: radius.md,
-			padding: spacing.lg,
-		},
-		optionSelected: { borderColor: colors.primary },
-		optionIdle: { borderColor: colors.inputBorder },
-	}) satisfies ThemedStyleSet
 
 type ModeOptionProps = {
 	readonly value: LockMode
@@ -32,26 +18,20 @@ type ModeOptionProps = {
 }
 
 const ModeOption = ({ value, title, hint, current, onSelect }: ModeOptionProps) => {
-	const styles = useThemedStyles(createStyles)
 	const selected = current === value
+	styles.useVariants({ selected })
 	const haptics = useHaptics()
 	const onPress = useCallback(() => {
 		if (!selected) haptics.selection()
 		onSelect(value)
 	}, [haptics, onSelect, value, selected])
-	const view = useMemo(
-		() => ({
-			state: { checked: selected },
-			style: [styles.option, selected ? styles.optionSelected : styles.optionIdle],
-		}),
-		[selected, styles],
-	)
+	const state = useMemo(() => ({ checked: selected }), [selected])
 	return (
 		<Pressable
 			onPress={onPress}
 			accessibilityRole="radio"
-			accessibilityState={view.state}
-			style={view.style}
+			accessibilityState={state}
+			style={styles.option}
 		>
 			<AppText variant="label">{title}</AppText>
 			{hint === undefined ? (
@@ -88,7 +68,6 @@ export const LockModeForm = ({
 	readonly submitLabel: string
 	readonly onSubmit: (value: LockModeSubmit) => Promise<void>
 }) => {
-	const styles = useThemedStyles(createStyles)
 	const [mode, setMode] = useState<LockMode>("password")
 	const [current, setCurrent] = useState("")
 	const [password, setPassword] = useState("")
@@ -212,3 +191,20 @@ export const LockModeForm = ({
 		</View>
 	)
 }
+
+const styles = StyleSheet.create(theme => ({
+	form: { gap: theme.spacing.md },
+	option: {
+		borderWidth: 2,
+		gap: theme.spacing.xs,
+		backgroundColor: theme.colors.surface,
+		borderRadius: theme.radius.md,
+		padding: theme.spacing.lg,
+		variants: {
+			selected: {
+				true: { borderColor: theme.colors.primary },
+				false: { borderColor: theme.colors.inputBorder },
+			},
+		},
+	},
+}))

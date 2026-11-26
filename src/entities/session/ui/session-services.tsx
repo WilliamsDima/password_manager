@@ -1,4 +1,4 @@
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react"
+import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react"
 
 import type { VaultLockService } from "../model/vault-lock-service"
 import type { VaultLockState } from "../model/vault-lock-types"
@@ -16,11 +16,12 @@ export const SessionServicesProvider = ({
 	lock,
 	recovery,
 	children,
-}: SessionServices & { readonly children: ReactNode }) => (
-	<SessionServicesContext.Provider value={{ lock, recovery }}>
-		{children}
-	</SessionServicesContext.Provider>
-)
+}: SessionServices & { readonly children: ReactNode }) => {
+	const services = useMemo(() => ({ lock, recovery }), [lock, recovery])
+	return (
+		<SessionServicesContext.Provider value={services}>{children}</SessionServicesContext.Provider>
+	)
+}
 
 const useServices = (): SessionServices => {
 	const services = useContext(SessionServicesContext)

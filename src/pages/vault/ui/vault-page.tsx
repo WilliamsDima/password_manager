@@ -1,6 +1,5 @@
 import { useNavigation } from "@react-navigation/native"
 import { useCallback, useMemo } from "react"
-import { StyleSheet } from "react-native"
 import { useSelector } from "react-redux"
 
 import {
@@ -33,10 +32,10 @@ export const VaultPage = () => {
 
 	return (
 		<Screen>
-			<AppText tone="muted" style={styles.centered}>
+			<AppText tone="muted" align="center">
 				{user?.email}
 			</AppText>
-			<AppText style={styles.centered}>{strings.vault.placeholder}</AppText>
+			<AppText align="center">{strings.vault.placeholder}</AppText>
 			<ErrorText message={errorMessage} />
 			{mode === "none" ? (
 				<></>
@@ -48,5 +47,3 @@ export const VaultPage = () => {
 		</Screen>
 	)
 }
-
-const styles = StyleSheet.create({ centered: { textAlign: "center" } })

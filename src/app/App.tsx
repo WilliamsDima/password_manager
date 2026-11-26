@@ -6,7 +6,7 @@ import { Provider } from "react-redux"
 import { SessionServicesProvider } from "@/entities/session"
 import { BackupServicesProvider } from "@/features/vault-backup"
 import { HapticsProvider } from "@/shared/services/haptics"
-import { AppThemeProvider, useAppTheme } from "@/shared/theme"
+import { AppThemeProvider, useColorScheme } from "@/shared/theme"
 
 import { StyleSheet, View } from "react-native"
 
@@ -32,7 +32,7 @@ const AppContent = ({
 	useEffect(() => {
 		preventScreenCaptureAsync().catch(() => undefined)
 	}, [])
-	const { scheme } = useAppTheme()
+	const scheme = useColorScheme()
 	const statusBarStyle = useMemo(() => (scheme === "dark" ? "light" : "dark"), [scheme])
 	useAuthSync(authService)
 	useVaultLockSync(lock)

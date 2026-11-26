@@ -12,8 +12,7 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated"
 import type { ViewProps, ViewStyle } from "react-native"
-
-import { useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
+import { StyleSheet } from "react-native-unistyles"
 
 /** Shared timings: every screen and list animates the same way. */
 export const SCREEN_ENTERING = FadeIn.duration(180)
@@ -44,9 +43,6 @@ export const useShake = (): {
 	return useMemo(() => ({ style, shake }), [style, shake])
 }
 
-const createStyles = ({ spacing }: Theme) =>
-	({ group: { gap: spacing.lg } }) satisfies ThemedStyleSet
-
 /** Wraps a group of fields (spaced like a screen) so they can shake together. */
 export const ShakeView = ({
 	style,
@@ -55,8 +51,7 @@ export const ShakeView = ({
 	readonly style: AnimatedStyle<ViewStyle>
 	readonly children: React.ReactNode
 }) => {
-	const styles = useThemedStyles(createStyles)
-	const groupStyle = useMemo(() => [styles.group, style], [styles, style])
+	const groupStyle = useMemo(() => [styles.group, style], [style])
 	return <Animated.View style={groupStyle}>{children}</Animated.View>
 }
 
@@ -67,3 +62,5 @@ export const ShakeView = ({
 export const AnimatedListItem = (props: ViewProps) => (
 	<Animated.View {...props} entering={ITEM_ENTERING} exiting={ITEM_EXITING} layout={CARD_LAYOUT} />
 )
+
+const styles = StyleSheet.create(theme => ({ group: { gap: theme.spacing.lg } }))
