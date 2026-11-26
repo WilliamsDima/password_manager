@@ -38,14 +38,7 @@ const SegmentItem = <T extends string>({
 			onPress={onPress}
 			style={styles.segment}
 		>
-			<AppText
-				variant="label"
-				tone={view.tone}
-				align="center"
-				numberOfLines={1}
-				adjustsFontSizeToFit
-				minimumFontScale={0.7}
-			>
+			<AppText variant="label" tone={view.tone} align="center">
 				{option.label}
 			</AppText>
 		</Pressable>
@@ -76,17 +69,21 @@ export const SegmentedControl = <T extends string>({
 	)
 }
 
-const styles = StyleSheet.create(theme => ({
+/** From this font scale on the options are stacked: three labels no longer fit in one row. */
+const STACK_FROM_FONT_SCALE = 1.25
+
+const styles = StyleSheet.create((theme, rt) => ({
 	row: {
-		flexDirection: "row",
+		flexDirection: rt.fontScale >= STACK_FROM_FONT_SCALE ? "column" : "row",
 		backgroundColor: theme.colors.surfaceMuted,
 		borderRadius: theme.radius.md,
 		padding: theme.spacing.xs,
 	},
 	segment: {
 		// Equal widths whatever the label length; a long label wraps instead of touching the edge.
-		flex: 1,
-		flexBasis: 0,
+		flex: rt.fontScale >= STACK_FROM_FONT_SCALE ? undefined : 1,
+		flexBasis: rt.fontScale >= STACK_FROM_FONT_SCALE ? undefined : 0,
+		alignSelf: "stretch",
 		alignItems: "center",
 		justifyContent: "center",
 		minHeight: 44,

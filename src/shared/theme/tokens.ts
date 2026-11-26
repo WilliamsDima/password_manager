@@ -15,6 +15,7 @@ export type ThemeColors = {
 	readonly danger: string
 	readonly onDanger: string
 	readonly success: string
+	readonly warning: string
 }
 
 export const lightColors: ThemeColors = {
@@ -30,6 +31,7 @@ export const lightColors: ThemeColors = {
 	danger: "#C4261D",
 	onDanger: "#FFFFFF",
 	success: "#17794A",
+	warning: "#9A5B00",
 }
 
 export const darkColors: ThemeColors = {
@@ -45,6 +47,7 @@ export const darkColors: ThemeColors = {
 	danger: "#FF8F86",
 	onDanger: "#0D0F12",
 	success: "#62D693",
+	warning: "#F2B24C",
 }
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const

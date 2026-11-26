@@ -19,6 +19,10 @@ import { CryptoJsLegacyDecryptor, type ILegacyDecryptor } from "@/shared/service
 import { ExpoClipboard, type IClipboard } from "@/shared/services/clipboard"
 import { ExpoHaptics, type IHaptics } from "@/shared/services/haptics"
 import { type IUrlOpener, LinkingUrlOpener } from "@/shared/services/links"
+import {
+	type IPasswordGenerator,
+	RandomPasswordGenerator,
+} from "@/shared/services/password-generator"
 import { ExpoFileStorage, type IFileStorage } from "@/shared/services/file-storage"
 import { ExpoRandom, type IRandom } from "@/shared/services/random"
 import { FirestoreSdkStore, type IRemoteStore } from "@/shared/services/remote-store"
@@ -52,6 +56,8 @@ export type AppDependencies = SessionApiDependencies &
 		readonly haptics: IHaptics
 		/** Opens an entry's address in the browser. */
 		readonly urlOpener: IUrlOpener
+		/** Random passwords for the entry form (6.3). */
+		readonly passwordGenerator: IPasswordGenerator
 		/** Backup export / import (5.5). */
 		readonly fileStorage: IFileStorage
 		readonly vaultBackup: VaultBackupService
@@ -99,6 +105,7 @@ export const createContainer = (): AppDependencies => {
 		clipboard: new ExpoClipboard(),
 		haptics: new ExpoHaptics(),
 		urlOpener: new LinkingUrlOpener(),
+		passwordGenerator: new RandomPasswordGenerator(random),
 		fileStorage,
 		themeStore: new SecureStorageThemeStore(secureStorage),
 		vaultBackup: new VaultBackupService(

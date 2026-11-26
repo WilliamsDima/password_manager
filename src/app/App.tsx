@@ -10,6 +10,7 @@ import { ClipboardProvider } from "@/shared/services/clipboard"
 import { FileStorageProvider } from "@/shared/services/file-storage"
 import { HapticsProvider } from "@/shared/services/haptics"
 import { UrlOpenerProvider } from "@/shared/services/links"
+import { PasswordGeneratorProvider } from "@/shared/services/password-generator"
 import { AppThemeProvider, useColorScheme } from "@/shared/theme"
 
 import { StyleSheet, View } from "react-native"
@@ -68,23 +69,28 @@ export const App = () => {
 			<AppThemeProvider store={container.themeStore}>
 				<HapticsProvider haptics={container.haptics}>
 					<UrlOpenerProvider opener={container.urlOpener}>
-						<ClipboardProvider clipboard={container.clipboard}>
-							<FileStorageProvider files={container.fileStorage}>
-								<MigrationServicesProvider migration={container.vaultMigration}>
-									<SessionServicesProvider
-										lock={container.vaultLock}
-										recovery={container.vaultRecovery}
-									>
-										<BackupServicesProvider
-											backup={container.vaultBackup}
-											files={container.fileStorage}
+						<PasswordGeneratorProvider generator={container.passwordGenerator}>
+							<ClipboardProvider clipboard={container.clipboard}>
+								<FileStorageProvider files={container.fileStorage}>
+									<MigrationServicesProvider migration={container.vaultMigration}>
+										<SessionServicesProvider
+											lock={container.vaultLock}
+											recovery={container.vaultRecovery}
 										>
-											<AppContent authService={container.authService} lock={container.vaultLock} />
-										</BackupServicesProvider>
-									</SessionServicesProvider>
-								</MigrationServicesProvider>
-							</FileStorageProvider>
-						</ClipboardProvider>
+											<BackupServicesProvider
+												backup={container.vaultBackup}
+												files={container.fileStorage}
+											>
+												<AppContent
+													authService={container.authService}
+													lock={container.vaultLock}
+												/>
+											</BackupServicesProvider>
+										</SessionServicesProvider>
+									</MigrationServicesProvider>
+								</FileStorageProvider>
+							</ClipboardProvider>
+						</PasswordGeneratorProvider>
 					</UrlOpenerProvider>
 				</HapticsProvider>
 			</AppThemeProvider>

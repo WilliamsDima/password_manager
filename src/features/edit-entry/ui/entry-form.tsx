@@ -1,11 +1,14 @@
 import { useCallback, useMemo, useState } from "react"
-import { View } from "react-native"
+import { Alert, View } from "react-native"
 import { StyleSheet } from "react-native-unistyles"
 
 import type { Entry, EntryInput } from "@/entities/entry"
 import { useVaultLock } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton } from "@/shared/ui"
+
+import { PasswordGeneratorPanel } from "./password-generator-panel"
+import { StrengthMeter } from "./strength-meter"
 
 /**
  * The entry form for creating and editing. It only collects text: saving belongs to the page.
@@ -30,6 +33,7 @@ export const EntryForm = ({
 	const [url, setUrl] = useState(initial?.url ?? "")
 	const [notes, setNotes] = useState(initial?.notes ?? "")
 	const [showPassword, setShowPassword] = useState(false)
+	const [generatorOpen, setGeneratorOpen] = useState(false)
 
 	const typed = useCallback(
 		(set: (text: string) => void) => (text: string) => {
@@ -44,6 +48,31 @@ export const EntryForm = ({
 	const onChangeUrl = useMemo(() => typed(setUrl), [typed])
 	const onChangeNotes = useMemo(() => typed(setNotes), [typed])
 
+	// A generated password goes into the field and is shown, so the user can see what was made.
+	const onGenerated = useCallback(
+		(generated: string) => {
+			lock.noteActivity()
+			const use = () => {
+				setPassword(generated)
+				setShowPassword(true)
+			}
+			// Replacing a password that is already typed (or saved) must be a conscious choice.
+			if (password === "") {
+				use()
+				return
+			}
+			Alert.alert(strings.generator.replaceTitle, strings.generator.replaceBody, [
+				{ text: strings.entry.cancel, style: "cancel" },
+				{ text: strings.generator.replace, style: "destructive", onPress: use },
+			])
+		},
+		[lock, password],
+	)
+
+	const onToggleGenerator = useCallback(() => {
+		setGeneratorOpen(current => !current)
+	}, [])
+
 	const onToggleShow = useCallback(() => {
 		setShowPassword(current => !current)
 	}, [])
@@ -52,11 +81,12 @@ export const EntryForm = ({
 		() => ({
 			canSave: title.trim().length > 0 && !busy,
 			toggleLabel: showPassword ? strings.entry.hide : strings.entry.show,
+			generatorLabel: generatorOpen ? strings.generator.close : strings.generator.open,
 			hidePassword: !showPassword,
 			// A shown password is plain text: this keyboard type stops the keyboard learning it.
 			passwordKeyboard: showPassword ? ("visible-password" as const) : ("default" as const),
 		}),
-		[title, busy, showPassword],
+		[title, busy, showPassword, generatorOpen],
 	)
 
 	const onSave = useCallback(() => {
@@ -96,7 +126,12 @@ export const EntryForm = ({
 					keyboardType={view.passwordKeyboard}
 					editable={!busy}
 				/>
-				<LinkButton label={view.toggleLabel} onPress={onToggleShow} />
+				<StrengthMeter password={password} />
+				<View style={styles.passwordActions}>
+					<LinkButton label={view.toggleLabel} onPress={onToggleShow} />
+					<LinkButton label={view.generatorLabel} onPress={onToggleGenerator} />
+				</View>
+				<PasswordGeneratorPanel open={generatorOpen} onGenerated={onGenerated} />
 			</View>
 			<View style={styles.field}>
 				<AppText variant="caption" tone="muted">
@@ -123,4 +158,5 @@ export const EntryForm = ({
 
 const styles = StyleSheet.create(theme => ({
 	field: { gap: theme.spacing.xs },
+	passwordActions: { flexDirection: "row", justifyContent: "space-between" },
 }))
