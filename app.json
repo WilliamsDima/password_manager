@@ -9,7 +9,7 @@
 		"platforms": ["android"],
 		"android": {
 			"package": "com.eclipse.account_manager",
-			"versionCode": 11,
+			"versionCode": 13,
 			"allowBackup": false,
 			"googleServicesFile": "./google-services.json",
 			"adaptiveIcon": {
@@ -24,8 +24,7 @@
 				"android.permission.WRITE_EXTERNAL_STORAGE",
 				"android.permission.SYSTEM_ALERT_WINDOW",
 				"android.permission.CAMERA",
-				"android.permission.READ_MEDIA_IMAGES",
-				"android.permission.DETECT_SCREEN_CAPTURE"
+				"android.permission.READ_MEDIA_IMAGES"
 			],
 			"predictiveBackGestureEnabled": false
 		},
