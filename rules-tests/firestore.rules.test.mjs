@@ -7,6 +7,7 @@ import {
 import {
 	Timestamp,
 	deleteDoc,
+	deleteField,
 	doc,
 	getDoc,
 	serverTimestamp,
@@ -102,6 +103,19 @@ describe("v2 profile (after migration)", () => {
 		const { items: _items, ...rest } = migrated()
 		await seed(migrated())
 		await assertSucceeds(setDoc(profile(as(UID)), rest))
+	})
+	it("allows the exact request the app sends to delete the old copy: items: deleteField()", async () => {
+		await seed(migrated())
+		await assertSucceeds(updateDoc(profile(as(UID)), { items: deleteField() }))
+	})
+	it("rejects deleting items together with a changed crypto", async () => {
+		await seed(migrated())
+		await assertFails(
+			updateDoc(profile(as(UID)), {
+				items: deleteField(),
+				crypto: { ...cryptoV(1), wrappedDek: "v2.other.key" },
+			}),
+		)
 	})
 	it("rejects replacing crypto with the same rkVersion or a jump", async () => {
 		await seed(migrated())

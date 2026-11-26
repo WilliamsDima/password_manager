@@ -8,7 +8,7 @@ Password manager for Android (package `com.eclipse.account_manager`). It was on 
 
 The v2 rewrite is feature-complete on branch `feature/v2-rework` (release build checked on a phone, 2026-11-26); what is left is in [docs/ROADMAP.md](docs/ROADMAP.md) (phase 7):
 - **Root = v2**: a new Expo app (Expo SDK 58, React Native 0.88, React 19, TypeScript 6) built per [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/CRYPTO.md](docs/CRYPTO.md).
-- **[legacy/](legacy/) = v1**: the old RN 0.68 app, kept read-only until the final backup (7.3) is done: `scripts/backup-firestore.mjs` still reads the Firebase config from `legacy/src/config/firebase.ts`. It is deleted after that. Do not modify it. It is excluded from tsc, ESLint, Prettier and Jest.
+- **v1 is gone**: the old RN 0.68 app was deleted from the repo (2026-11-26, after the owner migrated and deleted the old data). Its code stays in git history; its data format and the migration are described in [docs/CRYPTO.md](docs/CRYPTO.md) §6.
 
 ## Commands (v2, repo root)
 
@@ -32,7 +32,7 @@ npx expo install <pkg>    # always use instead of npm i for Expo/RN packages (SD
 - Expo APIs change every SDK. Check the versioned docs (`https://docs.expo.dev/versions/v58.0.0/`) or the installed package's types instead of relying on memory.
 
 ### Required untracked files
-- `google-services.json` in the repo root (copy of `legacy/Android/app/google-services.json`). Needed by `@react-native-firebase` at prebuild.
+- `google-services.json` in the repo root (download it from the Firebase console, project settings, or restore it from `secrets/firebase/`). Needed by `@react-native-firebase` at prebuild.
 - Release signing key: a **new** v2 key (not the v1 Play key), outside the repo at `~/.android-keys/password-manager/release.jks`, alias `pm-release`. Path and passwords are in `~/.gradle/gradle.properties` (`PM_RELEASE_STORE_FILE`, `PM_RELEASE_KEY_ALIAS`, `PM_RELEASE_STORE_PASSWORD`, `PM_RELEASE_KEY_PASSWORD`). On another machine copy both files; without them `assembleRelease` fails (it never falls back to the debug key). Wired by the config plugin `plugins/with-release-signing.js`. Build: `cd android && ./gradlew assembleRelease` → `android/app/build/outputs/apk/release/app-release.apk`. v1 (Play key) cannot be updated in place: uninstall it first.
 
 ### Secrets folder (`secrets/`, gitignored)
@@ -41,10 +41,8 @@ One local folder holds a copy of every secret, so that it can be saved in one go
 | In `secrets/` | Restore to |
 |---|---|
 | `firebase/google-services.json` | repo root `google-services.json` |
-| `firebase/firebase.ts` | `legacy/src/config/firebase.ts` (only for `scripts/backup-firestore.mjs`) |
 | `android/release.jks` | `~/.android-keys/password-manager/release.jks` |
 | `android/gradle.properties` | `~/.gradle/gradle.properties` (fix the absolute `PM_RELEASE_STORE_FILE` path for the new machine) |
-| `android/v1-play-key.jks`, `android/private_key.pepk` | v1 Play key and its upload file (`legacy/Android/app/`; copy once from the old machine) |
 | `claude/telegram.json` | `.claude/telegram.json` |
 | `backups/` | `backups/` (Firestore ciphertext backups) |
 
@@ -69,11 +67,10 @@ The v1 encryption key (text/QR) is not a file: store it in your password manager
   - Empty branch of a JSX conditional is `<></>`, never `null` (so React Native never renders a stray value outside `<Text>`).
   - Hooks go above any early `return`.
 
-## Legacy v1 (legacy/), for reference and migration
+## Old v1 data format (for the migration code only)
 
-- RN 0.68, Redux slice with side effects in reducers, Atomic Design components, i18next (ru/en/uk), Firebase JS SDK (`firestore/lite`). Its Firebase config is in gitignored `legacy/src/config/firebase.ts`. `scripts/backup-firestore.mjs` reads the apiKey and projectId from there.
-- Encryption: one key per user, `CryptoJS.AES.encrypt(JSON.stringify(value), key)` (OpenSSL "Salted__" format, `EVP_BytesToKey`/MD5, AES-256-CBC), on both `title` and `message` (`{login, password, description}`) of each item. Firestore `users/{uid}` = `{id, email, displayName, dateCreate, items: [{id: timestamp, title, message}]}`. The whole `items` array is rewritten on each change. Migration to v2: docs/CRYPTO.md §6.
-- Known problems: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
+- Encryption: one key per user, `CryptoJS.AES.encrypt(JSON.stringify(value), key)` (OpenSSL "Salted__" format, `EVP_BytesToKey`/MD5, AES-256-CBC), on both `title` and `message` (`{login, password, description}`) of each item. Firestore `users/{uid}` = `{id, email, displayName, dateCreate, items: [{id: timestamp, title, message}]}`; the whole `items` array was rewritten on each change. The decryptor is `shared/services/legacy-decryptor`; the migration is `features/vault-migration`.
+- Known problems of v1: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md).
 
 ## Work process
 
@@ -85,5 +82,5 @@ The v1 encryption key (text/QR) is not a file: store it in your password manager
 - Git: all rework happens on branch `feature/v2-rework`. Commit messages follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `build:`, `test:`, `style:`, `perf:`, `ci:`; optional scope, e.g. `feat(crypto): ...`; imperative, English subject line). **Never commit or push without the user's explicit permission in the current conversation**: after a task is done, propose the commit message and wait.
 - Telegram notifications: `.claude/hooks/telegram-notify.mjs` (Stop/Notification hooks), secrets in gitignored `.claude/telegram.json`.
 - Data backup: `node scripts/backup-firestore.mjs` → `backups/` (gitignored, ciphertext only; exports the v1 `items` and the v2 `entries`).
-- **Release build:** raise `android.versionCode` in `app.json` for every APK that is given to the owner (the phone installs a build only if the code is not lower), run `npm run prebuild`, then `./gradlew assembleRelease`. Check the result with `apksigner verify --print-certs` (certificate SHA-256 must end in `…4B:40:00`, see the secrets table) and `aapt dump badging` (no CAMERA permission until the QR scanner exists). The release APK is signed with the key from `~/.gradle/gradle.properties`; it never falls back to the debug key. Release builds are `arm64-v8a` only (`buildArchs` in `app.json`, ~34 MB; a universal APK is ~125 MB). **After every release build send the APK to the owner's Telegram bot**: `node .claude/hooks/telegram-notify.mjs --document <apk> "<version, versionCode, SHA-256>"` (the Bot API accepts files up to 50 MB; the script refuses larger ones) and copy it to `~/Downloads/password-manager-<version>-build<versionCode>-arm64-release.apk`.
+- **Release build:** raise `android.versionCode` in `app.json` for every APK that is given to the owner (the phone installs a build only if the code is not lower), run `npm run prebuild`, then `./gradlew assembleRelease`. **Always install and launch the release APK on the emulator (Android 14+: `Pixel_9_Pro`) before sending it to the owner** (`adb uninstall` the debug app first, the signatures differ): a release-only crash (for example a blocked permission a native module needs) is invisible in debug. Check the result with `apksigner verify --print-certs` (certificate SHA-256 must end in `…4B:40:00`, see the secrets table) and `aapt dump badging` (no CAMERA permission until the QR scanner exists). The release APK is signed with the key from `~/.gradle/gradle.properties`; it never falls back to the debug key. Release builds are `arm64-v8a` only (`buildArchs` in `app.json`, ~34 MB; a universal APK is ~125 MB). **After every release build send the APK to the owner's Telegram bot**: `node .claude/hooks/telegram-notify.mjs --document <apk> "<version, versionCode, SHA-256>"` (the Bot API accepts files up to 50 MB; the script refuses larger ones) and copy it to `~/Downloads/password-manager-<version>-build<versionCode>-arm64-release.apk`.
 - Source layout (FSD): `entities/{entry,session}`, `features/{copy-secret,delete-entry,edit-entry,lock-mode,open-url,switch-theme,toggle-favorite,vault-backup,vault-migration}`, `widgets/{entry-list,onboarding}`, `pages/{entry-details,entry-edit,settings,sign-in,unlock,vault,vault-setup}`.

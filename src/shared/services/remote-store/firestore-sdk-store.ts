@@ -229,6 +229,26 @@ export class FirestoreSdkStore implements IRemoteStore {
 			})
 		})
 
+	public readonly deleteLegacyItems = (uid: string): Promise<void> =>
+		run(() => {
+			const db = getFirestore()
+			const profileRef = doc(db, "users", uid)
+			return runTransaction(db, async transaction => {
+				const profile = await transaction.get(profileRef)
+				const data: unknown = profile.data()
+				// Never delete the old copy of an account that has no v2 keys yet.
+				if (
+					!profile.exists() ||
+					!isRecord(data) ||
+					data.crypto == null ||
+					data.schemaVersion !== 2
+				) {
+					throw new AppError("conflict", "Profile is not migrated")
+				}
+				transaction.update(profileRef, { items: deleteField() })
+			})
+		})
+
 	public readonly flushPendingWrites = (): Promise<void> =>
 		run(() => waitForPendingWrites(getFirestore()))
 

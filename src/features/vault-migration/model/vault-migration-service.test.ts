@@ -802,4 +802,34 @@ describe("VaultMigrationService: setup kind and new account", () => {
 		expect(ctx.remote.entries.size).toBe(2)
 		expect(ctx.remote.profiles.get(UID)?.crypto).not.toBeNull()
 	})
+
+	it("tells whether the old v1 copy is still in the account", async () => {
+		const ctx = setup()
+		expect(await ctx.service.hasLegacyData(UID)).toBe(false) // not migrated: items belong to v1
+		const plan = await ctx.service.prepare(UID, LEGACY_KEY)
+		await ctx.service.commit(plan)
+		expect(await ctx.service.hasLegacyData(UID)).toBe(true)
+	})
+
+	it("deletes only the old copy: entries and keys stay, a second call is harmless", async () => {
+		const ctx = setup()
+		const plan = await ctx.service.prepare(UID, LEGACY_KEY)
+		await ctx.service.commit(plan)
+		const entriesBefore = ctx.remote.entries.size
+
+		await ctx.service.deleteLegacyData(UID)
+
+		const profile = ctx.remote.profiles.get(UID)
+		expect(profile?.legacyItems).toBeUndefined()
+		expect(profile?.crypto).not.toBeNull()
+		expect(ctx.remote.entries.size).toBe(entriesBefore)
+		expect(await ctx.service.hasLegacyData(UID)).toBe(false)
+		await expect(ctx.service.deleteLegacyData(UID)).resolves.toBeUndefined()
+	})
+
+	it("refuses to delete the old copy of an account that was not migrated", async () => {
+		const ctx = setup()
+		await expect(ctx.service.deleteLegacyData(UID)).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.remote.profiles.get(UID)?.legacyItems).toBe(LEGACY_ITEMS)
+	})
 })

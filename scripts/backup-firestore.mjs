@@ -3,7 +3,7 @@
 //
 //   node scripts/backup-firestore.mjs
 //
-// - Reads apiKey/projectId from legacy/src/config/firebase.ts.
+// - Reads apiKey/projectId from google-services.json (repo root, or secrets/firebase/).
 // - Asks for email + password (Firebase Auth REST), downloads users/{uid}.
 // - Saves backups/firestore-<uid>-<timestamp>.json (data stays encrypted, as in Firestore):
 //   `data` = profile (v1 `items` and/or v2 `crypto`), `entries` = v2 entry documents.
@@ -27,12 +27,14 @@ if (process.argv.includes("--help")) {
 }
 
 function readFirebaseConfig() {
-	const src = fs.readFileSync(path.join(root, "legacy/src/config/firebase.ts"), "utf8")
-	const get = name => src.match(new RegExp(`["']?${name}["']?\\s*:\\s*["']([^"']+)["']`))?.[1]
-	const apiKey = get("apiKey")
-	const projectId = get("projectId")
-	if (!apiKey || !projectId)
-		throw new Error("apiKey/projectId не найдены в legacy/src/config/firebase.ts")
+	const file = ["google-services.json", "secrets/firebase/google-services.json"]
+		.map(name => path.join(root, name))
+		.find(candidate => fs.existsSync(candidate))
+	if (!file) throw new Error("google-services.json не найден (корень репозитория или secrets/firebase/)")
+	const json = JSON.parse(fs.readFileSync(file, "utf8"))
+	const apiKey = json.client?.[0]?.api_key?.[0]?.current_key
+	const projectId = json.project_info?.project_id
+	if (!apiKey || !projectId) throw new Error("apiKey/projectId не найдены в google-services.json")
 	return { apiKey, projectId }
 }
 

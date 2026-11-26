@@ -27,5 +27,5 @@ module.exports = {
 		"^@/(.*)$": "<rootDir>/src/$1",
 	},
 	transformIgnorePatterns,
-	testPathIgnorePatterns: ["/node_modules/", "/legacy/"],
+	testPathIgnorePatterns: ["/node_modules/"],
 }

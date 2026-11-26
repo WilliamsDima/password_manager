@@ -113,6 +113,15 @@ export class FakeRemoteStore implements IRemoteStore {
 			}
 		})
 
+	public readonly deleteLegacyItems = (uid: string): Promise<void> =>
+		this.transaction(() => {
+			const profile = this.profiles.get(uid)
+			if (profile?.crypto == null) throw new AppError("conflict", "Profile is not migrated")
+			return () => {
+				this.profiles.set(uid, { ...profile, legacyItems: undefined })
+			}
+		})
+
 	public readonly flushPendingWrites = (): Promise<void> => {
 		this.flushCalls += 1
 		return Promise.resolve()

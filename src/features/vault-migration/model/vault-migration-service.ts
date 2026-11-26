@@ -247,6 +247,19 @@ export class VaultMigrationService {
 		await this.clearPending()
 	}
 
+	/** True while the account still holds the old v1 `items` (read from the server). */
+	public readonly hasLegacyData = async (uid: string): Promise<boolean> => {
+		const profile = await this.remote.getProfile(uid, "server")
+		return profile?.crypto != null && profile.legacyItems !== undefined
+	}
+
+	/**
+	 * Deletes the old, weakly encrypted v1 copy from the account (docs/CRYPTO.md §6.7). Irreversible
+	 * without a backup, so only the user triggers it, after a confirmation. Entries are untouched.
+	 */
+	public readonly deleteLegacyData = (uid: string): Promise<void> =>
+		this.remote.deleteLegacyItems(uid)
+
 	/** Removes the saved pair once the DEK lives in the regular key storage. */
 	public readonly clearPending = (): Promise<void> =>
 		this.secureStorage.remove(PENDING_MIGRATION_KEY)

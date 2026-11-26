@@ -95,6 +95,13 @@ export type IRemoteStore = {
 		},
 	) => Promise<void>
 
+	/**
+	 * Removes the v1 `items` field (the old, weakly encrypted copy) from a v2 profile
+	 * (docs/CRYPTO.md §6.7), one transaction, online only. The entries and `crypto` are not touched.
+	 * Rejects with `AppError("conflict")` unless the profile exists and already has `crypto`.
+	 */
+	readonly deleteLegacyItems: (uid: string) => Promise<void>
+
 	/** Resolves when every queued local write has reached the server (before a DEK change). */
 	readonly flushPendingWrites: () => Promise<void>
 

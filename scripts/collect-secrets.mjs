@@ -20,14 +20,11 @@ const target = path.join(root, "secrets")
 // from: where the app/tooling expects the file; to: its place inside secrets/.
 const SECRETS = [
 	{ from: path.join(root, "google-services.json"), to: "firebase/google-services.json" },
-	{ from: path.join(root, "legacy/src/config/firebase.ts"), to: "firebase/firebase.ts" },
 	{
 		from: path.join(home, ".android-keys/password-manager/release.jks"),
 		to: "android/release.jks",
 	},
 	{ from: path.join(home, ".gradle/gradle.properties"), to: "android/gradle.properties" },
-	{ from: path.join(root, "legacy/Android/app/key.jks"), to: "android/v1-play-key.jks" },
-	{ from: path.join(root, "legacy/Android/app/private_key.pepk"), to: "android/private_key.pepk" },
 	{ from: path.join(root, ".claude/telegram.json"), to: "claude/telegram.json" },
 	{ from: path.join(root, "backups"), to: "backups" },
 ]

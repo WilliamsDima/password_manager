@@ -54,7 +54,7 @@ export const PrimaryButton = ({
 			{loading ? (
 				<ActivityIndicator color={colors.onPrimary} />
 			) : (
-				<AppText variant="label" tone="onPrimary">
+				<AppText variant="label" tone="onPrimary" align="center">
 					{label}
 				</AppText>
 			)}
@@ -97,7 +97,7 @@ export const SecondaryButton = ({
 			{loading ? (
 				<ActivityIndicator color={spinnerColor} />
 			) : (
-				<AppText variant="label" tone={tone}>
+				<AppText variant="label" tone={tone} align="center">
 					{label}
 				</AppText>
 			)}
@@ -142,6 +142,8 @@ const styles = StyleSheet.create(theme => ({
 		backgroundColor: theme.colors.primary,
 		borderRadius: theme.radius.md,
 		paddingVertical: theme.spacing.md,
+		// A long label wraps inside the button instead of touching its edge.
+		paddingHorizontal: theme.spacing.md,
 		variants: { inactive: inactiveVariant },
 	},
 	secondary: {
@@ -153,6 +155,7 @@ const styles = StyleSheet.create(theme => ({
 		backgroundColor: theme.colors.surface,
 		borderRadius: theme.radius.md,
 		paddingVertical: theme.spacing.md,
+		paddingHorizontal: theme.spacing.md,
 		variants: {
 			inactive: inactiveVariant,
 			danger: { true: { borderColor: theme.colors.danger }, false: {} },

@@ -18,7 +18,6 @@ const layerPolicies = LAYERS.map((layer, index) => ({
 module.exports = defineConfig([
 	{
 		ignores: [
-			"legacy/**",
 			"secrets/**",
 			"android/**",
 			"ios/**",

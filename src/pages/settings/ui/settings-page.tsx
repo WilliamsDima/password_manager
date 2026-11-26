@@ -6,6 +6,7 @@ import { useSignOutMutation, useVaultLock, useVaultLockState } from "@/entities/
 import { LockModeForm, type LockModeSubmit } from "@/features/lock-mode"
 import { ThemeSwitcher } from "@/features/switch-theme"
 import { BackupSection } from "@/features/vault-backup"
+import { LegacyDataSection } from "@/features/vault-migration"
 import { strings } from "@/shared/config"
 import { authErrorMessage } from "@/shared/lib/auth-error-message"
 import {
@@ -93,6 +94,7 @@ export const SettingsPage = () => {
 					)}
 				</Card>
 				<BackupSection />
+				<LegacyDataSection />
 				<Card>
 					<SecondaryButton
 						label={strings.settings.signOut}

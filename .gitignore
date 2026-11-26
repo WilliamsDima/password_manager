@@ -45,14 +45,7 @@ GoogleService-Info.plist
 *.mobileprovision
 
 # Legacy v1 app (kept for reference until phase 7, see docs/ROADMAP.md)
-legacy/src/config/
-legacy/node_modules/
-legacy/Android/build/
-legacy/Android/app/build/
-legacy/Android/.gradle/
-legacy/Android/local.properties
-!legacy/Android/app/debug.keystore
-
+!
 # Claude Code local secrets / data backups
 .claude/settings.local.json
 .claude/telegram.json
