@@ -43,6 +43,16 @@ export const entryApi = baseApi.injectEndpoints({
 			},
 			invalidatesTags: ["Entry"],
 		}),
+		setEntryFavorite: build.mutation<
+			EntrySaved,
+			{ readonly uid: string; readonly entryId: string; readonly favorite: boolean }
+		>({
+			queryFn: ({ uid, entryId, favorite }, { extra }) => {
+				const { entryRepository } = extra as EntryApiDependencies
+				return toQueryResult(() => entryRepository.setFavorite(uid, entryId, favorite))
+			},
+			invalidatesTags: ["Entry"],
+		}),
 		deleteEntry: build.mutation<EntryRemoved, { readonly uid: string; readonly entryId: string }>({
 			queryFn: ({ uid, entryId }, { extra }) => {
 				const { entryRepository } = extra as EntryApiDependencies
@@ -57,5 +67,6 @@ export const {
 	useGetEntriesQuery,
 	useCreateEntryMutation,
 	useUpdateEntryMutation,
+	useSetEntryFavoriteMutation,
 	useDeleteEntryMutation,
 } = entryApi

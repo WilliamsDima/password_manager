@@ -3,6 +3,7 @@ import type {
 	EntryRewrite,
 	EntryWrite,
 	IRemoteStore,
+	ReadSource,
 	RemoteCrypto,
 	RemoteCryptoInput,
 	RemoteEntry,
@@ -45,6 +46,17 @@ export class FakeRemoteStore implements IRemoteStore {
 			return Promise.reject(new AppError("network", "Remote storage failed"))
 		}
 		return Promise.resolve([...this.entries.values()])
+	}
+
+	public readonly getEntry = (
+		_uid: string,
+		entryId: string,
+		source: ReadSource,
+	): Promise<RemoteEntry | null> => {
+		if (this.offline && source === "server") {
+			return Promise.reject(new AppError("network", "Remote storage failed"))
+		}
+		return Promise.resolve(this.entries.get(entryId) ?? null)
 	}
 
 	public readonly setEntry = (_uid: string, entry: EntryWrite): Promise<WriteStatus> => {

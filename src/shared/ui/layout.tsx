@@ -12,6 +12,13 @@ export const Screen = ({ children }: { readonly children: React.ReactNode }) => 
 	</Animated.View>
 )
 
+/** Top-aligned screen for a list: background, side padding and a gap, no vertical centering. */
+export const Page = ({ children }: { readonly children: React.ReactNode }) => (
+	<Animated.View style={styles.page} entering={SCREEN_ENTERING}>
+		{children}
+	</Animated.View>
+)
+
 /** Scrolling screen for long content (settings). */
 export const ScrollScreen = ({ children }: { readonly children: React.ReactNode }) => (
 	<ScrollView
@@ -43,6 +50,13 @@ const styles = StyleSheet.create(theme => ({
 		backgroundColor: theme.colors.background,
 		padding: theme.spacing.xl,
 		gap: theme.spacing.lg,
+	},
+	page: {
+		flex: 1,
+		backgroundColor: theme.colors.background,
+		paddingHorizontal: theme.spacing.lg,
+		paddingTop: theme.spacing.md,
+		gap: theme.spacing.md,
 	},
 	scroll: { backgroundColor: theme.colors.background },
 	scrollContent: { padding: theme.spacing.xl, gap: theme.spacing.lg },

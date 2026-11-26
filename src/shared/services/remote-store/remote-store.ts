@@ -62,6 +62,12 @@ export type EntryRewrite = EntryWrite & { readonly expectedCt: string }
 export type IRemoteStore = {
 	readonly getProfile: (uid: string, source: ReadSource) => Promise<RemoteProfile | null>
 	readonly listEntries: (uid: string, source: ReadSource) => Promise<readonly RemoteEntry[]>
+	/** One entry document, or `null` if it does not exist (any more). */
+	readonly getEntry: (
+		uid: string,
+		entryId: string,
+		source: ReadSource,
+	) => Promise<RemoteEntry | null>
 	/** Creates or replaces one entry document; `updatedAt` is set by the server. */
 	readonly setEntry: (uid: string, entry: EntryWrite) => Promise<WriteStatus>
 	readonly deleteEntry: (uid: string, entryId: string) => Promise<WriteStatus>

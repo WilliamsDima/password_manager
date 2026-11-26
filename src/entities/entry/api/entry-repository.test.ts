@@ -121,3 +121,39 @@ describe("EntryRepository", () => {
 		await expect(repo.list(UID)).rejects.toMatchObject({ code: "network" })
 	})
 })
+
+describe("EntryRepository.setFavorite", () => {
+	it("flips the star on the current document and keeps updatedAt", async () => {
+		const { repo, state } = setup()
+		const { entry } = await repo.create(UID, input("Почта"))
+		state.now = NOW + 9000
+		const { entry: starred, synced } = await repo.setFavorite(UID, entry.id, true)
+		expect(synced).toBe(true)
+		expect(starred).toMatchObject({ favorite: true, updatedAt: NOW, password: "p@ss" })
+		expect((await repo.list(UID)).entries[0]).toEqual(starred)
+	})
+
+	it("does not roll back a change made elsewhere since the list was read", async () => {
+		const { repo } = setup()
+		const { entry: stale } = await repo.create(UID, input("Почта"))
+		await repo.update(UID, { ...stale, password: "changed-elsewhere" })
+		// The screen still holds `stale`; the star must act on what is stored now.
+		const { entry } = await repo.setFavorite(UID, stale.id, true)
+		expect(entry.password).toBe("changed-elsewhere")
+	})
+
+	it("falls back to the cache when the server cannot be reached", async () => {
+		const { repo, remote } = setup()
+		const { entry } = await repo.create(UID, input("Почта"))
+		remote.offline = true
+		const result = await repo.setFavorite(UID, entry.id, true)
+		expect(result).toMatchObject({ synced: false, entry: { favorite: true } })
+	})
+
+	it("rejects with not-found when the entry is gone", async () => {
+		const { repo } = setup()
+		await expect(repo.setFavorite(UID, "missing", true)).rejects.toMatchObject({
+			code: "not-found",
+		})
+	})
+})

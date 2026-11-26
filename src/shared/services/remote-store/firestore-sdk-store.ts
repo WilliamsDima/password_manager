@@ -153,6 +153,17 @@ export class FirestoreSdkStore implements IRemoteStore {
 			return snapshot.docs.map(toEntry)
 		})
 
+	public readonly getEntry = (
+		uid: string,
+		entryId: string,
+		source: ReadSource,
+	): Promise<RemoteEntry | null> =>
+		run(async () => {
+			const ref = doc(getFirestore(), "users", uid, "entries", entryId)
+			const snapshot = await (source === "server" ? getDocFromServer(ref) : getDoc(ref))
+			return snapshot.exists() ? toEntry(snapshot) : null
+		})
+
 	public readonly setEntry = (uid: string, entry: EntryWrite): Promise<WriteStatus> =>
 		run(() =>
 			settleWithin(

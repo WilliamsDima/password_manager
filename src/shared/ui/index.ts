@@ -1,6 +1,7 @@
 export { AppText, type TextTone } from "./app-text"
+export { ChipToggle } from "./chip-toggle"
 export { LinkButton, PrimaryButton, SecondaryButton } from "./buttons"
 export { FormInput } from "./form-input"
-export { Card, ErrorText, Screen, ScrollScreen } from "./layout"
+export { Card, ErrorText, Page, Screen, ScrollScreen } from "./layout"
 export { AnimatedListItem, ShakeView, useShake } from "./motion"
 export { SegmentedControl, type SegmentOption } from "./segmented-control"

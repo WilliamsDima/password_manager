@@ -36,6 +36,13 @@ export type IEntryRepository = {
 	 * created again; with concurrent edits the last write wins (docs/CRYPTO.md §5).
 	 */
 	readonly update: (uid: string, entry: Entry) => Promise<EntrySaved>
+	/**
+	 * Flips `favorite` on the **current** version of the document: it is read fresh (server first,
+	 * cache when offline), so a password changed on another device is not rolled back by a tap on
+	 * the star. `updatedAt` stays as it was: a star is not an edit. Rejects with `not-found` if
+	 * the entry no longer exists.
+	 */
+	readonly setFavorite: (uid: string, entryId: string, favorite: boolean) => Promise<EntrySaved>
 	readonly remove: (uid: string, entryId: string) => Promise<EntryRemoved>
 }
 
@@ -78,9 +85,29 @@ export class EntryRepository implements IEntryRepository {
 	public readonly update = (uid: string, entry: Entry): Promise<EntrySaved> =>
 		this.write(uid, { ...entry, updatedAt: this.now() })
 
+	public readonly setFavorite = async (
+		uid: string,
+		entryId: string,
+		favorite: boolean,
+	): Promise<EntrySaved> => {
+		const remote = await this.readFresh(uid, entryId)
+		if (remote === null) throw new AppError("not-found", "Entry no longer exists")
+		const current = this.withDek(dek => this.codec.decrypt(dek, uid, entryId, remote.ct))
+		return this.write(uid, { ...current, id: entryId, favorite })
+	}
+
 	public readonly remove = async (uid: string, entryId: string): Promise<EntryRemoved> => ({
 		synced: (await this.remoteStore.deleteEntry(uid, entryId)) === "synced",
 	})
+
+	private readonly readFresh = async (uid: string, entryId: string) => {
+		try {
+			return await this.remoteStore.getEntry(uid, entryId, "server")
+		} catch (error) {
+			if (!(error instanceof AppError) || error.code !== "network") throw error
+			return this.remoteStore.getEntry(uid, entryId, "default")
+		}
+	}
 
 	private readonly write = async (uid: string, entry: Entry): Promise<EntrySaved> => {
 		const { id, ...payload } = entry

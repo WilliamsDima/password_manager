@@ -6,9 +6,16 @@ export {
 } from "./lib/legacy-items"
 export { EntryCodec } from "./lib/entry-codec"
 export {
+	ENTRY_SORT_ORDERS,
+	visibleEntries,
+	type EntryListOptions,
+	type EntrySortOrder,
+} from "./lib/entry-view"
+export {
 	useCreateEntryMutation,
 	useDeleteEntryMutation,
 	useGetEntriesQuery,
+	useSetEntryFavoriteMutation,
 	useUpdateEntryMutation,
 } from "./api/entry-api"
 export type { EntryApiDependencies } from "./api/entry-api"
