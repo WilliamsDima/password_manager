@@ -19,6 +19,7 @@ module.exports = defineConfig([
 	{
 		ignores: [
 			"legacy/**",
+			"secrets/**",
 			"android/**",
 			"ios/**",
 			".expo/**",

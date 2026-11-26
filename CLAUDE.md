@@ -32,6 +32,21 @@ npx expo install <pkg>    # always use instead of npm i for Expo/RN packages (SD
 - `google-services.json` in the repo root (copy of `legacy/Android/app/google-services.json`). Needed by `@react-native-firebase` at prebuild.
 - Release signing key: a **new** v2 key (not the v1 Play key), outside the repo at `~/.android-keys/password-manager/release.jks`, alias `pm-release`. Path and passwords are in `~/.gradle/gradle.properties` (`PM_RELEASE_STORE_FILE`, `PM_RELEASE_KEY_ALIAS`, `PM_RELEASE_STORE_PASSWORD`, `PM_RELEASE_KEY_PASSWORD`). On another machine copy both files; without them `assembleRelease` fails (it never falls back to the debug key). Wired by the config plugin `plugins/with-release-signing.js`. Build: `cd android && ./gradlew assembleRelease` → `android/app/build/outputs/apk/release/app-release.apk`. v1 (Play key) cannot be updated in place: uninstall it first.
 
+### Secrets folder (`secrets/`, gitignored)
+One local folder holds a copy of every secret, so that it can be saved in one go (encrypted archive, password manager, offline drive). **Never commit it; never print or paste file contents.** Refresh it with `npm run secrets:collect` ([scripts/collect-secrets.mjs](scripts/collect-secrets.mjs)) after any secret changes; **add every new secret to the `SECRETS` list in that script.** Layout and where each file must be put back on a new machine:
+
+| In `secrets/` | Restore to |
+|---|---|
+| `firebase/google-services.json` | repo root `google-services.json` |
+| `firebase/firebase.ts` | `legacy/src/config/firebase.ts` (only for `scripts/backup-firestore.mjs`) |
+| `android/release.jks` | `~/.android-keys/password-manager/release.jks` |
+| `android/gradle.properties` | `~/.gradle/gradle.properties` (fix the absolute `PM_RELEASE_STORE_FILE` path for the new machine) |
+| `android/v1-play-key.jks`, `android/private_key.pepk` | v1 Play key and its upload file (`legacy/Android/app/`; copy once from the old machine) |
+| `claude/telegram.json` | `.claude/telegram.json` |
+| `backups/` | `backups/` (Firestore ciphertext backups) |
+
+The v1 encryption key (text/QR) is not a file: store it in your password manager. Without `release.jks` + passwords v2 cannot be updated in place (see 4.4a in the roadmap).
+
 ## v2 setup notes
 
 - Firebase: native `@react-native-firebase` (app, auth, firestore), modular API. Plugins in `app.json`.

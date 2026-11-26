@@ -63,3 +63,6 @@ backups/
 *.aab
 *firebase-adminsdk*.json
 service-account*.json
+
+# Local copies of every secret (keys, Firebase configs, signing keystore): never commit
+/secrets/
