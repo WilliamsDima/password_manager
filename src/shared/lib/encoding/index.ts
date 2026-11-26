@@ -45,6 +45,10 @@ export const toBase64Url = (bytes: Uint8Array): string => encode(bytes, URL_SAFE
 
 export const fromBase64Url = (text: string): Uint8Array => decode(text, URL_SAFE, false)
 
+/** Byte equality for checks after a write (not for secrets compared against an attacker's input). */
+export const bytesEqual = (a: Uint8Array, b: Uint8Array): boolean =>
+	a.length === b.length && a.every((byte, index) => byte === b[index])
+
 export const encodeUtf8 = (text: string): Uint8Array => utf8ToBytes(text)
 
 const MIN_CODE_POINT = [0, 0x80, 0x800, 0x10000] as const

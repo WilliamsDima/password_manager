@@ -204,6 +204,31 @@ export class FirestoreSdkStore implements IRemoteStore {
 			})
 		})
 
+	public readonly createV2Profile = (
+		uid: string,
+		input: {
+			readonly email: string | null
+			readonly displayName: string | null
+			readonly crypto: RemoteCryptoInput
+		},
+	): Promise<void> =>
+		run(() => {
+			const db = getFirestore()
+			const profileRef = doc(db, "users", uid)
+			return runTransaction(db, async transaction => {
+				if ((await transaction.get(profileRef)).exists()) {
+					throw new AppError("conflict", "Profile already exists")
+				}
+				transaction.set(profileRef, {
+					schemaVersion: 2,
+					...(input.email === null ? {} : { email: input.email }),
+					...(input.displayName === null ? {} : { displayName: input.displayName }),
+					createdAt: serverTimestamp(),
+					crypto: cryptoFields(input.crypto),
+				})
+			})
+		})
+
 	public readonly flushPendingWrites = (): Promise<void> =>
 		run(() => waitForPendingWrites(getFirestore()))
 

@@ -90,6 +90,29 @@ export class FakeRemoteStore implements IRemoteStore {
 			}
 		})
 
+	public readonly createV2Profile = (
+		uid: string,
+		input: {
+			readonly email: string | null
+			readonly displayName: string | null
+			readonly crypto: RemoteCryptoInput
+		},
+	): Promise<void> =>
+		this.transaction(() => {
+			if (this.profiles.has(uid)) throw new AppError("conflict", "Profile already exists")
+			return () => {
+				this.profiles.set(uid, {
+					uid,
+					schemaVersion: 2,
+					email: input.email,
+					displayName: input.displayName,
+					crypto: this.cryptoOf(input.crypto),
+					legacyItems: undefined,
+					migratedAt: null,
+				})
+			}
+		})
+
 	public readonly flushPendingWrites = (): Promise<void> => {
 		this.flushCalls += 1
 		return Promise.resolve()

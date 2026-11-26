@@ -82,6 +82,19 @@ export type IRemoteStore = {
 		input: { readonly entries: readonly EntryWrite[]; readonly crypto: RemoteCryptoInput },
 	) => Promise<void>
 
+	/**
+	 * New v2 account (§5): creates `users/{uid}` with `crypto` and `schemaVersion: 2` in one
+	 * transaction (online only). Rejects with `AppError("conflict")` if the profile already exists.
+	 */
+	readonly createV2Profile: (
+		uid: string,
+		input: {
+			readonly email: string | null
+			readonly displayName: string | null
+			readonly crypto: RemoteCryptoInput
+		},
+	) => Promise<void>
+
 	/** Resolves when every queued local write has reached the server (before a DEK change). */
 	readonly flushPendingWrites: () => Promise<void>
 

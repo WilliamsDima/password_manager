@@ -1,13 +1,19 @@
 import { decryptLegacyItems, type EntryCodec, samePayloads } from "@/entities/entry"
 import type { IVaultKeyService } from "@/entities/session"
-import { fromBase64, toBase64 } from "@/shared/lib/encoding"
+import { bytesEqual, fromBase64, toBase64 } from "@/shared/lib/encoding"
 import { AppError } from "@/shared/lib/errors"
 import type { ILegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import type { IRandom } from "@/shared/services/random"
 import type { IRemoteStore, RemoteProfile } from "@/shared/services/remote-store"
 import type { ISecureStorage } from "@/shared/services/secure-storage"
 
-import type { DekChangePlan, MigrationOutcome, MigrationPlan } from "./types"
+import type {
+	AccountSetupKind,
+	DekChangePlan,
+	MigrationOutcome,
+	MigrationPlan,
+	NewAccountPlan,
+} from "./types"
 
 /** SecureStore key of the pair generated before the recovery key is shown (docs/CRYPTO.md §6.3). */
 export const PENDING_MIGRATION_KEY = "pm.pendingMigration"
@@ -33,6 +39,24 @@ const isPending = (value: unknown, uid: string): value is PendingMigration =>
 	"dek" in value &&
 	typeof value.dek === "string"
 
+/** The account a saved pair belongs to; `null` for nothing saved or data that is not a pair. */
+const ownerOfPending = (raw: string | null): string | null => {
+	if (raw === null) return null
+	try {
+		const parsed: unknown = JSON.parse(raw)
+		return typeof parsed === "object" &&
+			parsed !== null &&
+			"v" in parsed &&
+			parsed.v === 1 &&
+			"uid" in parsed &&
+			typeof parsed.uid === "string"
+			? parsed.uid
+			: null
+	} catch {
+		return null
+	}
+}
+
 const FIRST_RK_VERSION = 1
 
 /**
@@ -50,6 +74,91 @@ export class VaultMigrationService {
 		private readonly random: IRandom,
 		private readonly secureStorage: ISecureStorage,
 	) {}
+
+	/** Reads the profile from the server and tells which setup the account needs. */
+	public readonly detect = async (uid: string): Promise<AccountSetupKind> => {
+		const profile = await this.remote.getProfile(uid, "server")
+		if (profile === null) return "new"
+		if (profile.crypto !== null) return "has-keys"
+		if (!Array.isArray(profile.legacyItems)) return "unsupported"
+		return profile.legacyItems.length === 0 ? "migrate-empty" : "migrate"
+	}
+
+	/**
+	 * New account, step 1: loads or creates the key pair and persists it **before returning**
+	 * (before the recovery key can be shown). Throws `conflict` if the profile already exists
+	 * without a pending pair that opens it (another device got there first).
+	 */
+	public readonly prepareNewAccount = async (uid: string): Promise<NewAccountPlan> => {
+		const profile = await this.remote.getProfile(uid, "server")
+		const pending = await this.loadPending(uid)
+		if (profile !== null) {
+			// A v1 profile is a migration, not a new account: leave any saved pair alone.
+			if (profile.crypto === null) throw new AppError("conflict", "Profile already exists")
+			if (pending === null) throw new AppError("conflict", "Profile created by another device")
+			try {
+				this.unwrapOrConflict(pending.recoveryKey, profile, uid).fill(0)
+			} catch (error) {
+				// Another device created the profile first: the key shown here is void. Forget it
+				// so that the screen can ask for the recovery key of the other device instead.
+				await this.clearPending()
+				throw error
+			}
+			return { uid, ...pending, stage: "verify", keysCreated: false }
+		}
+		const keys = pending ?? (await this.createPending(uid))
+		return { uid, ...keys, stage: "write", keysCreated: pending === null }
+	}
+
+	/** New account, step 2 (after the recovery key is confirmed): one transaction, online only. */
+	public readonly commitNewAccount = async (
+		plan: NewAccountPlan,
+		profile: { readonly email: string | null; readonly displayName: string | null },
+	): Promise<void> => {
+		if (plan.stage !== "write") return
+		try {
+			await this.remote.createV2Profile(plan.uid, {
+				...profile,
+				crypto: {
+					wrappedDek: this.vaultKeys.wrapDek(
+						plan.recoveryKey,
+						plan.dek,
+						plan.uid,
+						FIRST_RK_VERSION,
+					),
+					kdf: "hkdf-sha256",
+					rkVersion: FIRST_RK_VERSION,
+				},
+			})
+		} catch (error) {
+			// A retry after a lost answer: the profile may already be ours. A key that opens it
+			// proves that, so the retry succeeds instead of reporting a conflict on our own write.
+			if (!(error instanceof AppError) || error.code !== "conflict") throw error
+			const existing = await this.remote.getProfile(plan.uid, "server")
+			if (existing?.crypto == null) throw error
+			try {
+				this.unwrapOrConflict(plan.recoveryKey, existing, plan.uid).fill(0)
+			} catch (conflict) {
+				// Another device created the profile between our prepare and commit: our key is void.
+				await this.clearPending()
+				throw conflict
+			}
+		}
+	}
+
+	/**
+	 * New account, step 3: reads **from the server** and unwraps the DEK with the saved recovery
+	 * key. Returns the DEK to store for the chosen lock mode; the caller then calls `clearPending`.
+	 */
+	public readonly verifyNewAccount = async (plan: NewAccountPlan): Promise<Uint8Array> => {
+		const profile = await this.remote.getProfile(plan.uid, "server")
+		if (profile?.crypto == null) throw new AppError("not-found", "Profile was not created")
+		const unwrapped = this.unwrapOrConflict(plan.recoveryKey, profile, plan.uid)
+		const same = bytesEqual(unwrapped, plan.dek)
+		unwrapped.fill(0)
+		if (!same) throw new AppError("conflict", "Server key differs from the generated one")
+		return plan.dek
+	}
 
 	/**
 	 * Reads the profile from the server, decrypts and validates all v1 items (throws
@@ -69,7 +178,7 @@ export class VaultMigrationService {
 		const payloads = decryptLegacyItems(profile.legacyItems, legacyKey, this.legacy)
 		if (profile.crypto !== null && pending !== null) {
 			// Resume only with keys that really open the committed profile.
-			this.unwrapOrConflict(pending.recoveryKey, profile, uid)
+			this.unwrapOrConflict(pending.recoveryKey, profile, uid).fill(0)
 		}
 		const keys = pending ?? (await this.createPending(uid))
 		return {
@@ -236,6 +345,8 @@ export class VaultMigrationService {
 		} catch (error) {
 			if (error instanceof AppError && error.code === "crypto") return false
 			throw error
+		} finally {
+			dek.fill(0)
 		}
 	}
 
@@ -282,6 +393,12 @@ export class VaultMigrationService {
 	private readonly createPending = async (
 		uid: string,
 	): Promise<{ readonly recoveryKey: Uint8Array; readonly dek: Uint8Array }> => {
+		// An unfinished setup of another account holds a recovery key that may already be shown:
+		// overwriting it would lose that key. Finish (or roll back) that account first.
+		const owner = ownerOfPending(await this.secureStorage.get(PENDING_MIGRATION_KEY))
+		if (owner !== null && owner !== uid) {
+			throw new AppError("conflict", "Unfinished setup of another account on this phone")
+		}
 		const recoveryKey = this.vaultKeys.generateRecoveryKey()
 		const dek = this.vaultKeys.generateDek()
 		const pending: PendingMigration = {

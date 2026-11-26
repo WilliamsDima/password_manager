@@ -1,6 +1,30 @@
 import type { EntryPayload } from "@/entities/entry"
 import type { EntryRewrite } from "@/shared/services/remote-store"
 
+/** What the setup screen has to do for this account (decided from the profile on the server). */
+export type AccountSetupKind =
+	/** `crypto` exists: enter the recovery key. */
+	| "has-keys"
+	/** v1 data without `crypto`: migrate with the old key. */
+	| "migrate"
+	/** v1 profile with no entries yet: upgrade it without asking for the old key (nothing to decrypt). */
+	| "migrate-empty"
+	/** A profile without `crypto` and without a v1 `items` array: nothing the app can set up. */
+	| "unsupported"
+	/** No profile: create a v2 account. */
+	| "new"
+
+/** A fresh account's keys between "generated" and "profile created" (docs/CRYPTO.md §5). */
+export type NewAccountPlan = {
+	readonly uid: string
+	readonly recoveryKey: Uint8Array
+	readonly dek: Uint8Array
+	/** `write`: no profile yet. `verify`: an earlier run created it but did not finish the check. */
+	readonly stage: "write" | "verify"
+	/** `true` when no saved key pair existed: a recovery key shown before is void. */
+	readonly keysCreated: boolean
+}
+
 /** Everything the UI needs between "keys generated" and "migration committed". */
 export type MigrationPlan = {
 	readonly uid: string

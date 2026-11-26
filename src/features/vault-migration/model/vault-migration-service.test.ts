@@ -89,8 +89,8 @@ const v1Profile = (items: unknown): RemoteProfile => ({
 	migratedAt: null,
 })
 
-const setup = (items: unknown = LEGACY_ITEMS) => {
-	const random = new FakeRandom()
+const setup = (items: unknown = LEGACY_ITEMS, seed = 0) => {
+	const random = new FakeRandom(seed)
 	const crypto = new NobleCryptoService(random)
 	const remote = new FakeRemoteStore()
 	const secureStorage = new FakeSecureStorage()
@@ -331,7 +331,7 @@ describe("VaultMigrationService: v1 → v2", () => {
 		expect(ctx.remote.entries.size).toBe(entriesBefore)
 	})
 
-	it("ignores a pending pair that belongs to another account", async () => {
+	it("refuses to overwrite a pending pair that belongs to another account", async () => {
 		const ctx = setup()
 		await ctx.secureStorage.set(
 			PENDING_MIGRATION_KEY,
@@ -343,9 +343,9 @@ describe("VaultMigrationService: v1 → v2", () => {
 			}),
 		)
 
-		const plan = await ctx.service.prepare(UID, LEGACY_KEY)
-
-		expect(plan.recoveryKey).not.toEqual(new Uint8Array(32))
+		// That account may have shown its recovery key already: never replace the pair silently.
+		await expect(ctx.service.prepare(UID, LEGACY_KEY)).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.secureStorage.values.get(PENDING_MIGRATION_KEY)).toContain("someone-else")
 	})
 
 	it("never leaks keys or plaintext in error messages", async () => {
@@ -573,5 +573,158 @@ describe("VaultMigrationService: DEK change", () => {
 		await expect(ctx.service.repairAfterDekChange(change, plan.dek)).rejects.toMatchObject({
 			code: "crypto",
 		})
+	})
+})
+
+describe("VaultMigrationService: setup kind and new account", () => {
+	const empty = (seed = 0) => {
+		const ctx = setup(LEGACY_ITEMS, seed)
+		ctx.remote.profiles.clear()
+		return ctx
+	}
+
+	it("tells which setup the account needs", async () => {
+		const migrate = setup()
+		expect(await migrate.service.detect(UID)).toBe("migrate")
+
+		const noEntries = setup([])
+		expect(await noEntries.service.detect(UID)).toBe("migrate-empty")
+
+		const odd = setup(undefined)
+		odd.remote.seedProfile(v1Profile(undefined))
+		expect(await odd.service.detect(UID)).toBe("unsupported")
+
+		const fresh = empty()
+		expect(await fresh.service.detect(UID)).toBe("new")
+
+		const plan = await fresh.service.prepareNewAccount(UID)
+		await fresh.service.commitNewAccount(plan, { email: "a@b.c", displayName: null })
+		expect(await fresh.service.detect(UID)).toBe("has-keys")
+	})
+
+	it("creates a new account: prepare → commit → verify returns the same key", async () => {
+		const ctx = empty()
+		const plan = await ctx.service.prepareNewAccount(UID)
+		expect(plan).toMatchObject({ stage: "write", keysCreated: true })
+		// The pair is on the phone before the profile exists, so the shown key is never lost.
+		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(true)
+
+		await ctx.service.commitNewAccount(plan, { email: "a@b.c", displayName: null })
+		const dek = await ctx.service.verifyNewAccount(plan)
+
+		expect(dek).toEqual(plan.dek)
+		const profile = ctx.remote.profiles.get(UID)
+		expect(profile).toMatchObject({ schemaVersion: 2, email: "a@b.c" })
+		expect(profile?.crypto?.rkVersion).toBe(1)
+		expect(ctx.remote.entries.size).toBe(0)
+		// The server holds only the wrapped key: the DEK is not in the profile in clear.
+		expect(JSON.stringify(profile)).not.toContain(toBase64(plan.dek))
+	})
+
+	it("reuses the same keys after an interruption and only repeats the check", async () => {
+		const ctx = empty()
+		const first = await ctx.service.prepareNewAccount(UID)
+		ctx.remote.failNextTransaction = "after-commit"
+		await expect(
+			ctx.service.commitNewAccount(first, { email: "a@b.c", displayName: null }),
+		).rejects.toMatchObject({ code: "network" })
+
+		const second = await ctx.service.prepareNewAccount(UID)
+		expect(second).toMatchObject({ stage: "verify", keysCreated: false })
+		expect(second.recoveryKey).toEqual(first.recoveryKey)
+		expect(await ctx.service.verifyNewAccount(second)).toEqual(first.dek)
+	})
+
+	it("starts again with the same keys when the commit never reached the server", async () => {
+		const ctx = empty()
+		const first = await ctx.service.prepareNewAccount(UID)
+		ctx.remote.failNextTransaction = "before-commit"
+		await expect(
+			ctx.service.commitNewAccount(first, { email: "a@b.c", displayName: null }),
+		).rejects.toMatchObject({ code: "network" })
+
+		const second = await ctx.service.prepareNewAccount(UID)
+		expect(second).toMatchObject({ stage: "write", keysCreated: false })
+		expect(second.recoveryKey).toEqual(first.recoveryKey)
+	})
+
+	it("refuses when a profile appeared without our keys (another device)", async () => {
+		const ctx = empty()
+		const other = empty()
+		const theirs = await other.service.prepareNewAccount(UID)
+		await other.service.commitNewAccount(theirs, { email: "a@b.c", displayName: null })
+		ctx.remote.profiles = other.remote.profiles
+
+		await expect(ctx.service.prepareNewAccount(UID)).rejects.toMatchObject({ code: "conflict" })
+	})
+
+	it("does not overwrite an existing profile on commit", async () => {
+		const ctx = empty()
+		const plan = await ctx.service.prepareNewAccount(UID)
+		ctx.remote.seedProfile(v1Profile(LEGACY_ITEMS))
+		await expect(
+			ctx.service.commitNewAccount(plan, { email: "a@b.c", displayName: null }),
+		).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.remote.profiles.get(UID)?.crypto).toBeNull()
+	})
+
+	it("treats a retry after a lost answer as success when the profile is ours", async () => {
+		const ctx = empty()
+		const plan = await ctx.service.prepareNewAccount(UID)
+		ctx.remote.failNextTransaction = "after-commit"
+		await expect(
+			ctx.service.commitNewAccount(plan, { email: "a@b.c", displayName: null }),
+		).rejects.toMatchObject({ code: "network" })
+
+		// The same plan again, e.g. a plain "Retry" button: no conflict on our own profile.
+		await expect(
+			ctx.service.commitNewAccount(plan, { email: "a@b.c", displayName: null }),
+		).resolves.toBeUndefined()
+		expect(await ctx.service.verifyNewAccount(plan)).toEqual(plan.dek)
+	})
+
+	it("forgets a void key when another device created the profile first", async () => {
+		const ctx = empty()
+		const ours = await ctx.service.prepareNewAccount(UID)
+		expect(ours.keysCreated).toBe(true)
+
+		const other = empty(7)
+		const theirs = await other.service.prepareNewAccount(UID)
+		await other.service.commitNewAccount(theirs, { email: "a@b.c", displayName: null })
+		ctx.remote.profiles = other.remote.profiles
+
+		await expect(ctx.service.prepareNewAccount(UID)).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(false)
+	})
+
+	it("never overwrites an unfinished setup of another account", async () => {
+		const ctx = empty()
+		await ctx.service.prepareNewAccount("someone-else")
+		const saved = ctx.secureStorage.values.get(PENDING_MIGRATION_KEY)
+
+		await expect(ctx.service.prepareNewAccount(UID)).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.secureStorage.values.get(PENDING_MIGRATION_KEY)).toBe(saved)
+	})
+
+	it("replaces data that is not a saved pair", async () => {
+		const ctx = empty()
+		ctx.secureStorage.values.set(PENDING_MIGRATION_KEY, "garbage")
+		const plan = await ctx.service.prepareNewAccount(UID)
+		expect(plan.keysCreated).toBe(true)
+	})
+
+	it("forgets a void key when another device wins between prepare and commit", async () => {
+		const ctx = empty()
+		const ours = await ctx.service.prepareNewAccount(UID)
+
+		const other = empty(9)
+		const theirs = await other.service.prepareNewAccount(UID)
+		await other.service.commitNewAccount(theirs, { email: "a@b.c", displayName: null })
+		ctx.remote.profiles = other.remote.profiles
+
+		await expect(
+			ctx.service.commitNewAccount(ours, { email: "a@b.c", displayName: null }),
+		).rejects.toMatchObject({ code: "conflict" })
+		expect(ctx.secureStorage.values.has(PENDING_MIGRATION_KEY)).toBe(false)
 	})
 })

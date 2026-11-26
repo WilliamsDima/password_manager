@@ -177,6 +177,15 @@ describe("profile shape (an account can never get stuck without crypto)", () => 
 })
 
 describe("new v2 account", () => {
+	it("creates the profile the way the app does: server timestamps, no email", async () => {
+		await assertSucceeds(
+			setDoc(profile(as(UID)), {
+				schemaVersion: 2,
+				createdAt: serverTimestamp(),
+				crypto: { ...cryptoV(1), createdAt: serverTimestamp() },
+			}),
+		)
+	})
 	it("creates the profile with crypto in one write", async () => {
 		await assertSucceeds(
 			setDoc(profile(as(UID)), {
