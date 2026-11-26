@@ -1,8 +1,8 @@
 const expoPreset = require("jest-expo/jest-preset")
 
 // jest-expo resolves the "react-native" export condition; immer and react-redux (Redux Toolkit) map it
-// to ESM builds, so they must be transformed like the react-native packages.
-const EXTRA_TRANSFORMED_PACKAGES = ["immer", "react-redux"]
+// to ESM builds, and @noble/* are ESM-only, so they must be transformed like the react-native packages.
+const EXTRA_TRANSFORMED_PACKAGES = ["immer", "react-redux", "@noble/ciphers", "@noble/hashes"]
 
 const PRESET_PREFIX = "/node_modules/(?!("
 if (!expoPreset.transformIgnorePatterns[0]?.startsWith(PRESET_PREFIX)) {

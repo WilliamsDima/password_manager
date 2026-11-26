@@ -1,7 +1,11 @@
+import { EntryCodec } from "@/entities/entry"
+import { VaultKeyService } from "@/entities/session"
 import { baseApi, toQueryResult } from "@/shared/api"
 import { AppError } from "@/shared/lib/errors"
+import { NobleCryptoService, NobleScryptKdf } from "@/shared/services/crypto"
+import { CryptoJsLegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import type { ISecureStorage } from "@/shared/services/secure-storage"
-import { FakeAuthService } from "@/shared/testing"
+import { FakeAuthService, FakeRandom } from "@/shared/testing"
 
 import type { AppDependencies } from "../di/container"
 import { createAppStore } from "./store"
@@ -44,6 +48,21 @@ const testApi = baseApi.injectEndpoints({
 	}),
 })
 
+const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies => {
+	const random = new FakeRandom()
+	const crypto = new NobleCryptoService(random)
+	return {
+		authService: new FakeAuthService(),
+		secureStorage,
+		random,
+		crypto,
+		kdf: new NobleScryptKdf(),
+		vaultKeys: new VaultKeyService(crypto, random),
+		entryCodec: new EntryCodec(crypto),
+		legacyDecryptor: new CryptoJsLegacyDecryptor(),
+	}
+}
+
 describe("createAppStore", () => {
 	// RTK Query and its autoBatchEnhancer schedule work on timers / requestAnimationFrame after a
 	// query settles. Fake them (promises stay real) and flush them before teardown.
@@ -59,7 +78,7 @@ describe("createAppStore", () => {
 	it("passes the DI container to queryFn as `extra`", async () => {
 		const secureStorage = new FakeSecureStorage()
 		await secureStorage.set("k", "v")
-		const store = createAppStore({ authService: new FakeAuthService(), secureStorage })
+		const store = createAppStore(createTestDependencies(secureStorage))
 
 		const result = await store.dispatch(
 			testApi.endpoints.readTestValue.initiate("k", { subscribe: false }),
@@ -69,10 +88,7 @@ describe("createAppStore", () => {
 	})
 
 	it("stores errors in serializable AppError form", async () => {
-		const store = createAppStore({
-			authService: new FakeAuthService(),
-			secureStorage: new FakeSecureStorage(),
-		})
+		const store = createAppStore(createTestDependencies(new FakeSecureStorage()))
 
 		const result = await store.dispatch(
 			testApi.endpoints.failTestValue.initiate("k", { subscribe: false }),
@@ -82,10 +98,7 @@ describe("createAppStore", () => {
 	})
 
 	it("wraps unknown errors without leaking their message", async () => {
-		const store = createAppStore({
-			authService: new FakeAuthService(),
-			secureStorage: new FakeSecureStorage(),
-		})
+		const store = createAppStore(createTestDependencies(new FakeSecureStorage()))
 		const leaky = baseApi.injectEndpoints({
 			endpoints: build => ({
 				leakyTestValue: build.query<string, string>({
