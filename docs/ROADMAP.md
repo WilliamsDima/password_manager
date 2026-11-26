@@ -11,7 +11,7 @@
 
 ## Текущий статус
 
-- **Сейчас:** Фаза 4: 4.1a готово (каркас FSD, интерфейсы, DI, baseApi; expo-secure-store подходит) → далее 4.2 (замена пакетов, криптобиблиотеки)
+- **Сейчас:** Фаза 4: 4.2 готово (expo-camera, @noble/*, expo-crypto, `ExpoRandom`; манифест без лишних разрешений) → далее 4.3 (навигация, состояние)
 - **Последнее обновление:** 2026-11-26
 
 ---
@@ -60,7 +60,7 @@
 
 - [x] 4.1 Скелет проекта на **Expo** (актуальный SDK, prebuild) + TypeScript strict, ESLint/Prettier (запрет `let`/`any`, границы FSD), Jest; R8 в release, `usesCleartextTraffic=false`, логгер выключен в release (A2, A4, O1); **выбор Firebase SDK** (JS / `@react-native-firebase`, CRYPTO.md §8)
 - [x] 4.1a Каркас FSD-слоёв, интерфейсы сервисов (`ICryptoService`, `IKdf`, `IRandom`, `ILegacyDecryptor`, `ISecureStorage`, `IRemoteStore`…), `app/di/container.ts`, `baseApi` RTK Query с `extraArgument`; **проверка `expo-secure-store`** (биометрия, аннулирование, Auto Backup; CRYPTO.md §8)
-- [ ] 4.2 Замена устаревших пакетов: `react-native-camera` → `expo-camera` (сканер QR), `crypto-js` → `@noble/ciphers` + `@noble/hashes` + `expo-crypto`; полное удаление Yandex Ads (пакет, нативный код, манифест); убрать лишние разрешения `RECORD_AUDIO`, `READ/WRITE_EXTERNAL_STORAGE` (A3)
+- [x] 4.2 Замена устаревших пакетов: `react-native-camera` → `expo-camera` (сканер QR), `crypto-js` → `@noble/ciphers` + `@noble/hashes` + `expo-crypto`; полное удаление Yandex Ads (пакет, нативный код, манифест); убрать лишние разрешения `RECORD_AUDIO`, `READ/WRITE_EXTERNAL_STORAGE` (A3)
 - [ ] 4.3 Навигация, состояние (Redux Toolkit + RTK Query, без сайд-эффектов в редьюсерах; store и `baseApi` уже есть с 4.1a); в хранилище только нужные поля профиля, без Firebase `User` с токенами (L4)
 - [ ] 4.3a Только русский язык: убрать en/uk, смену языка (`LanguageModal`, `LANG` в AsyncStorage)
 - [ ] 4.3b Убрать ссылки на внешние ресурсы, «Оставить отзыв», `DevInfo` и подобное
@@ -121,3 +121,4 @@
 | 2026-11-26 | У каждого значения с биометрией свой keychain-сервис `pm.auth.<key>`: запись после аннулирования стирает все такие значения под общим сервисом |
 | 2026-11-26 | Ошибки secure-store распознаются по тексту сообщения, а не по `code`: R8 в release переименовывает Kotlin-классы исключений, из имён которых выводится `code` |
 | 2026-11-26 | Биометрия спрашивается только при входе (и один раз при включении режима): DEK читается из SecureStore при разблокировке и держится в памяти до авто-блокировки; операции с записями отпечаток не запрашивают |
+| 2026-11-26 | Случайность только через `getRandomValues` из `expo-crypto` (`ExpoRandom`): синхронный `getRandomBytes` в `__DEV__` откатывается на `Math.random`. `ExpoRandom` подключается в `container.ts` вместе с `NobleCryptoService` в 5.1 |

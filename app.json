@@ -41,7 +41,13 @@
 			],
 			"@react-native-firebase/app",
 			"@react-native-firebase/auth",
-			"expo-secure-store"
+			"expo-secure-store",
+			[
+				"expo-camera",
+				{
+					"recordAudioAndroid": false
+				}
+			]
 		]
 	}
 }
