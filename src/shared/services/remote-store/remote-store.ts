@@ -9,6 +9,13 @@
  * below Firestore's request-size limit for ~1 KB documents); more rejects with `limit-exceeded`.
  */
 
+/**
+ * Result of a single-document write: `synced` = the server confirmed it, `queued` = the SDK holds
+ * it in the offline queue and sends it when the network returns (docs/CRYPTO.md §5, D1). A write
+ * that is rejected for real (rules, validation) rejects instead.
+ */
+export type WriteStatus = "synced" | "queued"
+
 /** `"server"` bypasses the offline cache (used by migration and backup checks). */
 export type ReadSource = "default" | "server"
 
@@ -56,8 +63,8 @@ export type IRemoteStore = {
 	readonly getProfile: (uid: string, source: ReadSource) => Promise<RemoteProfile | null>
 	readonly listEntries: (uid: string, source: ReadSource) => Promise<readonly RemoteEntry[]>
 	/** Creates or replaces one entry document; `updatedAt` is set by the server. */
-	readonly setEntry: (uid: string, entry: EntryWrite) => Promise<void>
-	readonly deleteEntry: (uid: string, entryId: string) => Promise<void>
+	readonly setEntry: (uid: string, entry: EntryWrite) => Promise<WriteStatus>
+	readonly deleteEntry: (uid: string, entryId: string) => Promise<WriteStatus>
 
 	/**
 	 * v1 → v2 (§6.5), one transaction (online only, never queued offline): the profile must exist

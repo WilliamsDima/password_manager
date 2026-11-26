@@ -1,8 +1,11 @@
 import { useEffect } from "react"
 import { AppState } from "react-native"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 
 import { selectSessionStatus, selectSessionUser, type VaultLockService } from "@/entities/session"
+import { baseApi } from "@/shared/api"
+
+import { startCacheReset } from "./cache-reset"
 
 const AUTO_LOCK_CHECK_MS = 5000
 
@@ -15,6 +18,16 @@ const AUTO_LOCK_CHECK_MS = 5000
 export const useVaultLockSync = (lock: VaultLockService): void => {
 	const status = useSelector(selectSessionStatus)
 	const uid = useSelector(selectSessionUser)?.uid
+	const dispatch = useDispatch()
+
+	// The RTK Query cache holds decrypted entries: drop it whenever the vault is not open.
+	useEffect(
+		() =>
+			startCacheReset(lock, () => {
+				dispatch(baseApi.util.resetApiState())
+			}),
+		[lock, dispatch],
+	)
 
 	useEffect(() => {
 		if (status === "signed-in" && uid !== undefined) void lock.initialize(uid)

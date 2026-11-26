@@ -9,4 +9,5 @@ export type {
 	RemoteCryptoInput,
 	RemoteEntry,
 	RemoteProfile,
+	WriteStatus,
 } from "./remote-store"

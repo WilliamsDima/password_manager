@@ -7,6 +7,7 @@ import type {
 	RemoteCryptoInput,
 	RemoteEntry,
 	RemoteProfile,
+	WriteStatus,
 } from "@/shared/services/remote-store"
 
 const ROLLBACK_WINDOW_MS = 23 * 3_600_000
@@ -23,6 +24,8 @@ export class FakeRemoteStore implements IRemoteStore {
 	/** Next `migrateToV2` / `rekey` fails: before nothing is written, after the write is kept. */
 	public failNextTransaction: Failure | null = null
 	public failNextListEntries = false
+	/** Single-document writes are applied but reported as `queued` (offline). */
+	public offline = false
 	public rollbackCalls = 0
 	public flushCalls = 0
 	/** Wall clock in ms: `migratedAt` is stamped with it and the rollback window is measured on it. */
@@ -44,14 +47,14 @@ export class FakeRemoteStore implements IRemoteStore {
 		return Promise.resolve([...this.entries.values()])
 	}
 
-	public readonly setEntry = (_uid: string, entry: EntryWrite): Promise<void> => {
+	public readonly setEntry = (_uid: string, entry: EntryWrite): Promise<WriteStatus> => {
 		this.entries.set(entry.id, { ...entry, updatedAt: this.tick() })
-		return Promise.resolve()
+		return Promise.resolve(this.offline ? "queued" : "synced")
 	}
 
-	public readonly deleteEntry = (_uid: string, entryId: string): Promise<void> => {
+	public readonly deleteEntry = (_uid: string, entryId: string): Promise<WriteStatus> => {
 		this.entries.delete(entryId)
-		return Promise.resolve()
+		return Promise.resolve(this.offline ? "queued" : "synced")
 	}
 
 	public readonly migrateToV2 = (

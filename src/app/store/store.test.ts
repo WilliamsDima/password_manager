@@ -1,4 +1,4 @@
-import { EntryCodec } from "@/entities/entry"
+import { EntryCodec, EntryRepository } from "@/entities/entry"
 import { VaultKeyService, VaultLockService, VaultRecoveryService } from "@/entities/session"
 import { baseApi, toQueryResult } from "@/shared/api"
 import { AppError } from "@/shared/lib/errors"
@@ -35,6 +35,13 @@ const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies 
 	const entryCodec = new EntryCodec(crypto)
 	const legacyDecryptor = new CryptoJsLegacyDecryptor()
 	const remoteStore = new FakeRemoteStore()
+	const vaultLock = new VaultLockService(
+		secureStorage,
+		crypto,
+		new NobleScryptKdf(),
+		random,
+		Date.now,
+	)
 	return {
 		authService: new FakeAuthService(),
 		secureStorage,
@@ -53,7 +60,8 @@ const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies 
 			random,
 			secureStorage,
 		),
-		vaultLock: new VaultLockService(secureStorage, crypto, new NobleScryptKdf(), random, Date.now),
+		vaultLock,
+		entryRepository: new EntryRepository(remoteStore, entryCodec, vaultLock, random, Date.now),
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: { copySensitive: () => Promise.resolve(), clear: () => Promise.resolve() },
 		haptics: { impact: () => undefined, notify: () => undefined, selection: () => undefined },

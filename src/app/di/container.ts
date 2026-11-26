@@ -5,7 +5,7 @@ import {
 	VaultLockService,
 	VaultRecoveryService,
 } from "@/entities/session"
-import { EntryCodec } from "@/entities/entry"
+import { EntryCodec, type EntryApiDependencies, EntryRepository } from "@/entities/entry"
 import { VaultBackupService } from "@/features/vault-backup"
 import { VaultMigrationService } from "@/features/vault-migration"
 import { FirebaseAuthService } from "@/shared/services/auth"
@@ -29,31 +29,32 @@ import { type IThemePreferenceStore, SecureStorageThemeStore } from "@/shared/th
  * Grows as an intersection of the dependency types declared by entities, e.g.
  * `EntryApiDependencies & SessionApiDependencies`, so the compiler checks the container.
  */
-export type AppDependencies = SessionApiDependencies & {
-	/** Temporary until `VaultLockService` (entities/session, 5.3) owns it. */
-	readonly secureStorage: ISecureStorage
-	/** Crypto building blocks (5.1); repositories and `VaultLockService` consume them from 5.2/5.3. */
-	readonly random: IRandom
-	readonly crypto: ICryptoService
-	readonly kdf: IKdf
-	readonly vaultKeys: IVaultKeyService
-	readonly entryCodec: EntryCodec
-	readonly legacyDecryptor: ILegacyDecryptor
-	readonly remoteStore: IRemoteStore
-	/** v1 → v2 migration and DEK change (5.2); screens arrive with 5.3 / 6.4. */
-	readonly vaultMigration: VaultMigrationService
-	/** Modes, local wrapper, attempt limit and auto-lock (5.3). */
-	readonly vaultLock: VaultLockService
-	readonly vaultRecovery: VaultRecoveryService
-	readonly clipboard: IClipboard
-	/** Vibration feedback (6.1a); components reach it through `useHaptics`. */
-	readonly haptics: IHaptics
-	/** Backup export / import (5.5). */
-	readonly fileStorage: IFileStorage
-	readonly vaultBackup: VaultBackupService
-	/** Saved light / dark / system choice (6.1). */
-	readonly themeStore: IThemePreferenceStore
-}
+export type AppDependencies = SessionApiDependencies &
+	EntryApiDependencies & {
+		/** Temporary until `VaultLockService` (entities/session, 5.3) owns it. */
+		readonly secureStorage: ISecureStorage
+		/** Crypto building blocks (5.1); repositories and `VaultLockService` consume them from 5.2/5.3. */
+		readonly random: IRandom
+		readonly crypto: ICryptoService
+		readonly kdf: IKdf
+		readonly vaultKeys: IVaultKeyService
+		readonly entryCodec: EntryCodec
+		readonly legacyDecryptor: ILegacyDecryptor
+		readonly remoteStore: IRemoteStore
+		/** v1 → v2 migration and DEK change (5.2); screens arrive with 5.3 / 6.4. */
+		readonly vaultMigration: VaultMigrationService
+		/** Modes, local wrapper, attempt limit and auto-lock (5.3). */
+		readonly vaultLock: VaultLockService
+		readonly vaultRecovery: VaultRecoveryService
+		readonly clipboard: IClipboard
+		/** Vibration feedback (6.1a); components reach it through `useHaptics`. */
+		readonly haptics: IHaptics
+		/** Backup export / import (5.5). */
+		readonly fileStorage: IFileStorage
+		readonly vaultBackup: VaultBackupService
+		/** Saved light / dark / system choice (6.1). */
+		readonly themeStore: IThemePreferenceStore
+	}
 
 /**
  * Composition root: the **only** place where implementations are created and wired together.
@@ -70,6 +71,7 @@ export const createContainer = (): AppDependencies => {
 	// Native: pure-JS scrypt takes ~5 s for N=2^14 in Hermes (5.3 measurement); `NobleScryptKdf` stays for tests.
 	const kdf = new NativeScryptKdf()
 	const fileStorage = new ExpoFileStorage()
+	const vaultLock = new VaultLockService(secureStorage, crypto, kdf, random, Date.now)
 	return {
 		authService: new FirebaseAuthService(),
 		secureStorage,
@@ -88,7 +90,8 @@ export const createContainer = (): AppDependencies => {
 			random,
 			secureStorage,
 		),
-		vaultLock: new VaultLockService(secureStorage, crypto, kdf, random, Date.now),
+		vaultLock,
+		entryRepository: new EntryRepository(remoteStore, entryCodec, vaultLock, random, Date.now),
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: new ExpoClipboard(),
 		haptics: new ExpoHaptics(),

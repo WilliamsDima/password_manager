@@ -30,7 +30,9 @@ import {
 	type RemoteCryptoInput,
 	type RemoteEntry,
 	type RemoteProfile,
+	type WriteStatus,
 } from "./remote-store"
+import { settleWithin } from "./settle-write"
 
 const BATCH_LIMIT = 400
 const HOUR_MS = 3_600_000
@@ -151,16 +153,18 @@ export class FirestoreSdkStore implements IRemoteStore {
 			return snapshot.docs.map(toEntry)
 		})
 
-	public readonly setEntry = (uid: string, entry: EntryWrite): Promise<void> =>
+	public readonly setEntry = (uid: string, entry: EntryWrite): Promise<WriteStatus> =>
 		run(() =>
-			setDoc(doc(getFirestore(), "users", uid, "entries", entry.id), {
-				ct: entry.ct,
-				updatedAt: serverTimestamp(),
-			}),
+			settleWithin(
+				setDoc(doc(getFirestore(), "users", uid, "entries", entry.id), {
+					ct: entry.ct,
+					updatedAt: serverTimestamp(),
+				}),
+			),
 		)
 
-	public readonly deleteEntry = (uid: string, entryId: string): Promise<void> =>
-		run(() => deleteDoc(doc(getFirestore(), "users", uid, "entries", entryId)))
+	public readonly deleteEntry = (uid: string, entryId: string): Promise<WriteStatus> =>
+		run(() => settleWithin(deleteDoc(doc(getFirestore(), "users", uid, "entries", entryId))))
 
 	public readonly migrateToV2 = (
 		uid: string,
