@@ -17,6 +17,7 @@ npm install
 npm start                 # Expo dev server (needs a development build, not Expo Go: native Firebase)
 npm run android           # expo run:android: build and install a debug build on a device or emulator
 npm run prebuild          # regenerate android/ from app.json (Continuous Native Generation)
+npm run icons             # redraw the app icon, adaptive icon layers and splash images (assets/, scripts/build-icons.mjs)
 npm run typecheck         # tsc --noEmit
 npm run lint              # eslint (flat config: eslint.config.js)
 npm run format            # prettier --write

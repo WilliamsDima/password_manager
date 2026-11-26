@@ -14,7 +14,8 @@
     "test": "jest",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
     "secrets:collect": "node scripts/collect-secrets.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-pm-rules \"node --test rules-tests/*.test.mjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-pm-rules \"node --test rules-tests/*.test.mjs\"",
+    "icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
     "@noble/ciphers": "^2.4.0",
@@ -35,6 +36,7 @@
     "expo-screen-capture": "~58.0.6",
     "expo-secure-store": "~58.0.3",
     "expo-sharing": "~58.0.23",
+    "expo-splash-screen": "~58.0.15",
     "expo-status-bar": "~58.0.5",
     "expo-system-ui": "~58.0.7",
     "react": "19.3.0",
@@ -49,6 +51,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
     "babel-plugin-transform-remove-console": "^6.9.4",
