@@ -27,7 +27,7 @@ const SORT_OPTIONS = ENTRY_SORT_ORDERS.map(value => ({
 const keyOf = (entry: Entry): string => entry.id
 
 /** Entries of the open vault with search, sorting and the favorites filter. */
-export const EntryList = () => {
+export const EntryList = ({ onOpenEntry }: { readonly onOpenEntry: (entryId: string) => void }) => {
 	const { colors } = useAppTheme()
 	const user = useSelector(selectSessionUser)
 	const lock = useVaultLock()
@@ -86,8 +86,8 @@ export const EntryList = () => {
 		void onPull()
 	}, [onPull])
 	const renderItem = useCallback(
-		({ item }: ListRenderItemInfo<Entry>) => <EntryRow entry={item} />,
-		[],
+		({ item }: ListRenderItemInfo<Entry>) => <EntryRow entry={item} onOpen={onOpenEntry} />,
+		[onOpenEntry],
 	)
 	const empty = useMemo(
 		() => (
@@ -157,6 +157,7 @@ export const EntryList = () => {
 
 const styles = StyleSheet.create(theme => ({
 	container: { flex: 1, gap: theme.spacing.md },
-	listContent: { gap: theme.spacing.sm, paddingBottom: theme.spacing.xl },
+	// Room under the last row for the floating add button.
+	listContent: { gap: theme.spacing.sm, paddingBottom: theme.spacing.xxl * 3 },
 	failed: { gap: theme.spacing.sm },
 }))

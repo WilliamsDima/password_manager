@@ -77,7 +77,7 @@ The v1 encryption key (text/QR) is not a file: store it in your password manager
 
 - The plan lives in [docs/ROADMAP.md](docs/ROADMAP.md): read it at the start of a session, keep "Текущий статус" and the checkboxes up to date, and record decisions in "Журнал решений".
 - Each task: implement → `code-reviewer` agent → fixes → `task-verifier` agent → mark done. The `/next-step` skill runs this cycle.
-- Decided: the app is never published (APK only); one UI language (Russian); no external links, "leave a review" button, or language switcher; no ads.
+- Decided: the app is never published (APK only); one UI language (Russian); no external links of the app itself (store, "leave a review", developer pages), no language switcher; no ads. The one link is the owner's own: the address saved in an entry opens in the browser (`features/open-url`, http/https only, `toOpenableUrl`).
 - **Architecture for all new code: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** (FSD layers + class-based services behind interfaces, wired only in `app/di/container.ts`; RTK Query endpoints use `queryFn` with repositories from `extra`). Code rules: TS strict, no `let`, no `any`, no `@ts-ignore`, functional components only.
 - Encryption, key handling, Firestore schema, migration and in-app backup: [docs/CRYPTO.md](docs/CRYPTO.md).
 - Git: all rework happens on branch `feature/v2-rework`. Commit messages follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `build:`, `test:`, `style:`, `perf:`, `ci:`; optional scope, e.g. `feat(crypto): ...`; imperative, English subject line). **Never commit or push without the user's explicit permission in the current conversation**: after a task is done, propose the commit message and wait.

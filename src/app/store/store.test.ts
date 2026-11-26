@@ -64,6 +64,7 @@ const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies 
 		entryRepository: new EntryRepository(remoteStore, entryCodec, vaultLock, random, Date.now),
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: { copySensitive: () => Promise.resolve(), clear: () => Promise.resolve() },
+		urlOpener: { open: () => Promise.resolve() },
 		haptics: { impact: () => undefined, notify: () => undefined, selection: () => undefined },
 		themeStore: { load: () => Promise.resolve("system" as const), save: () => Promise.resolve() },
 		fileStorage: {

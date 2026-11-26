@@ -9,6 +9,8 @@ import { AppText } from "./app-text"
 
 type ButtonProps = {
 	readonly label: string
+	/** `danger` for destructive actions (delete). */
+	readonly tone?: "primary" | "danger"
 	readonly onPress: () => void
 	readonly disabled?: boolean
 	readonly loading?: boolean
@@ -66,10 +68,15 @@ export const SecondaryButton = ({
 	onPress,
 	disabled = false,
 	loading = false,
+	tone = "primary",
 }: ButtonProps) => {
 	const { colors } = useAppTheme()
 	const inactive = disabled || loading
-	styles.useVariants({ inactive })
+	styles.useVariants({ inactive, danger: tone === "danger" })
+	const spinnerColor = useMemo(
+		() => (tone === "danger" ? colors.danger : colors.primary),
+		[tone, colors.danger, colors.primary],
+	)
 	// Read after `useVariants`: only this scope sees the style with the chosen variants.
 	const baseStyle = styles.secondary
 	const pressableStyle = useCallback(
@@ -88,9 +95,9 @@ export const SecondaryButton = ({
 			accessibilityLabel={label}
 		>
 			{loading ? (
-				<ActivityIndicator color={colors.primary} />
+				<ActivityIndicator color={spinnerColor} />
 			) : (
-				<AppText variant="label" tone="primary">
+				<AppText variant="label" tone={tone}>
 					{label}
 				</AppText>
 			)}
@@ -146,7 +153,10 @@ const styles = StyleSheet.create(theme => ({
 		backgroundColor: theme.colors.surface,
 		borderRadius: theme.radius.md,
 		paddingVertical: theme.spacing.md,
-		variants: { inactive: inactiveVariant },
+		variants: {
+			inactive: inactiveVariant,
+			danger: { true: { borderColor: theme.colors.danger }, false: {} },
+		},
 	},
 	link: {
 		paddingVertical: theme.spacing.sm,

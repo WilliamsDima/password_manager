@@ -3,4 +3,7 @@ export type RootStackParamList = {
 	SignIn: undefined
 	Vault: undefined
 	Settings: undefined
+	EntryDetails: { entryId: string }
+	/** Without `entryId` a new entry is created. */
+	EntryEdit: { entryId?: string }
 }

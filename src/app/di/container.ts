@@ -18,6 +18,7 @@ import {
 import { CryptoJsLegacyDecryptor, type ILegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import { ExpoClipboard, type IClipboard } from "@/shared/services/clipboard"
 import { ExpoHaptics, type IHaptics } from "@/shared/services/haptics"
+import { type IUrlOpener, LinkingUrlOpener } from "@/shared/services/links"
 import { ExpoFileStorage, type IFileStorage } from "@/shared/services/file-storage"
 import { ExpoRandom, type IRandom } from "@/shared/services/random"
 import { FirestoreSdkStore, type IRemoteStore } from "@/shared/services/remote-store"
@@ -49,6 +50,8 @@ export type AppDependencies = SessionApiDependencies &
 		readonly clipboard: IClipboard
 		/** Vibration feedback (6.1a); components reach it through `useHaptics`. */
 		readonly haptics: IHaptics
+		/** Opens an entry's address in the browser. */
+		readonly urlOpener: IUrlOpener
 		/** Backup export / import (5.5). */
 		readonly fileStorage: IFileStorage
 		readonly vaultBackup: VaultBackupService
@@ -95,6 +98,7 @@ export const createContainer = (): AppDependencies => {
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: new ExpoClipboard(),
 		haptics: new ExpoHaptics(),
+		urlOpener: new LinkingUrlOpener(),
 		fileStorage,
 		themeStore: new SecureStorageThemeStore(secureStorage),
 		vaultBackup: new VaultBackupService(

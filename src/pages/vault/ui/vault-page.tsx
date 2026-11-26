@@ -5,17 +5,36 @@ import { StyleSheet } from "react-native-unistyles"
 
 import { useVaultLock, useVaultLockState } from "@/entities/session"
 import { strings } from "@/shared/config"
-import { LinkButton, Page, SwipeArea } from "@/shared/ui"
+import { FloatingButton, LinkButton, Page, SwipeArea } from "@/shared/ui"
 import { EntryList } from "@/widgets/entry-list"
 
-/** Main screen: the entry list with the lock and settings shortcuts. */
+type Navigation = {
+	readonly navigate: {
+		(route: "Settings"): void
+		(route: "EntryDetails", params: { entryId: string }): void
+		(route: "EntryEdit", params: { entryId?: string }): void
+	}
+}
+
+/** Main screen: the entry list, shortcuts to settings and lock, and a button for a new entry. */
 export const VaultPage = () => {
-	const navigation = useNavigation<{ navigate: (route: "Settings") => void }>()
+	const navigation = useNavigation<Navigation>()
 	const lock = useVaultLock()
 	const { mode } = useVaultLockState()
 
 	const onOpenSettings = useCallback(() => {
 		navigation.navigate("Settings")
+	}, [navigation])
+
+	const onOpenEntry = useCallback(
+		(entryId: string) => {
+			navigation.navigate("EntryDetails", { entryId })
+		},
+		[navigation],
+	)
+
+	const onAddEntry = useCallback(() => {
+		navigation.navigate("EntryEdit", {})
 	}, [navigation])
 
 	return (
@@ -29,8 +48,9 @@ export const VaultPage = () => {
 						<LinkButton label={strings.vault.lockNow} onPress={lock.lock} />
 					)}
 				</View>
-				<EntryList />
+				<EntryList onOpenEntry={onOpenEntry} />
 			</Page>
+			<FloatingButton label={strings.entry.add} glyph="+" onPress={onAddEntry} />
 		</SwipeArea>
 	)
 }
