@@ -1,10 +1,11 @@
 import { preventScreenCaptureAsync } from "expo-screen-capture"
 import { StatusBar } from "expo-status-bar"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Provider } from "react-redux"
 
 import { SessionServicesProvider } from "@/entities/session"
 import { BackupServicesProvider } from "@/features/vault-backup"
+import { AppThemeProvider, useAppTheme } from "@/shared/theme"
 
 import { StyleSheet, View } from "react-native"
 
@@ -30,6 +31,8 @@ const AppContent = ({
 	useEffect(() => {
 		preventScreenCaptureAsync().catch(() => undefined)
 	}, [])
+	const { scheme } = useAppTheme()
+	const statusBarStyle = useMemo(() => (scheme === "dark" ? "light" : "dark"), [scheme])
 	useAuthSync(authService)
 	useVaultLockSync(lock)
 
@@ -37,7 +40,7 @@ const AppContent = ({
 		// Any touch counts as activity for the idle auto-lock; the handler never consumes the event.
 		<View style={styles.root} onTouchStart={lock.noteActivity}>
 			<RootNavigator />
-			<StatusBar style="auto" />
+			<StatusBar style={statusBarStyle} />
 		</View>
 	)
 }
@@ -49,11 +52,13 @@ export const App = () => {
 
 	return (
 		<Provider store={store}>
-			<SessionServicesProvider lock={container.vaultLock} recovery={container.vaultRecovery}>
-				<BackupServicesProvider backup={container.vaultBackup} files={container.fileStorage}>
-					<AppContent authService={container.authService} lock={container.vaultLock} />
-				</BackupServicesProvider>
-			</SessionServicesProvider>
+			<AppThemeProvider store={container.themeStore}>
+				<SessionServicesProvider lock={container.vaultLock} recovery={container.vaultRecovery}>
+					<BackupServicesProvider backup={container.vaultBackup} files={container.fileStorage}>
+						<AppContent authService={container.authService} lock={container.vaultLock} />
+					</BackupServicesProvider>
+				</SessionServicesProvider>
+			</AppThemeProvider>
 		</Provider>
 	)
 }

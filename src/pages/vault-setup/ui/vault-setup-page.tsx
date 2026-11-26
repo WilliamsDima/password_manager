@@ -1,9 +1,7 @@
-import { useTheme } from "@react-navigation/native"
-import { useEffect, useRef, useState } from "react"
-import { StyleSheet, Text } from "react-native"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 
-import { LockModeForm } from "@/features/lock-mode"
+import { LockModeForm, type LockModeSubmit } from "@/features/lock-mode"
 import {
 	selectSessionUser,
 	useSignOutMutation,
@@ -12,7 +10,7 @@ import {
 } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { lockErrorMessage } from "@/shared/lib/lock-error-message"
-import { ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
+import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
 
 /**
  * First start on this phone: the recovery key opens the account's DEK (checked against the
@@ -20,7 +18,6 @@ import { ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/share
  * closure until `enroll` stores it, and is zeroed afterwards.
  */
 export const VaultSetupPage = () => {
-	const { colors } = useTheme()
 	const user = useSelector(selectSessionUser)
 	const lock = useVaultLock()
 	const recovery = useVaultRecovery()
@@ -39,7 +36,7 @@ export const VaultSetupPage = () => {
 	const [busy, setBusy] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
-	const checkKey = async () => {
+	const checkKey = useCallback(async () => {
 		if (user === null) return
 		setBusy(true)
 		setError(null)
@@ -53,13 +50,39 @@ export const VaultSetupPage = () => {
 		} finally {
 			setBusy(false)
 		}
-	}
+	}, [user, recovery, keyText])
+
+	const view = useMemo(
+		() => ({
+			canCheckKey: keyText.trim().length > 0,
+			biometricAvailable: lock.canUseBiometrics(),
+		}),
+		[keyText, lock],
+	)
+
+	const onCheckKey = useCallback(() => {
+		void checkKey()
+	}, [checkKey])
+
+	const onSignOut = useCallback(() => {
+		void signOut()
+	}, [signOut])
+
+	const onSubmitMode = useCallback(
+		async ({ mode, password }: LockModeSubmit) => {
+			if (dek === null) return
+			await lock.enroll({ dek, mode, ...(password === undefined ? {} : { password }) })
+			dek.fill(0)
+			setDek(null)
+		},
+		[dek, lock],
+	)
 
 	if (dek === null) {
 		return (
 			<Screen>
-				<Text style={[styles.title, { color: colors.text }]}>{strings.setup.title}</Text>
-				<Text style={[styles.text, { color: colors.text }]}>{strings.setup.recoveryHint}</Text>
+				<AppText variant="title">{strings.setup.title}</AppText>
+				<AppText>{strings.setup.recoveryHint}</AppText>
 				<FormInput
 					placeholder={strings.setup.recoveryPlaceholder}
 					value={keyText}
@@ -71,33 +94,24 @@ export const VaultSetupPage = () => {
 				<ErrorText message={error} />
 				<PrimaryButton
 					label={strings.setup.recoveryNext}
-					onPress={() => void checkKey()}
-					disabled={keyText.trim().length === 0}
+					onPress={onCheckKey}
+					disabled={!view.canCheckKey}
 					loading={busy}
 				/>
-				<LinkButton label={strings.lock.signOut} onPress={() => void signOut()} />
+				<LinkButton label={strings.lock.signOut} onPress={onSignOut} />
 			</Screen>
 		)
 	}
 
 	return (
 		<Screen>
-			<Text style={[styles.title, { color: colors.text }]}>{strings.setup.modeTitle}</Text>
+			<AppText variant="heading">{strings.setup.modeTitle}</AppText>
 			<LockModeForm
-				biometricAvailable={lock.canUseBiometrics()}
+				biometricAvailable={view.biometricAvailable}
 				requireCurrentPassword={false}
 				submitLabel={strings.setup.save}
-				onSubmit={async ({ mode, password }) => {
-					await lock.enroll({ dek, mode, ...(password === undefined ? {} : { password }) })
-					dek.fill(0)
-					setDek(null)
-				}}
+				onSubmit={onSubmitMode}
 			/>
 		</Screen>
 	)
 }
-
-const styles = StyleSheet.create({
-	title: { fontSize: 24, fontWeight: "700" },
-	text: { fontSize: 15 },
-})

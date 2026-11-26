@@ -72,6 +72,34 @@ module.exports = defineConfig([
 					selector: "VariableDeclaration[kind='let']",
 					message: "`let` is forbidden (docs/ARCHITECTURE.md §4). Use `const`.",
 				},
+				// JSX rules (CLAUDE.md "JSX rules"): logic lives above the JSX, in hooks.
+				{
+					selector:
+						"JSXAttribute[name.name=/^(style|contentContainerStyle)$/] > JSXExpressionContainer > ObjectExpression",
+					message:
+						"No inline style objects. Static: StyleSheet.create; conditional or themed: `useThemedStyles` / useMemo.",
+				},
+				{
+					selector:
+						"JSXAttribute[name.name=/^(style|contentContainerStyle)$/] > JSXExpressionContainer > ArrayExpression",
+					message: "No style arrays built in JSX. Build the style in useMemo above the JSX.",
+				},
+				{
+					selector:
+						":matches(JSXElement, JSXFragment) > JSXExpressionContainer > ConditionalExpression > Literal[raw='null']",
+					message: "Use `<></>` instead of `null` for the empty branch of a JSX conditional.",
+				},
+				{
+					selector:
+						"JSXAttribute > JSXExpressionContainer > :matches(ArrowFunctionExpression, FunctionExpression)",
+					message: "No functions inside JSX. Extract a named handler with useCallback.",
+				},
+				{
+					selector:
+						"JSXAttribute > JSXExpressionContainer > :matches(ConditionalExpression, LogicalExpression, TemplateLiteral, CallExpression, BinaryExpression)",
+					message:
+						"No computed values in JSX props. Compute them in useMemo above the JSX and pass the result.",
+				},
 			],
 			"no-console": "error",
 			"no-restricted-imports": [

@@ -21,6 +21,7 @@ import { ExpoFileStorage, type IFileStorage } from "@/shared/services/file-stora
 import { ExpoRandom, type IRandom } from "@/shared/services/random"
 import { FirestoreSdkStore, type IRemoteStore } from "@/shared/services/remote-store"
 import { ExpoSecureStorage, type ISecureStorage } from "@/shared/services/secure-storage"
+import { type IThemePreferenceStore, SecureStorageThemeStore } from "@/shared/theme"
 
 /**
  * Everything the store passes to `queryFn` as `api.extra` (docs/ARCHITECTURE.md §3.1).
@@ -47,6 +48,8 @@ export type AppDependencies = SessionApiDependencies & {
 	/** Backup export / import (5.5). */
 	readonly fileStorage: IFileStorage
 	readonly vaultBackup: VaultBackupService
+	/** Saved light / dark / system choice (6.1). */
+	readonly themeStore: IThemePreferenceStore
 }
 
 /**
@@ -86,6 +89,7 @@ export const createContainer = (): AppDependencies => {
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: new ExpoClipboard(),
 		fileStorage,
+		themeStore: new SecureStorageThemeStore(secureStorage),
 		vaultBackup: new VaultBackupService(
 			remoteStore,
 			entryCodec,

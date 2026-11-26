@@ -47,7 +47,7 @@ UI (React)  →  RTK Query endpoints  →  Repository (класс)  →  Сер�
    - `IAuthService` → `FirebaseAuthService`
    - `ICryptoService` → `NobleCryptoService` (AES-GCM, HKDF); `IKdf` → `NobleScryptKdf`;
      `IRandom` → `ExpoRandom`; для миграции `ILegacyDecryptor` → `CryptoJsLegacyDecryptor`
-   - `ISecureStorage` → `ExpoSecureStorage` (биометрия тоже через него, CRYPTO.md §8.1); `IKeyValueStorage` → `MmkvStorage` (появится в 6.1, тема)
+   - `ISecureStorage` → `ExpoSecureStorage` (биометрия тоже через него, CRYPTO.md §8.1); выбор темы хранится тем же `ISecureStorage` без биометрии (ключ `pm.theme.mode`, 6.1); отдельный `IKeyValueStorage` (MMKV) добавим, только если понадобится
    - `IHaptics`, `IClipboard`; отдельный `IBiometrics` — только если понадобится проверка без SecureStore
 2. **Репозиторий** (`entities/<entity>/api/`). Класс, который получает адаптеры через конструктор
    и реализует операции сущности: `EntryRepository(remoteStore, crypto, session)` →

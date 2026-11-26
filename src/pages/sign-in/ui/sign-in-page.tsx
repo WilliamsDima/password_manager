@@ -1,16 +1,13 @@
-import { useTheme } from "@react-navigation/native"
-import { useState } from "react"
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native"
+import { useCallback, useMemo, useState } from "react"
 
 import { useSignInMutation, useSignUpMutation } from "@/entities/session"
 import { strings } from "@/shared/config"
 import { authErrorMessage } from "@/shared/lib/auth-error-message"
+import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
 
 type Mode = "sign-in" | "sign-up"
 
-// Temporary screen: colors come from the navigation theme until the design system (6.1).
 export const SignInPage = () => {
-	const { colors } = useTheme()
 	const [mode, setMode] = useState<Mode>("sign-in")
 	const [email, setEmail] = useState("")
 	const [password, setPassword] = useState("")
@@ -21,90 +18,57 @@ export const SignInPage = () => {
 	const { isLoading, error } = isRegister ? signUpState : signInState
 	const canSubmit = !isLoading && email.trim().length > 0 && password.length > 0
 
-	const submit = () => {
+	const submit = useCallback(() => {
 		const credentials = { email: email.trim(), password }
 		void (isRegister ? signUp(credentials) : signIn(credentials))
-	}
+	}, [email, password, isRegister, signUp, signIn])
 
-	const switchMode = () => {
+	const switchMode = useCallback(() => {
 		signInState.reset()
 		signUpState.reset()
 		setMode(isRegister ? "sign-in" : "sign-up")
-	}
+	}, [signInState, signUpState, isRegister])
 
-	const inputStyle = [styles.input, { color: colors.text, borderColor: colors.border }]
+	const view = useMemo(
+		() => ({
+			title: isRegister ? strings.signIn.registerTitle : strings.signIn.title,
+			submitLabel: isRegister ? strings.signIn.registerSubmit : strings.signIn.submit,
+			switchLabel: isRegister ? strings.signIn.switchToSignIn : strings.signIn.switchToRegister,
+			passwordAutoComplete: isRegister ? ("new-password" as const) : ("current-password" as const),
+			onSubmitEditing: canSubmit ? submit : undefined,
+			errorMessage: error ? authErrorMessage(error.code) : null,
+		}),
+		[isRegister, canSubmit, submit, error],
+	)
 
 	return (
-		<View style={[styles.container, { backgroundColor: colors.background }]}>
-			<Text style={[styles.title, { color: colors.text }]}>
-				{isRegister ? strings.signIn.registerTitle : strings.signIn.title}
-			</Text>
-			<TextInput
-				style={inputStyle}
+		<Screen>
+			<AppText variant="title">{view.title}</AppText>
+			<FormInput
 				placeholder={strings.signIn.email}
-				placeholderTextColor={colors.border}
 				value={email}
 				onChangeText={setEmail}
 				keyboardType="email-address"
-				autoCapitalize="none"
-				autoCorrect={false}
 				autoComplete="email"
 				editable={!isLoading}
 			/>
-			<TextInput
-				style={inputStyle}
+			<FormInput
 				placeholder={strings.signIn.password}
-				placeholderTextColor={colors.border}
 				value={password}
 				onChangeText={setPassword}
 				secureTextEntry
-				autoCapitalize="none"
-				autoCorrect={false}
-				autoComplete={isRegister ? "new-password" : "current-password"}
+				autoComplete={view.passwordAutoComplete}
 				editable={!isLoading}
-				onSubmitEditing={canSubmit ? submit : undefined}
+				onSubmitEditing={view.onSubmitEditing}
 			/>
-			{error ? (
-				<Text style={[styles.error, { color: colors.notification }]}>
-					{authErrorMessage(error.code)}
-				</Text>
-			) : null}
-			<Pressable
-				style={[styles.button, { backgroundColor: colors.primary }, !canSubmit && styles.disabled]}
+			<ErrorText message={view.errorMessage} />
+			<PrimaryButton
+				label={view.submitLabel}
 				onPress={submit}
 				disabled={!canSubmit}
-				accessibilityRole="button"
-			>
-				{isLoading ? (
-					<ActivityIndicator color={colors.card} />
-				) : (
-					<Text style={[styles.buttonText, { color: colors.card }]}>
-						{isRegister ? strings.signIn.registerSubmit : strings.signIn.submit}
-					</Text>
-				)}
-			</Pressable>
-			<Pressable onPress={switchMode} disabled={isLoading} accessibilityRole="button">
-				<Text style={[styles.link, { color: colors.primary }]}>
-					{isRegister ? strings.signIn.switchToSignIn : strings.signIn.switchToRegister}
-				</Text>
-			</Pressable>
-		</View>
+				loading={isLoading}
+			/>
+			<LinkButton label={view.switchLabel} onPress={switchMode} disabled={isLoading} />
+		</Screen>
 	)
 }
-
-const styles = StyleSheet.create({
-	container: { flex: 1, justifyContent: "center", padding: 24, gap: 16 },
-	title: { fontSize: 28, fontWeight: "600", marginBottom: 8 },
-	input: {
-		borderWidth: 1,
-		borderRadius: 8,
-		paddingHorizontal: 12,
-		paddingVertical: 10,
-		fontSize: 16,
-	},
-	error: { fontSize: 14 },
-	button: { borderRadius: 8, paddingVertical: 12, alignItems: "center" },
-	buttonText: { fontSize: 16, fontWeight: "600" },
-	disabled: { opacity: 0.5 },
-	link: { textAlign: "center", fontSize: 14 },
-})

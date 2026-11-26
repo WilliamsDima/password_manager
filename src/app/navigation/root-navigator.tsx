@@ -3,9 +3,11 @@ import {
 	DefaultTheme,
 	NavigationContainer,
 	ThemeProvider,
+	type Theme as NavigationTheme,
 } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { ActivityIndicator, StyleSheet, useColorScheme, View } from "react-native"
+import { useMemo } from "react"
+import { ActivityIndicator, View } from "react-native"
 import { useSelector } from "react-redux"
 
 import { selectSessionStatus, useVaultLockState } from "@/entities/session"
@@ -15,8 +17,36 @@ import { UnlockPage } from "@/pages/unlock"
 import { VaultPage } from "@/pages/vault"
 import { VaultSetupPage } from "@/pages/vault-setup"
 import { strings } from "@/shared/config"
+import { useAppTheme, useThemedStyles, type Theme, type ThemedStyleSet } from "@/shared/theme"
 
 import type { RootStackParamList } from "./types"
+
+/** Navigation chrome (headers, transitions) takes its colors from our tokens, keeping its fonts. */
+const toNavigationTheme = ({ scheme, colors }: Theme): NavigationTheme => {
+	const base = scheme === "dark" ? DarkTheme : DefaultTheme
+	return {
+		...base,
+		colors: {
+			...base.colors,
+			primary: colors.primary,
+			background: colors.background,
+			card: colors.surface,
+			text: colors.text,
+			border: colors.border,
+			notification: colors.danger,
+		},
+	}
+}
+
+const createSplashStyles = ({ colors }: Theme) =>
+	({
+		splash: {
+			flex: 1,
+			alignItems: "center",
+			justifyContent: "center",
+			backgroundColor: colors.background,
+		},
+	}) satisfies ThemedStyleSet
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
@@ -27,8 +57,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
  * so no screen of it can be shown or reached.
  */
 export const RootNavigator = () => {
-	const colorScheme = useColorScheme()
-	const theme = colorScheme === "dark" ? DarkTheme : DefaultTheme
+	const appTheme = useAppTheme()
+	const styles = useThemedStyles(createSplashStyles)
+	const theme = useMemo(() => toNavigationTheme(appTheme), [appTheme])
 	const status = useSelector(selectSessionStatus)
 	const lock = useVaultLockState()
 
@@ -37,9 +68,9 @@ export const RootNavigator = () => {
 
 	if (waiting) {
 		return (
-			<View style={[styles.splash, { backgroundColor: theme.colors.background }]}>
+			<View style={styles.splash}>
 				<ActivityIndicator
-					color={theme.colors.primary}
+					color={appTheme.colors.primary}
 					accessibilityLabel={strings.common.loading}
 				/>
 			</View>
@@ -77,7 +108,3 @@ export const RootNavigator = () => {
 		</NavigationContainer>
 	)
 }
-
-const styles = StyleSheet.create({
-	splash: { flex: 1, alignItems: "center", justifyContent: "center" },
-})

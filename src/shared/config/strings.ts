@@ -63,6 +63,12 @@ export const strings = {
 		currentMode: "Сейчас",
 		changeMode: "Изменить способ входа",
 		modeChanged: "Способ входа изменён",
+		appearance: "Оформление",
+		themeNames: {
+			system: "Как в системе",
+			light: "Светлая",
+			dark: "Тёмная",
+		},
 		modeNames: {
 			password: "Пароль приложения",
 			biometric: "Отпечаток пальца",

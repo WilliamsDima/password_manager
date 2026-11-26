@@ -1,6 +1,4 @@
-import { useTheme } from "@react-navigation/native"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { StyleSheet, Text } from "react-native"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSelector } from "react-redux"
 
 import {
@@ -11,14 +9,13 @@ import {
 	useVaultLockState,
 	useVaultRecovery,
 } from "@/entities/session"
-import { LockModeForm } from "@/features/lock-mode"
+import { LockModeForm, type LockModeSubmit } from "@/features/lock-mode"
 import { strings } from "@/shared/config"
 import { formatWait, lockErrorMessage } from "@/shared/lib/lock-error-message"
-import { ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
+import { AppText, ErrorText, FormInput, LinkButton, PrimaryButton, Screen } from "@/shared/ui"
 
 /** Lock screen: password / fingerprint, with the recovery key as the way back in (docs/CRYPTO.md §4). */
 export const UnlockPage = () => {
-	const { colors } = useTheme()
 	const lock = useVaultLock()
 	const recovery = useVaultRecovery()
 	const { status, mode, biometricInvalidated } = useVaultLockState()
@@ -68,28 +65,93 @@ export const UnlockPage = () => {
 		}
 	}, [waitMs, refreshWait])
 
-	const run = async (action: () => Promise<void>) => {
-		setBusy(true)
-		setError(null)
-		try {
-			await action()
-		} catch (caught) {
-			if (caught instanceof LockoutError) setWaitMs(caught.retryAfterMs)
-			else setError(lockErrorMessage(caught))
-			await refreshWait()
-		} finally {
-			setBusy(false)
-		}
-	}
+	const run = useCallback(
+		async (action: () => Promise<void>) => {
+			setBusy(true)
+			setError(null)
+			try {
+				await action()
+			} catch (caught) {
+				if (caught instanceof LockoutError) setWaitMs(caught.retryAfterMs)
+				else setError(lockErrorMessage(caught))
+				await refreshWait()
+			} finally {
+				setBusy(false)
+			}
+		},
+		[refreshWait],
+	)
 
 	const unlockBiometric = useCallback(
 		() =>
 			run(async () => {
 				await lock.unlockWithBiometrics()
 			}),
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- `run` only closes over stable setters and `lock`
-		[lock],
+		[run, lock],
 	)
+
+	const submitPassword = useCallback(
+		() =>
+			run(async () => {
+				await lock.unlockWithPassword(password)
+				setPassword("")
+			}),
+		[run, lock, password],
+	)
+
+	const recoverKey = useCallback(
+		() =>
+			run(async () => {
+				if (user === null) return
+				const recovered = await recovery.recover(user.uid, keyText)
+				dekRef.current = recovered
+				setRecoveredDek(recovered)
+				setKeyText("")
+			}),
+		[run, user, recovery, keyText],
+	)
+
+	const onRetryInit = useCallback(() => {
+		if (user !== null) void lock.initialize(user.uid)
+	}, [user, lock])
+
+	const onSignOut = useCallback(() => {
+		void signOut()
+	}, [signOut])
+
+	const onSubmitMode = useCallback(
+		async ({ mode: chosen, password: chosenPassword }: LockModeSubmit) => {
+			if (recoveredDek === null) return
+			await lock.enroll({
+				dek: recoveredDek,
+				mode: chosen,
+				...(chosenPassword === undefined ? {} : { password: chosenPassword }),
+			})
+			recoveredDek.fill(0)
+			setRecoveredDek(null)
+		},
+		[lock, recoveredDek],
+	)
+
+	const onSubmitPassword = useCallback(() => {
+		void submitPassword()
+	}, [submitPassword])
+
+	const onRecover = useCallback(() => {
+		void recoverKey()
+	}, [recoverKey])
+
+	const onBiometric = useCallback(() => {
+		void unlockBiometric()
+	}, [unlockBiometric])
+
+	const onForgot = useCallback(() => {
+		setUseRecovery(true)
+	}, [])
+
+	const onBackToPassword = useCallback(() => {
+		setUseRecovery(false)
+	}, [])
 
 	// Fingerprint prompt right away, unless Android dropped the key.
 	useEffect(() => {
@@ -99,41 +161,40 @@ export const UnlockPage = () => {
 		})
 	}, [mode, biometricInvalidated, lock])
 
+	const view = useMemo(() => {
+		const recoveryOnly = mode === "biometric" && biometricInvalidated
+		const waiting = waitMs > 0
+		return {
+			recoveryOnly,
+			showRecovery: useRecovery || recoveryOnly,
+			biometricAvailable: lock.canUseBiometrics(),
+			canRecover: keyText.trim().length > 0 && user !== null,
+			waiting,
+			passwordEditable: !busy && !waiting,
+			canSubmitPassword: password.length > 0 && !waiting,
+			retryText: `${strings.lock.retryIn} ${formatWait(waitMs)}`,
+		}
+	}, [mode, biometricInvalidated, useRecovery, lock, keyText, user, waitMs, busy, password])
+
 	if (status === "init-failed") {
 		return (
 			<Screen>
-				<Text style={[styles.title, { color: colors.text }]}>{strings.lock.initFailed}</Text>
-				<PrimaryButton
-					label={strings.lock.retry}
-					onPress={() => {
-						if (user !== null) void lock.initialize(user.uid)
-					}}
-				/>
-				<LinkButton label={strings.lock.signOut} onPress={() => void signOut()} />
+				<AppText variant="heading">{strings.lock.initFailed}</AppText>
+				<PrimaryButton label={strings.lock.retry} onPress={onRetryInit} />
+				<LinkButton label={strings.lock.signOut} onPress={onSignOut} />
 			</Screen>
 		)
 	}
 
-	const recoveryOnly = mode === "biometric" && biometricInvalidated
-	const showRecovery = useRecovery || recoveryOnly
-
 	if (recoveredDek !== null) {
 		return (
 			<Screen>
-				<Text style={[styles.title, { color: colors.text }]}>{strings.setup.modeTitle}</Text>
+				<AppText variant="heading">{strings.setup.modeTitle}</AppText>
 				<LockModeForm
-					biometricAvailable={lock.canUseBiometrics()}
+					biometricAvailable={view.biometricAvailable}
 					requireCurrentPassword={false}
 					submitLabel={strings.setup.save}
-					onSubmit={async ({ mode: chosen, password: chosenPassword }) => {
-						await lock.enroll({
-							dek: recoveredDek,
-							mode: chosen,
-							...(chosenPassword === undefined ? {} : { password: chosenPassword }),
-						})
-						recoveredDek.fill(0)
-						setRecoveredDek(null)
-					}}
+					onSubmit={onSubmitMode}
 				/>
 			</Screen>
 		)
@@ -141,15 +202,11 @@ export const UnlockPage = () => {
 
 	return (
 		<Screen>
-			<Text style={[styles.title, { color: colors.text }]}>{strings.lock.title}</Text>
-			{recoveryOnly ? (
-				<Text style={[styles.text, { color: colors.text }]}>
-					{strings.lock.biometricInvalidated}
-				</Text>
-			) : null}
-			{showRecovery ? (
+			<AppText variant="title">{strings.lock.title}</AppText>
+			{view.recoveryOnly ? <AppText>{strings.lock.biometricInvalidated}</AppText> : <></>}
+			{view.showRecovery ? (
 				<>
-					<Text style={[styles.text, { color: colors.text }]}>{strings.setup.recoveryHint}</Text>
+					<AppText>{strings.setup.recoveryHint}</AppText>
 					<FormInput
 						placeholder={strings.setup.recoveryPlaceholder}
 						value={keyText}
@@ -161,25 +218,14 @@ export const UnlockPage = () => {
 					<ErrorText message={error} />
 					<PrimaryButton
 						label={strings.setup.recoveryNext}
-						disabled={keyText.trim().length === 0 || user === null}
+						disabled={!view.canRecover}
 						loading={busy}
-						onPress={() =>
-							void run(async () => {
-								if (user === null) return
-								const recovered = await recovery.recover(user.uid, keyText)
-								dekRef.current = recovered
-								setRecoveredDek(recovered)
-								setKeyText("")
-							})
-						}
+						onPress={onRecover}
 					/>
-					{recoveryOnly ? null : (
-						<LinkButton
-							label={strings.lock.backToPassword}
-							onPress={() => {
-								setUseRecovery(false)
-							}}
-						/>
+					{view.recoveryOnly ? (
+						<></>
+					) : (
+						<LinkButton label={strings.lock.backToPassword} onPress={onBackToPassword} />
 					)}
 				</>
 			) : (
@@ -191,56 +237,28 @@ export const UnlockPage = () => {
 								value={password}
 								onChangeText={setPassword}
 								secureTextEntry
-								editable={!busy && waitMs <= 0}
-								onSubmitEditing={() =>
-									void run(async () => {
-										await lock.unlockWithPassword(password)
-										setPassword("")
-									})
-								}
+								editable={view.passwordEditable}
+								onSubmitEditing={onSubmitPassword}
 							/>
-							{waitMs > 0 ? (
-								<Text style={[styles.text, { color: colors.notification }]}>
-									{`${strings.lock.retryIn} ${formatWait(waitMs)}`}
-								</Text>
-							) : null}
+							{view.waiting ? <AppText tone="danger">{view.retryText}</AppText> : <></>}
 							<ErrorText message={error} />
 							<PrimaryButton
 								label={strings.lock.unlock}
-								disabled={password.length === 0 || waitMs > 0}
+								disabled={!view.canSubmitPassword}
 								loading={busy}
-								onPress={() =>
-									void run(async () => {
-										await lock.unlockWithPassword(password)
-										setPassword("")
-									})
-								}
+								onPress={onSubmitPassword}
 							/>
 						</>
 					) : (
 						<>
 							<ErrorText message={error} />
-							<PrimaryButton
-								label={strings.lock.biometric}
-								loading={busy}
-								onPress={() => void unlockBiometric()}
-							/>
+							<PrimaryButton label={strings.lock.biometric} loading={busy} onPress={onBiometric} />
 						</>
 					)}
-					<LinkButton
-						label={strings.lock.forgot}
-						onPress={() => {
-							setUseRecovery(true)
-						}}
-					/>
+					<LinkButton label={strings.lock.forgot} onPress={onForgot} />
 				</>
 			)}
-			<LinkButton label={strings.lock.signOut} onPress={() => void signOut()} />
+			<LinkButton label={strings.lock.signOut} onPress={onSignOut} />
 		</Screen>
 	)
 }
-
-const styles = StyleSheet.create({
-	title: { fontSize: 24, fontWeight: "700" },
-	text: { fontSize: 15 },
-})

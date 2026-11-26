@@ -1,64 +1,67 @@
-import { useTheme } from "@react-navigation/native"
-import { useState } from "react"
-import { ScrollView, StyleSheet, Text } from "react-native"
+import { useCallback, useMemo, useState } from "react"
 
 import { useVaultLock, useVaultLockState } from "@/entities/session"
-import { LockModeForm } from "@/features/lock-mode"
+import { LockModeForm, type LockModeSubmit } from "@/features/lock-mode"
+import { ThemeSwitcher } from "@/features/switch-theme"
 import { BackupSection } from "@/features/vault-backup"
 import { strings } from "@/shared/config"
-import { LinkButton } from "@/shared/ui"
+import { AppText, Card, LinkButton, ScrollScreen } from "@/shared/ui"
 
 /** Settings: how the app is protected. A change needs the current password (docs/CRYPTO.md §4). */
 export const SettingsPage = () => {
-	const { colors } = useTheme()
 	const lock = useVaultLock()
 	const { mode } = useVaultLockState()
 	const [editing, setEditing] = useState(false)
 	const [changed, setChanged] = useState(false)
 
+	const onSubmitMode = useCallback(
+		async ({ mode: target, password, currentPassword }: LockModeSubmit) => {
+			await lock.changeMode(
+				{ mode: target, ...(password === undefined ? {} : { password }) },
+				currentPassword === undefined ? {} : { password: currentPassword },
+			)
+			setEditing(false)
+			setChanged(true)
+		},
+		[lock],
+	)
+
+	const onStartEdit = useCallback(() => {
+		setChanged(false)
+		setEditing(true)
+	}, [])
+
+	const view = useMemo(
+		() => ({
+			currentMode: `${strings.settings.currentMode}: ${mode === null ? "" : strings.settings.modeNames[mode]}`,
+			biometricAvailable: lock.canUseBiometrics(),
+			requireCurrentPassword: mode === "password",
+		}),
+		[mode, lock],
+	)
+
 	return (
-		<ScrollView
-			style={{ backgroundColor: colors.background }}
-			contentContainerStyle={styles.content}
-			keyboardShouldPersistTaps="handled"
-		>
-			<Text style={[styles.title, { color: colors.text }]}>{strings.settings.protection}</Text>
-			<Text style={[styles.text, { color: colors.text }]}>
-				{`${strings.settings.currentMode}: ${mode === null ? "" : strings.settings.modeNames[mode]}`}
-			</Text>
-			{changed ? (
-				<Text style={[styles.text, { color: colors.primary }]}>{strings.settings.modeChanged}</Text>
-			) : null}
-			{editing ? (
-				<LockModeForm
-					biometricAvailable={lock.canUseBiometrics()}
-					requireCurrentPassword={mode === "password"}
-					submitLabel={strings.setup.save}
-					onSubmit={async ({ mode: target, password, currentPassword }) => {
-						await lock.changeMode(
-							{ mode: target, ...(password === undefined ? {} : { password }) },
-							currentPassword === undefined ? {} : { password: currentPassword },
-						)
-						setEditing(false)
-						setChanged(true)
-					}}
-				/>
-			) : (
-				<LinkButton
-					label={strings.settings.changeMode}
-					onPress={() => {
-						setChanged(false)
-						setEditing(true)
-					}}
-				/>
-			)}
+		<ScrollScreen>
+			<Card>
+				<AppText variant="heading">{strings.settings.appearance}</AppText>
+				<ThemeSwitcher />
+			</Card>
+			<Card>
+				<AppText variant="heading">{strings.settings.protection}</AppText>
+				<AppText>{view.currentMode}</AppText>
+				{changed ? <AppText tone="success">{strings.settings.modeChanged}</AppText> : <></>}
+				{editing ? (
+					<LockModeForm
+						biometricAvailable={view.biometricAvailable}
+						requireCurrentPassword={view.requireCurrentPassword}
+						submitLabel={strings.setup.save}
+						onSubmit={onSubmitMode}
+					/>
+				) : (
+					<LinkButton label={strings.settings.changeMode} onPress={onStartEdit} />
+				)}
+			</Card>
 			<BackupSection />
-		</ScrollView>
+		</ScrollScreen>
 	)
 }
-
-const styles = StyleSheet.create({
-	content: { padding: 24, gap: 14 },
-	title: { fontSize: 22, fontWeight: "700" },
-	text: { fontSize: 16 },
-})

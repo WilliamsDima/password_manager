@@ -58,6 +58,12 @@ The v1 encryption key (text/QR) is not a file: store it in your password manager
 - ESLint enforces the FSD rules from ARCHITECTURE.md: layer direction and no cross-slice imports (`eslint-plugin-boundaries`), public-API-only imports (`no-restricted-imports`), no `let`, no `any`, no `@ts-ignore`, `no-console` (only `src/shared/lib/logger` may use console). Release bundles strip `console.*` (babel `transform-remove-console`), and the logger is disabled when `!__DEV__`.
 - TypeScript 6: `types` defaults to empty, so `tsconfig.json` lists `"types": ["jest"]`. `baseUrl` is deprecated, so don't add it.
 - Code style (Prettier): tabs, no semicolons, double quotes, width 100. Markdown is not auto-formatted.
+- **JSX rules** (the owner's rules, enforced by `no-restricted-syntax` in `eslint.config.js`): the JSX holds no logic, everything is prepared above it in hooks.
+  - No inline style objects (`style={{...}}`) and no style arrays built in JSX. Static styles: `StyleSheet.create`. Conditional or themed styles: `useThemedStyles(createStyles)` (`@/shared/theme`) with variants as separate named styles (`selected ? styles.a : styles.b`), or a `useMemo` variable.
+  - No functions in JSX props (`onPress={() => ...}`, `style={({ pressed }) => ...}`): extract a named `onX` handler with `useCallback`. For lists, build `items` in `useMemo` and give per-item handlers to a small item component.
+  - No computed values in JSX props (ternaries, template strings, `&&`, calls, comparisons): compute them in `useMemo` (usually one `view` object per component) and pass `view.x`. Plain identifiers, member reads and handler names are fine.
+  - Empty branch of a JSX conditional is `<></>`, never `null` (so React Native never renders a stray value outside `<Text>`).
+  - Hooks go above any early `return`.
 
 ## Legacy v1 (legacy/), for reference and migration
 
