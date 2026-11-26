@@ -1,11 +1,12 @@
 import { useTheme } from "@react-navigation/native"
 import { useState } from "react"
-import { StyleSheet, Text } from "react-native"
+import { ScrollView, StyleSheet, Text } from "react-native"
 
 import { useVaultLock, useVaultLockState } from "@/entities/session"
 import { LockModeForm } from "@/features/lock-mode"
+import { BackupSection } from "@/features/vault-backup"
 import { strings } from "@/shared/config"
-import { LinkButton, Screen } from "@/shared/ui"
+import { LinkButton } from "@/shared/ui"
 
 /** Settings: how the app is protected. A change needs the current password (docs/CRYPTO.md §4). */
 export const SettingsPage = () => {
@@ -16,7 +17,11 @@ export const SettingsPage = () => {
 	const [changed, setChanged] = useState(false)
 
 	return (
-		<Screen>
+		<ScrollView
+			style={{ backgroundColor: colors.background }}
+			contentContainerStyle={styles.content}
+			keyboardShouldPersistTaps="handled"
+		>
 			<Text style={[styles.title, { color: colors.text }]}>{strings.settings.protection}</Text>
 			<Text style={[styles.text, { color: colors.text }]}>
 				{`${strings.settings.currentMode}: ${mode === null ? "" : strings.settings.modeNames[mode]}`}
@@ -47,11 +52,13 @@ export const SettingsPage = () => {
 					}}
 				/>
 			)}
-		</Screen>
+			<BackupSection />
+		</ScrollView>
 	)
 }
 
 const styles = StyleSheet.create({
+	content: { padding: 24, gap: 14 },
 	title: { fontSize: 22, fontWeight: "700" },
 	text: { fontSize: 16 },
 })

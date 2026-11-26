@@ -224,6 +224,46 @@ export class FirestoreSdkStore implements IRemoteStore {
 			})
 		})
 
+	public readonly replaceEntries = (
+		uid: string,
+		input: {
+			readonly expectedRkVersion: number
+			readonly current: readonly { readonly id: string; readonly expectedCt: string }[]
+			readonly writes: readonly EntryWrite[]
+		},
+	): Promise<void> =>
+		run(() => {
+			assertWithinLimit(input.current.length + input.writes.length)
+			const db = getFirestore()
+			return runTransaction(db, async transaction => {
+				// The entries must belong to the key generation the plan was built for: a DEK change on
+				// another device in between would leave the new entries unreadable.
+				const profile = await transaction.get(doc(db, "users", uid))
+				const profileData: unknown = profile.data()
+				const keys = isRecord(profileData) ? parseCrypto(profileData.crypto) : null
+				if (keys?.rkVersion !== input.expectedRkVersion) {
+					throw new AppError("conflict", "Key version changed")
+				}
+				const refs = input.current.map(entry => doc(db, "users", uid, "entries", entry.id))
+				const snapshots = await Promise.all(refs.map(ref => transaction.get(ref)))
+				snapshots.forEach((snapshot, index) => {
+					const data: unknown = snapshot.data()
+					if (!isRecord(data) || data.ct !== input.current[index]?.expectedCt) {
+						throw new AppError("conflict", "Entry changed")
+					}
+				})
+				refs.forEach(ref => {
+					transaction.delete(ref)
+				})
+				input.writes.forEach(entry => {
+					transaction.set(doc(db, "users", uid, "entries", entry.id), {
+						ct: entry.ct,
+						updatedAt: serverTimestamp(),
+					})
+				})
+			})
+		})
+
 	public readonly rekey = (
 		uid: string,
 		input: {

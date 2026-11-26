@@ -6,6 +6,7 @@ import {
 	VaultRecoveryService,
 } from "@/entities/session"
 import { EntryCodec } from "@/entities/entry"
+import { VaultBackupService } from "@/features/vault-backup"
 import { VaultMigrationService } from "@/features/vault-migration"
 import { FirebaseAuthService } from "@/shared/services/auth"
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/shared/services/crypto"
 import { CryptoJsLegacyDecryptor, type ILegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import { ExpoClipboard, type IClipboard } from "@/shared/services/clipboard"
+import { ExpoFileStorage, type IFileStorage } from "@/shared/services/file-storage"
 import { ExpoRandom, type IRandom } from "@/shared/services/random"
 import { FirestoreSdkStore, type IRemoteStore } from "@/shared/services/remote-store"
 import { ExpoSecureStorage, type ISecureStorage } from "@/shared/services/secure-storage"
@@ -42,6 +44,9 @@ export type AppDependencies = SessionApiDependencies & {
 	readonly vaultLock: VaultLockService
 	readonly vaultRecovery: VaultRecoveryService
 	readonly clipboard: IClipboard
+	/** Backup export / import (5.5). */
+	readonly fileStorage: IFileStorage
+	readonly vaultBackup: VaultBackupService
 }
 
 /**
@@ -58,6 +63,7 @@ export const createContainer = (): AppDependencies => {
 	const remoteStore = new FirestoreSdkStore()
 	// Native: pure-JS scrypt takes ~5 s for N=2^14 in Hermes (5.3 measurement); `NobleScryptKdf` stays for tests.
 	const kdf = new NativeScryptKdf()
+	const fileStorage = new ExpoFileStorage()
 	return {
 		authService: new FirebaseAuthService(),
 		secureStorage,
@@ -79,5 +85,14 @@ export const createContainer = (): AppDependencies => {
 		vaultLock: new VaultLockService(secureStorage, crypto, kdf, random, Date.now),
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: new ExpoClipboard(),
+		fileStorage,
+		vaultBackup: new VaultBackupService(
+			remoteStore,
+			entryCodec,
+			vaultKeys,
+			legacyDecryptor,
+			random,
+			() => new Date(),
+		),
 	}
 }

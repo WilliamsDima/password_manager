@@ -24,6 +24,12 @@ export type AppErrorCode =
 	| "user-disabled"
 	/** Firebase wants a fresh sign-in before a sensitive operation (account deletion). */
 	| "reauth-required"
+	/** Reading or writing a user-visible file failed (picker, folder, share sheet). */
+	| "file-io"
+	/** The file is not a backup this app understands (format, structure). */
+	| "invalid-backup"
+	/** The picked file is too large to be a backup. */
+	| "file-too-large"
 	| "network"
 	| "permission-denied"
 	| "not-found"

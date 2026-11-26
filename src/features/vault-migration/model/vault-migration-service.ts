@@ -1,4 +1,4 @@
-import type { EntryCodec } from "@/entities/entry"
+import { decryptLegacyItems, type EntryCodec, samePayloads } from "@/entities/entry"
 import type { IVaultKeyService } from "@/entities/session"
 import { fromBase64, toBase64 } from "@/shared/lib/encoding"
 import { AppError } from "@/shared/lib/errors"
@@ -7,7 +7,6 @@ import type { IRandom } from "@/shared/services/random"
 import type { IRemoteStore, RemoteProfile } from "@/shared/services/remote-store"
 import type { ISecureStorage } from "@/shared/services/secure-storage"
 
-import { decryptLegacyItems, samePayloads } from "../lib/legacy-items"
 import type { DekChangePlan, MigrationOutcome, MigrationPlan } from "./types"
 
 /** SecureStore key of the pair generated before the recovery key is shown (docs/CRYPTO.md §6.3). */

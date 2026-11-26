@@ -298,4 +298,116 @@ describe("FirestoreSdkStore", () => {
 
 		expect(sdk.waitForPendingWrites).toHaveBeenCalledTimes(1)
 	})
+
+	it("replaceEntries deletes the current entries and creates the new ones in one transaction", async () => {
+		const del = jest.fn()
+		const set = jest.fn()
+		sdk.runTransaction.mockImplementation(((_db: unknown, fn: (t: unknown) => Promise<void>) =>
+			fn({
+				get: (ref: { path: string }) =>
+					Promise.resolve(
+						ref.path === "users/u"
+							? snapshot({
+									crypto: {
+										wrappedDek: "v2.a.b",
+										kdf: "hkdf-sha256",
+										rkVersion: 1,
+										createdAt: { toMillis: () => 1 },
+									},
+								})
+							: snapshot({ ct: "v2.old.old" }),
+					),
+				delete: del,
+				set,
+			})) as never)
+
+		await store.replaceEntries("u", {
+			expectedRkVersion: 1,
+			current: [{ id: "old1", expectedCt: "v2.old.old" }],
+			writes: [{ id: "new1", ct: "v2.new.new" }],
+		})
+
+		expect(del).toHaveBeenCalledWith({ path: "users/u/entries/old1" })
+		expect(set).toHaveBeenCalledWith(
+			{ path: "users/u/entries/new1" },
+			{ ct: "v2.new.new", updatedAt: "SERVER_TS" },
+		)
+	})
+
+	it("replaceEntries: a changed entry means conflict and nothing is deleted or written", async () => {
+		const del = jest.fn()
+		const set = jest.fn()
+		sdk.runTransaction.mockImplementation(((_db: unknown, fn: (t: unknown) => Promise<void>) =>
+			fn({
+				get: (ref: { path: string }) =>
+					Promise.resolve(
+						ref.path === "users/u"
+							? snapshot({
+									crypto: {
+										wrappedDek: "v2.a.b",
+										kdf: "hkdf-sha256",
+										rkVersion: 1,
+										createdAt: { toMillis: () => 1 },
+									},
+								})
+							: snapshot({ ct: "v2.edited.edited" }),
+					),
+				delete: del,
+				set,
+			})) as never)
+
+		await expect(
+			store.replaceEntries("u", {
+				expectedRkVersion: 1,
+				current: [{ id: "old1", expectedCt: "v2.old.old" }],
+				writes: [{ id: "new1", ct: "v2.new.new" }],
+			}),
+		).rejects.toMatchObject({ code: "conflict" })
+
+		expect(del).not.toHaveBeenCalled()
+		expect(set).not.toHaveBeenCalled()
+	})
+
+	it("replaceEntries rejects an oversized change before touching the server", async () => {
+		const writes = Array.from({ length: 401 }, (_, i) => ({ id: `e${String(i)}`, ct: "v2.a.b" }))
+
+		await expect(
+			store.replaceEntries("u", { expectedRkVersion: 1, current: [], writes }),
+		).rejects.toMatchObject({
+			code: "limit-exceeded",
+		})
+		expect(sdk.runTransaction).not.toHaveBeenCalled()
+	})
+
+	it("replaceEntries: a changed key version (DEK change elsewhere) is a conflict, nothing is written", async () => {
+		const del = jest.fn()
+		const set = jest.fn()
+		sdk.runTransaction.mockImplementation(((_db: unknown, fn: (t: unknown) => Promise<void>) =>
+			fn({
+				get: () =>
+					Promise.resolve(
+						snapshot({
+							crypto: {
+								wrappedDek: "v2.a.b",
+								kdf: "hkdf-sha256",
+								rkVersion: 2,
+								createdAt: { toMillis: () => 1 },
+							},
+						}),
+					),
+				delete: del,
+				set,
+			})) as never)
+
+		await expect(
+			store.replaceEntries("u", {
+				expectedRkVersion: 1,
+				current: [],
+				writes: [{ id: "n", ct: "v2.n.n" }],
+			}),
+		).rejects.toMatchObject({ code: "conflict" })
+
+		expect(set).not.toHaveBeenCalled()
+		expect(del).not.toHaveBeenCalled()
+	})
 })

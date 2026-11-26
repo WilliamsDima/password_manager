@@ -57,10 +57,17 @@ function ask(question, hidden = false) {
 	})
 }
 
+// The API key is restricted to the Android app (task 5.4, F3): Google checks these two headers.
+// Package and release-certificate SHA-1 are public identifiers, not secrets (docs/ROADMAP.md, 2026-11-26).
+const ANDROID_HEADERS = {
+	"X-Android-Package": "com.eclipse.account_manager",
+	"X-Android-Cert": "BB91088157E79949D531DD3FDB96D57ABA957097",
+}
+
 async function postJson(url, body) {
 	const res = await fetch(url, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
+		headers: { "Content-Type": "application/json", ...ANDROID_HEADERS },
 		body: JSON.stringify(body),
 	})
 	const json = await res.json()

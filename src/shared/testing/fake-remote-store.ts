@@ -96,6 +96,34 @@ export class FakeRemoteStore implements IRemoteStore {
 		return Promise.resolve()
 	}
 
+	public readonly replaceEntries = (
+		uid: string,
+		input: {
+			readonly expectedRkVersion: number
+			readonly current: readonly { readonly id: string; readonly expectedCt: string }[]
+			readonly writes: readonly EntryWrite[]
+		},
+	): Promise<void> =>
+		this.transaction(() => {
+			if (input.current.length + input.writes.length > 400) {
+				throw new AppError("limit-exceeded", "Too many entries")
+			}
+			if (this.profiles.get(uid)?.crypto?.rkVersion !== input.expectedRkVersion) {
+				throw new AppError("conflict", "Key version changed")
+			}
+			input.current.forEach(entry => {
+				if (this.entries.get(entry.id)?.ct !== entry.expectedCt) {
+					throw new AppError("conflict", "Entry changed")
+				}
+			})
+			return () => {
+				input.current.forEach(entry => this.entries.delete(entry.id))
+				input.writes.forEach(entry =>
+					this.entries.set(entry.id, { ...entry, updatedAt: this.tick() }),
+				)
+			}
+		})
+
 	public readonly rekey = (
 		uid: string,
 		input: {

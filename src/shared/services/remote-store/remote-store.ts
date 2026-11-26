@@ -84,6 +84,25 @@ export type IRemoteStore = {
 	readonly rollbackMigration: (uid: string) => Promise<void>
 
 	/**
+	 * Full replacement of the entries (backup import, docs/CRYPTO.md §7), one transaction: every
+	 * entry in `current` must still hold `expectedCt` and the profile must still be at
+	 * `expectedRkVersion` (a DEK change on another device in between would make the new entries
+	 * unreadable; else `AppError("conflict")`, nothing changes);
+	 * all of them are deleted and `writes` are created. `current.length + writes.length` is
+	 * capped by `MAX_TRANSACTION_ENTRIES` (`limit-exceeded`). An entry created after `current` was
+	 * read is not detected (same limit as `rekey`).
+	 */
+	readonly replaceEntries: (
+		uid: string,
+		input: {
+			/** `crypto.rkVersion` the entries are encrypted for; must still be the server's (else `conflict`). */
+			readonly expectedRkVersion: number
+			readonly current: readonly { readonly id: string; readonly expectedCt: string }[]
+			readonly writes: readonly EntryWrite[]
+		},
+	) => Promise<void>
+
+	/**
 	 * DEK change (§2), one transaction: `crypto.rkVersion` must equal `expectedRkVersion` and every
 	 * listed entry must still hold `expectedCt`; then all entries are replaced and `crypto` is
 	 * written with `rkVersion + 1`. Rejects with `AppError("conflict")` if anything changed.

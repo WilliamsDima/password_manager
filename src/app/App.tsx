@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Provider } from "react-redux"
 
 import { SessionServicesProvider } from "@/entities/session"
+import { BackupServicesProvider } from "@/features/vault-backup"
 
 import { StyleSheet, View } from "react-native"
 
@@ -49,7 +50,9 @@ export const App = () => {
 	return (
 		<Provider store={store}>
 			<SessionServicesProvider lock={container.vaultLock} recovery={container.vaultRecovery}>
-				<AppContent authService={container.authService} lock={container.vaultLock} />
+				<BackupServicesProvider backup={container.vaultBackup} files={container.fileStorage}>
+					<AppContent authService={container.authService} lock={container.vaultLock} />
+				</BackupServicesProvider>
 			</SessionServicesProvider>
 		</Provider>
 	)

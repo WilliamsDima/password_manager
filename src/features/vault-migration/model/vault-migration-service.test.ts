@@ -2,7 +2,7 @@ import { cbc } from "@noble/ciphers/aes.js"
 import { md5 } from "@noble/hashes/legacy.js"
 import { concatBytes } from "@noble/hashes/utils.js"
 
-import { EntryCodec, type EntryPayload } from "@/entities/entry"
+import { EntryCodec, type EntryPayload, LegacyDataError } from "@/entities/entry"
 import { VaultKeyService } from "@/entities/session"
 import { encodeUtf8, toBase64 } from "@/shared/lib/encoding"
 import { AppError } from "@/shared/lib/errors"
@@ -11,7 +11,6 @@ import { CryptoJsLegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import type { RemoteProfile } from "@/shared/services/remote-store"
 import { FakeRandom, FakeRemoteStore, FakeSecureStorage } from "@/shared/testing"
 
-import { LegacyDataError } from "../lib/legacy-items"
 import { PENDING_MIGRATION_KEY, VaultMigrationService } from "./vault-migration-service"
 
 const UID = "user-1"

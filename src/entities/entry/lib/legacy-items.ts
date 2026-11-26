@@ -1,7 +1,7 @@
 import { AppError } from "@/shared/lib/errors"
 import type { ILegacyDecryptor } from "@/shared/services/legacy-decryptor"
 
-import type { EntryPayload } from "@/entities/entry"
+import type { EntryPayload } from "../model/types"
 
 /** Raised when some v1 items do not decrypt or have the wrong shape; nothing is written then. */
 export class LegacyDataError extends AppError {

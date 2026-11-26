@@ -5,6 +5,7 @@ import { AppError } from "@/shared/lib/errors"
 import { NobleCryptoService, NobleScryptKdf } from "@/shared/services/crypto"
 import { CryptoJsLegacyDecryptor } from "@/shared/services/legacy-decryptor"
 import type { ISecureStorage } from "@/shared/services/secure-storage"
+import { VaultBackupService } from "@/features/vault-backup"
 import { VaultMigrationService } from "@/features/vault-migration"
 import { FakeAuthService, FakeRandom, FakeRemoteStore, FakeSecureStorage } from "@/shared/testing"
 
@@ -55,6 +56,19 @@ const createTestDependencies = (secureStorage: ISecureStorage): AppDependencies 
 		vaultLock: new VaultLockService(secureStorage, crypto, new NobleScryptKdf(), random, Date.now),
 		vaultRecovery: new VaultRecoveryService(remoteStore, vaultKeys),
 		clipboard: { copySensitive: () => Promise.resolve(), clear: () => Promise.resolve() },
+		fileStorage: {
+			saveToFolder: () => Promise.resolve("canceled"),
+			share: () => Promise.resolve(),
+			pickText: () => Promise.resolve(null),
+		},
+		vaultBackup: new VaultBackupService(
+			remoteStore,
+			entryCodec,
+			vaultKeys,
+			legacyDecryptor,
+			random,
+			() => new Date(),
+		),
 	}
 }
 
